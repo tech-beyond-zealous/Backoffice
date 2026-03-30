@@ -1,6 +1,6 @@
 package com.gosmart.backoffice.service;
 
-import com.gosmart.backoffice.repo.FunctionRepository;
+import com.gosmart.backoffice.repo.UserRoleRepository;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,10 +13,10 @@ import org.springframework.stereotype.Service;
 public class MenuService {
     private static final Logger log = LoggerFactory.getLogger(MenuService.class);
 
-    private final FunctionRepository functionRepository;
+    private final UserRoleRepository userRoleRepository;
 
-    public MenuService(FunctionRepository functionRepository) {
-        this.functionRepository = functionRepository;
+    public MenuService(UserRoleRepository userRoleRepository) {
+        this.userRoleRepository = userRoleRepository;
     }
 
     public List<MenuGroup> buildMenuGroups(String userId) {
@@ -24,11 +24,11 @@ public class MenuService {
             return List.of();
         }
 
-        List<FunctionRepository.MenuRow> rows = functionRepository.findMenuRowsByUserId(userId);
+        List<UserRoleRepository.MenuRow> rows = userRoleRepository.findMenuRowsByUserId(userId);
         log.debug("Menu load rows={} userId={}", rows.size(), userId);
         Map<Long, MenuGroupBuilder> groups = new LinkedHashMap<>();
 
-        for (FunctionRepository.MenuRow row : rows) {
+        for (UserRoleRepository.MenuRow row : rows) {
             MenuGroupBuilder group = groups.computeIfAbsent(
                     row.getGroupId(),
                     id -> new MenuGroupBuilder(id, row.getGroupName())

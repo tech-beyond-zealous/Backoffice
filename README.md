@@ -28,7 +28,7 @@ The dashboard top navigation menu is built dynamically from RBAC tables (filtere
 - The `function` table name is a reserved word in MySQL, so it is referenced as `` `function` `` in SQL and mapped accordingly in JPA.
 
 Entry points:
-- Query: [FunctionRepository.java](file:///d:/Project/GoSmart/Source%20Code/BackOffice/src/main/java/com/gosmart/backoffice/repo/FunctionRepository.java)
+- Query: [UserRoleRepository.java](file:///d:/Project/GoSmart/Source%20Code/BackOffice/src/main/java/com/gosmart/backoffice/repo/UserRoleRepository.java)
 - Menu model building: [MenuService.java](file:///d:/Project/GoSmart/Source%20Code/BackOffice/src/main/java/com/gosmart/backoffice/service/MenuService.java)
 - Controller: [DashboardController.java](file:///d:/Project/GoSmart/Source%20Code/BackOffice/src/main/java/com/gosmart/backoffice/web/controller/DashboardController.java)
 - Rendering: [dashboard.html](file:///d:/Project/GoSmart/Source%20Code/BackOffice/src/main/resources/templates/dashboard.html)
