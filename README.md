@@ -182,7 +182,7 @@ Create gosmart database.
 
 Don't use root for this project. Create a new user gosmartdev with password Just13tm31n!2 and grant it all privileges on gosmart database.
 
-Please refer to gosmart.sql for the database schema and insert initial data.
+Please refer to gosmart.sql for the database schema and insert initial data. Run gosmart.sql in MySQL client.
 
 
 ### RBAC tables (menu authorization)
