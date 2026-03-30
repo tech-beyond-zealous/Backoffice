@@ -1,0 +1,38 @@
+server:
+  port: 8089
+
+spring:
+  thymeleaf:
+    cache: false
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/gosmart?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=SERVER&forceConnectionTimeZoneToSession=true
+    username: gosmartdev
+    password: Just13tm31n!2
+    hikari:
+      initialization-fail-timeout: 0
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+app:
+  version: 1.0.0
+  auth:
+    cookie-name: GS_AT
+    cookie-path: /
+    cookie-secure: false
+    cookie-same-site: Lax
+    idle-timeout-minutes: 5
+    jwt-secret: af5a3e292cf54d15a9074d3ea7b0bc0278896a0eca044485b4f61c822be8fd6d
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS,Asia/Kuala_Lumpur} %-5level [%thread] %logger{36} - %msg%n"
+  level:
+    root: INFO
+    com.gosmart.backoffice.security.JwtProvider: DEBUG
+    com.gosmart.backoffice.web.interceptor.AuthInterceptor: DEBUG
+    com.gosmart.backoffice.web.controller.AuthController: DEBUG
+    com.gosmart.backoffice.service.MenuService: DEBUG

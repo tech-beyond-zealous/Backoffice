@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .gs-loading {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(2px);
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+<div id="gsLoading" class="gs-loading" role="status" aria-live="polite">
+    <div class="d-flex align-items-center gap-2 text-secondary">
+        <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        <div>Loading...</div>
+    </div>
+</div>
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+    <div class="container-fluid">
+        <div class="navbar-brand fw-semibold">
+            GoSmart Admin Portal
+            <span th:if="${appVersion != null}" class="ms-1 text-secondary" style="font-size: 0.8rem;" th:text="'v' + ${appVersion}">v1.0.0</span>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
+                aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/dashboard}">Home</a>
+                </li>
+                <li class="nav-item dropdown" th:each="g : ${menuGroups}">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                       th:text="${g.groupName}">Menu</a>
+                    <ul class="dropdown-menu">
+                        <li th:each="fn : ${g.items}">
+                            <a class="dropdown-item" th:href="@{${fn.path}}" th:text="${fn.name}">Item</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-body-secondary small">Signed in as <span class="fw-semibold" th:text="${userId}">user</span></div>
+                <form id="logoutForm" method="post" th:action="@{/logout}">
+                    <button id="logoutBtn" class="btn btn-outline-secondary btn-sm" type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+    <div class="p-4 p-md-5 rounded-3 bg-light border">
+        <h1 class="display-6 mb-2">Dashboard</h1>
+        <p class="text-body-secondary mb-0">Protected home screen.</p>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:inline="javascript">window.GS_IDLE_TIMEOUT_MINUTES = [[${idleTimeoutMinutes}]];</script>
+<script th:src="@{/js/idle-timer.js(v=${idleTimeoutMinutes})}"></script>
+<script>
+    window.addEventListener("load", () => {
+        const loading = document.getElementById("gsLoading");
+        if (loading) loading.classList.add("d-none");
+    });
+</script>
+<script>
+    (() => {
+        const form = document.getElementById("logoutForm");
+        const btn = document.getElementById("logoutBtn");
+        const loading = document.getElementById("gsLoading");
+        if (!form || !loading) return;
+
+        form.addEventListener("submit", () => {
+            if (btn) btn.disabled = true;
+            loading.classList.remove("d-none");
+        });
+    })();
+</script>
+</body>
+</html>
