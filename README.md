@@ -176,7 +176,14 @@ This project uses a layered package structure for clarity as the codebase grows:
 
 ## Database Schema
 
+Please install MySQL community version 8.0.45 in your local workstation.
+
+Create gosmart database.
+
+Don't use root for this project. Create a new user gosmartdev with password Just13tm31n!2 and grant it all privileges on gosmart database.
+
 Please refer to gosmart.sql for the database schema and insert initial data.
+
 
 ### RBAC tables (menu authorization)
 
