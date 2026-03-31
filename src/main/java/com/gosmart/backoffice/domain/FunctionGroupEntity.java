@@ -14,6 +14,9 @@ public class FunctionGroupEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long groupId;
 
+    @Column(name = "application_system_id")
+    private Long applicationSystemId;
+
     @Column(name = "group_code")
     private String groupCode;
 
@@ -31,6 +34,14 @@ public class FunctionGroupEntity {
 
     public Long getGroupId() {
         return groupId;
+    }
+
+    public Long getApplicationSystemId() {
+        return applicationSystemId;
+    }
+
+    public void setApplicationSystemId(Long applicationSystemId) {
+        this.applicationSystemId = applicationSystemId;
     }
 
     public String getGroupCode() {

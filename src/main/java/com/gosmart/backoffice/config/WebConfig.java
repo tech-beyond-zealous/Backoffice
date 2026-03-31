@@ -24,7 +24,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns("/js/**");
         registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/dashboard", "/dashboard/**");
+                .addPathPatterns("/**")
+                .excludePathPatterns("/", "/login", "/js/**", "/error");
     }
 
     @Override

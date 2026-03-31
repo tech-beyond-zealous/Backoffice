@@ -1,4 +1,4 @@
-<nav xmlns:th="http://www.thymeleaf.org" th:fragment="topNav(appVersion, menuGroups, userId)" class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+<nav xmlns:th="http://www.thymeleaf.org" th:fragment="topNav(appVersion, menuGroups, userId, applicationSystemId)" class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
     <div class="container-fluid">
         <div class="navbar-brand fw-semibold">
             GoSmart Admin Portal
@@ -12,14 +12,17 @@
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" th:href="@{/dashboard}">Home</a>
+                    <a class="nav-link active" aria-current="page"
+                       th:href="${applicationSystemId != null} ? @{/dashboard(applicationSystemId=${applicationSystemId})} : @{/dashboard}">Home</a>
                 </li>
                 <li class="nav-item dropdown" th:each="g : ${menuGroups}">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
                        th:text="${g.groupName}">Menu</a>
                     <ul class="dropdown-menu">
                         <li th:each="fn : ${g.items}">
-                            <a class="dropdown-item" th:href="@{${fn.path}}" th:text="${fn.name}">Item</a>
+                            <a class="dropdown-item"
+                               th:href="${applicationSystemId != null} ? @{${fn.path}(applicationSystemId=${applicationSystemId}, functionId=${fn.functionId})} : @{${fn.path}(functionId=${fn.functionId})}"
+                               th:text="${fn.name}">Item</a>
                         </li>
                     </ul>
                 </li>
