@@ -1,0 +1,36 @@
+<nav xmlns:th="http://www.thymeleaf.org" th:fragment="topNav(appVersion, menuGroups, userId)" class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+    <div class="container-fluid">
+        <div class="navbar-brand fw-semibold">
+            GoSmart Admin Portal
+            <span th:if="${appVersion != null}" class="ms-1 text-secondary" style="font-size: 0.8rem;" th:text="'v' + ${appVersion}">v1.0.0</span>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain"
+                aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" th:href="@{/dashboard}">Home</a>
+                </li>
+                <li class="nav-item dropdown" th:each="g : ${menuGroups}">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                       th:text="${g.groupName}">Menu</a>
+                    <ul class="dropdown-menu">
+                        <li th:each="fn : ${g.items}">
+                            <a class="dropdown-item" th:href="@{${fn.path}}" th:text="${fn.name}">Item</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-body-secondary small">Signed in as <span class="fw-semibold" th:text="${userId}">user</span></div>
+                <form id="logoutForm" method="post" th:action="@{/logout}">
+                    <button id="logoutBtn" class="btn btn-outline-secondary btn-sm" type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
