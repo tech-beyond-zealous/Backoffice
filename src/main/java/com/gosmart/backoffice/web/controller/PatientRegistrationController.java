@@ -1,0 +1,88 @@
+package com.gosmart.backoffice.web.controller;
+
+import com.gosmart.backoffice.domain.PatientRegistration;
+import com.gosmart.backoffice.service.PatientRegistrationService;
+import com.gosmart.backoffice.service.ProtectedPageModelService;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+public class PatientRegistrationController {
+    private final ProtectedPageModelService protectedPageModelService;
+    private final PatientRegistrationService patientRegistrationService;
+
+    public PatientRegistrationController(
+            ProtectedPageModelService protectedPageModelService,
+            PatientRegistrationService patientRegistrationService
+    ) {
+        this.protectedPageModelService = protectedPageModelService;
+        this.patientRegistrationService = patientRegistrationService;
+    }
+
+    @GetMapping("/patient/registration")
+    public String registrationPage(HttpServletRequest request, Model model) {
+        protectedPageModelService.apply(model, request, null);
+        model.addAttribute("patients", patientRegistrationService.findAll());
+        return "patient-registration";
+    }
+
+    @PostMapping("/patient/save")
+    @ResponseBody
+    public PatientRegistration savePatient(@RequestBody PatientRegistration patient) {
+        return patientRegistrationService.save(patient);
+    }
+
+    @PutMapping("/patient/{id}")
+    @ResponseBody
+    public PatientRegistration updatePatient(@PathVariable Long id, @RequestBody PatientRegistration patient) {
+        Optional<PatientRegistration> existing = patientRegistrationService.findById(id);
+        if (existing.isPresent()) {
+            PatientRegistration toUpdate = existing.get();
+            toUpdate.setName(patient.getName());
+            toUpdate.setAge(patient.getAge());
+            toUpdate.setGender(patient.getGender());
+            toUpdate.setRace(patient.getRace());
+            toUpdate.setIcPassportNo(patient.getIcPassportNo());
+            toUpdate.setMobileNo(patient.getMobileNo());
+            toUpdate.setEmergencyContactName(patient.getEmergencyContactName());
+            toUpdate.setEmergencyContactNo(patient.getEmergencyContactNo());
+            toUpdate.setRelationship(patient.getRelationship());
+            toUpdate.setAddress(patient.getAddress());
+            toUpdate.setArea(patient.getArea());
+            toUpdate.setPostcode(patient.getPostcode());
+            toUpdate.setCity(patient.getCity());
+            toUpdate.setHasChronicDisease(patient.getHasChronicDisease());
+            toUpdate.setChronicDisease(patient.getChronicDisease());
+            toUpdate.setModifyBy(patient.getModifyBy());
+            return patientRegistrationService.save(toUpdate);
+        }
+        return null;
+    }
+
+    @DeleteMapping("/patient/{id}")
+    @ResponseBody
+    public void deletePatient(@PathVariable Long id) {
+        patientRegistrationService.deleteById(id);
+    }
+
+    @GetMapping("/patient/{id}")
+    @ResponseBody
+    public Optional<PatientRegistration> getPatient(@PathVariable Long id) {
+        return patientRegistrationService.findById(id);
+    }
+
+    @GetMapping("/patient/all")
+    @ResponseBody
+    public java.util.List<PatientRegistration> getAllPatients() {
+        return patientRegistrationService.findAll();
+    }
+}

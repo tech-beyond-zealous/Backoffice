@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Registration</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link th:href="@{/css/patient-registration.css}" rel="stylesheet" />
+  </head>
+  <body>
+    <div
+      th:replace="~{fragments/nav :: topNav(${appVersion}, ${menuGroups}, ${userId}, ${selectedApplicationSystemId})}"
+    ></div>
+
+    <main class="container-fluid py-4">
+      <div class="gs-main mx-auto">
+        <!-- Registration Form -->
+        <div class="card shadow-sm rounded-4">
+          <div class="card-body p-5">
+            <h2 class="card-title mb-4">Patient Registration Form</h2>
+
+            <form id="patientForm" class="form-grid">
+              <input type="hidden" id="patientId" name="id" />
+
+              <!-- Basic Info -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person"></i> Basic Information
+              </h3>
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  class="input-field"
+                  placeholder="Full Name *"
+                  required
+                />
+              </div>
+              <div class="form-group-compact">
+                <input
+                  type="number"
+                  id="age"
+                  name="age"
+                  class="input-field"
+                  placeholder="Age *"
+                  min="0"
+                  max="120"
+                  required
+                  oninvalid="
+                    this.setCustomValidity('Please enter the patient age')
+                  "
+                  oninput="this.setCustomValidity('')"
+                />
+              </div>
+
+              <div class="form-group-compact">
+                <select
+                  id="gender"
+                  name="gender"
+                  class="input-field"
+                  required
+                  oninvalid="this.setCustomValidity('Please select a gender')"
+                  oninput="this.setCustomValidity('')"
+                >
+                  <option value="" disabled selected>Select Gender *</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+              </div>
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="race"
+                  name="race"
+                  class="input-field"
+                  placeholder="Race"
+                />
+              </div>
+
+              <!-- Identity -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-card-text"></i> Identity
+              </h3>
+
+              <div class="form-group-compact col-span-2">
+                <input
+                  type="text"
+                  id="icPassportNo"
+                  name="icPassportNo"
+                  class="input-field"
+                  placeholder="IC / Passport Number *"
+                  required
+                />
+              </div>
+
+              <!-- Contact -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-telephone"></i> Contact
+              </h3>
+
+              <div class="form-group-compact col-span-2">
+                <input
+                  type="tel"
+                  id="mobileNo"
+                  name="mobileNo"
+                  class="input-field"
+                  placeholder="Mobile Number *"
+                  pattern="[0-9+\- ]{7,20}"
+                  title="Enter a valid phone number"
+                  required
+                  oninvalid="
+                    this.setCustomValidity('Please enter a valid mobile number')
+                  "
+                  oninput="this.setCustomValidity('')"
+                />
+              </div>
+
+              <!-- Emergency -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-shield-exclamation"></i> Emergency Contact
+              </h3>
+
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="emergencyContactName"
+                  name="emergencyContactName"
+                  class="input-field"
+                  placeholder="Contact Name *"
+                  required
+                  oninvalid="
+                    this.setCustomValidity(
+                      'Please enter an emergency contact name',
+                    )
+                  "
+                  oninput="this.setCustomValidity('')"
+                />
+              </div>
+              <div class="form-group-compact">
+                <input
+                  type="tel"
+                  id="emergencyContactNo"
+                  name="emergencyContactNo"
+                  class="input-field"
+                  placeholder="Contact Number *"
+                  pattern="[0-9+\- ]{7,20}"
+                  title="Enter a valid phone number"
+                  required
+                  oninvalid="
+                    this.setCustomValidity(
+                      'Please enter an emergency contact number',
+                    )
+                  "
+                  oninput="this.setCustomValidity('')"
+                />
+              </div>
+              <div class="form-group-compact col-span-2">
+                <input
+                  type="text"
+                  id="relationship"
+                  name="relationship"
+                  class="input-field"
+                  placeholder="Relationship"
+                />
+              </div>
+
+              <!-- Address -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-geo-alt"></i> Address
+              </h3>
+
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  class="input-field"
+                  placeholder="Address"
+                />
+              </div>
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="area"
+                  name="area"
+                  class="input-field"
+                  placeholder="Area"
+                />
+              </div>
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="postcode"
+                  name="postcode"
+                  class="input-field"
+                  placeholder="Postcode"
+                />
+              </div>
+              <div class="form-group-compact">
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  class="input-field"
+                  placeholder="City"
+                />
+              </div>
+
+              <!-- Medical -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-heart-pulse"></i> Medical Info
+              </h3>
+
+              <div class="form-group-compact col-span-2">
+                <select
+                  id="hasChronicDisease"
+                  name="hasChronicDisease"
+                  class="input-field"
+                >
+                  <option value="N">Chronic Disease: No</option>
+                  <option value="Y">Chronic Disease: Yes</option>
+                </select>
+              </div>
+              <div class="form-group-compact col-span-2">
+                <input
+                  type="text"
+                  id="chronicDisease"
+                  name="chronicDisease"
+                  class="input-field"
+                  placeholder="If Yes, Specify Disease"
+                />
+              </div>
+
+              <!-- Actions -->
+              <div class="mt-3 d-flex gap-2 col-span-2">
+                <button
+                  type="submit"
+                  id="submitBtn"
+                  class="btn btn-primary shadow-sm flex-grow-1 py-2"
+                >
+                  Add Patient
+                </button>
+                <button
+                  type="button"
+                  id="resetBtn"
+                  class="btn btn-secondary shadow-sm py-2"
+                  style="display: none"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Patients List -->
+        <div class="card shadow-sm rounded-4 mt-4">
+          <div class="card-body p-5">
+            <h2 class="card-title mb-4">
+              <i class="bi bi-people"></i> Patient List
+            </h2>
+            <div class="table-tools">
+              <div class="input-group flex-grow-1">
+                <span class="input-group-text"
+                  ><i class="bi bi-search"></i
+                ></span>
+                <input
+                  id="patientSearch"
+                  type="search"
+                  class="form-control"
+                  placeholder="Search by name, city, IC, mobile"
+                />
+              </div>
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#filterModal"
+                  title="Filter"
+                >
+                  <i class="bi bi-funnel"></i> Filter
+                </button>
+                <button
+                  type="button"
+                  id="resetFiltersBtn"
+                  class="btn btn-outline-secondary"
+                  title="Reset"
+                >
+                  <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle patients-table">
+                <thead class="table-header-custom">
+                  <tr>
+                    <th class="sortable" data-sort="name">
+                      Name <span class="sort-arrow" data-field="name"></span>
+                    </th>
+                    <th class="sortable" data-sort="age">
+                      Age <span class="sort-arrow" data-field="age"></span>
+                    </th>
+                    <th class="sortable" data-sort="gender">
+                      Gender
+                      <span class="sort-arrow" data-field="gender"></span>
+                    </th>
+                    <th>IC/Passport</th>
+                    <th>Mobile</th>
+                    <th class="sortable" data-sort="city">
+                      City <span class="sort-arrow" data-field="city"></span>
+                    </th>
+                    <th>Chronic Disease</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="patientsList">
+                  <tr
+                    th:each="patient : ${patients}"
+                    :key="${patient.id}"
+                    data-id="${patient.id}"
+                    data-name="${patient.name}"
+                    data-age="${patient.age}"
+                    data-gender="${patient.gender}"
+                    data-ic-passport="${patient.icPassportNo}"
+                    data-mobile="${patient.mobileNo}"
+                    data-city="${patient.city}"
+                    data-chronic="${patient.hasChronicDisease}"
+                  >
+                    <td>
+                      <a
+                        class="patient-name-link"
+                        onclick="viewPatientDetails(this)"
+                        data-id="${patient.id}"
+                        th:text="${patient.name}"
+                        >-</a
+                      >
+                    </td>
+                    <td th:text="${patient.age}">-</td>
+                    <td th:text="${patient.gender}">-</td>
+                    <td th:text="${patient.icPassportNo}">-</td>
+                    <td th:text="${patient.mobileNo}">-</td>
+                    <td th:text="${patient.city}">-</td>
+                    <td>
+                      <span
+                        th:class="${patient.hasChronicDisease == 'Y' ? 'badge badge-danger-soft' : 'badge badge-success-soft'}"
+                        th:text="${patient.hasChronicDisease == 'Y' ? 'Yes' : 'No'}"
+                      >
+                      </span>
+                    </td>
+                    <td class="text-nowrap">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
+                        onclick="viewPatientDetails(this)"
+                        data-id="${patient.id}"
+                        title="View"
+                      >
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
+                        onclick="editPatient(this)"
+                        data-id="${patient.id}"
+                        title="Edit"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
+                        onclick="deletePatient(this)"
+                        data-id="${patient.id}"
+                        title="Delete"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr id="noPatients" th:if="${#lists.isEmpty(patients)}">
+                    <td colspan="8" class="text-center text-muted py-4">
+                      No patients registered yet
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="pagination-wrapper">
+                <div id="patientsInfo" class="text-muted"></div>
+                <nav>
+                  <ul id="patientsPagination" class="pagination mb-0"></ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div
+      class="toast position-fixed bottom-0 end-0 p-3"
+      id="liveToast"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="toast-body bg-success text-white rounded"></div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div
+      class="modal fade"
+      id="patientDetailsModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Patient Details</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="details-grid" id="patientDetailsContent">
+              <!-- Details will be populated here -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Filter Patients</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-4">
+              <h6 class="mb-3">Gender</h6>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterMale"
+                  value="Male"
+                  data-filter="gender"
+                />
+                <label class="form-check-label" for="filterMale"> Male </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterFemale"
+                  value="Female"
+                  data-filter="gender"
+                />
+                <label class="form-check-label" for="filterFemale">
+                  Female
+                </label>
+              </div>
+            </div>
+            <div class="mb-4">
+              <h6 class="mb-3">Chronic Disease</h6>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterChronicYes"
+                  value="Y"
+                  data-filter="chronic"
+                />
+                <label class="form-check-label" for="filterChronicYes">
+                  Has Chronic Disease
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterChronicNo"
+                  value="N"
+                  data-filter="chronic"
+                />
+                <label class="form-check-label" for="filterChronicNo">
+                  No Chronic Disease
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              id="applyFilterBtn"
+              class="btn btn-primary"
+              data-bs-dismiss="modal"
+            >
+              Apply Filter
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const form = document.getElementById("patientForm");
+      const patientId = document.getElementById("patientId");
+      const submitBtn = document.getElementById("submitBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const patientsList = document.getElementById("patientsList");
+      const patientSearch = document.getElementById("patientSearch");
+      const patientsPagination = document.getElementById("patientsPagination");
+      const patientsInfo = document.getElementById("patientsInfo");
+
+      let allPatients = [];
+      let currentPage = 1;
+      const pageSize = 6;
+      let currentSortBy = "name";
+      let currentSortDir = "asc"; // 'asc' or 'desc'
+      let filterCriteria = {
+        gender: [],
+        chronic: [],
+      };
+
+      // Initialize modal once
+      let patientDetailsModal = null;
+
+      function getPatientDetailsModal() {
+        if (!patientDetailsModal) {
+          patientDetailsModal = new bootstrap.Modal(
+            document.getElementById("patientDetailsModal"),
+            {
+              backdrop: true,
+              keyboard: true,
+            },
+          );
+        }
+        return patientDetailsModal;
+      }
+
+      // Toast notification function
+      function showToast(message) {
+        const toastEl = document.getElementById("liveToast");
+        toastEl.querySelector(".toast-body").textContent = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        // Convert age to number and skip id if empty
+        if (data.id) data.id = parseInt(data.id);
+        if (data.age) data.age = parseInt(data.age);
+        if (!data.id || data.id === 0) delete data.id;
+
+        const url = data.id ? `/patient/${data.id}` : "/patient/save";
+        const method = data.id ? "PUT" : "POST";
+
+        try {
+          const response = await fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (response.ok) {
+            const savedPatient = await response.json();
+            clearForm();
+            loadPatients();
+            showToast("Patient saved successfully!");
+          } else {
+            showToast("Error saving patient");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Error: " + error.message);
+        }
+      });
+
+      resetBtn.addEventListener("click", clearForm);
+
+      async function editPatient(button) {
+        const id = button.getAttribute("data-id");
+        try {
+          const response = await fetch(`/patient/${id}`);
+          if (response.ok) {
+            const patient = await response.json();
+            document.getElementById("patientId").value = patient.id;
+            document.getElementById("name").value = patient.name || "";
+            document.getElementById("age").value = patient.age || "";
+            document.getElementById("gender").value = patient.gender || "";
+            document.getElementById("race").value = patient.race || "";
+            document.getElementById("icPassportNo").value =
+              patient.icPassportNo || "";
+            document.getElementById("mobileNo").value = patient.mobileNo || "";
+            document.getElementById("emergencyContactName").value =
+              patient.emergencyContactName || "";
+            document.getElementById("emergencyContactNo").value =
+              patient.emergencyContactNo || "";
+            document.getElementById("relationship").value =
+              patient.relationship || "";
+            document.getElementById("address").value = patient.address || "";
+            document.getElementById("area").value = patient.area || "";
+            document.getElementById("postcode").value = patient.postcode || "";
+            document.getElementById("city").value = patient.city || "";
+            document.getElementById("hasChronicDisease").value =
+              patient.hasChronicDisease || "N";
+            document.getElementById("chronicDisease").value =
+              patient.chronicDisease || "";
+
+            submitBtn.textContent = "Update Patient";
+            form.classList.add("border", "border-warning", "form-edit-mode");
+            resetBtn.style.display = "block";
+            form.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Error loading patient");
+        }
+      }
+
+      async function deletePatient(button) {
+        if (!confirm("Are you sure you want to delete this patient?")) return;
+
+        const id = button.getAttribute("data-id");
+        try {
+          const response = await fetch(`/patient/${id}`, { method: "DELETE" });
+          if (response.ok) {
+            loadPatients();
+            showToast("Patient deleted successfully!");
+          } else {
+            showToast("Error deleting patient");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Error: " + error.message);
+        }
+      }
+
+      function clearForm() {
+        form.reset();
+        patientId.value = "";
+        submitBtn.textContent = "Add Patient";
+        form.classList.remove("border", "border-warning", "form-edit-mode");
+        resetBtn.style.display = "none";
+      }
+
+      async function loadPatients() {
+        try {
+          const response = await fetch("/patient/all");
+          if (response.ok) {
+            allPatients = await response.json();
+            renderPatientsTable();
+          }
+        } catch (error) {
+          console.error("Error loading patients:", error);
+        }
+      }
+
+      function getPatientSortValue(patient, field) {
+        if (field === "age") {
+          return parseInt(patient.age, 10) || 0;
+        }
+        return (patient[field] || "").toString().toLowerCase();
+      }
+
+      function filterAndSortPatients() {
+        const searchTerm = patientSearch.value.trim().toLowerCase();
+
+        let filtered = allPatients.filter((patient) => {
+          const matchSearch = [
+            patient.name,
+            patient.city,
+            patient.icPassportNo,
+            patient.mobileNo,
+          ]
+            .filter(Boolean)
+            .map((value) => value.toString().toLowerCase())
+            .some((value) => value.includes(searchTerm));
+
+          const matchGender =
+            filterCriteria.gender.length === 0 ||
+            filterCriteria.gender.includes(patient.gender);
+          const matchChronic =
+            filterCriteria.chronic.length === 0 ||
+            filterCriteria.chronic.includes(patient.hasChronicDisease);
+
+          return matchSearch && matchGender && matchChronic;
+        });
+
+        filtered.sort((a, b) => {
+          const aValue = getPatientSortValue(a, currentSortBy);
+          const bValue = getPatientSortValue(b, currentSortBy);
+          let result = 0;
+          if (aValue < bValue) result = -1;
+          else if (aValue > bValue) result = 1;
+
+          // Apply sort direction
+          return currentSortDir === "asc" ? result : -result;
+        });
+
+        return filtered;
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderPatientsTable() {
+        const filtered = filterAndSortPatients();
+        const totalItems = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const pageItems = filtered.slice(startIndex, startIndex + pageSize);
+
+        patientsList.innerHTML = pageItems
+          .map((patient) => {
+            return `
+              <tr
+                data-id="${escapeHtml(patient.id)}"
+                data-name="${escapeHtml(patient.name)}"
+                data-age="${escapeHtml(patient.age)}"
+                data-gender="${escapeHtml(patient.gender)}"
+                data-ic-passport="${escapeHtml(patient.icPassportNo)}"
+                data-mobile="${escapeHtml(patient.mobileNo)}"
+                data-city="${escapeHtml(patient.city)}"
+                data-chronic="${escapeHtml(patient.chronic)}"
+              >
+                <td>
+                  <a
+                    class="patient-name-link"
+                    onclick="viewPatientDetails(this)"
+                    data-id="${escapeHtml(patient.id)}"
+                    >${escapeHtml(patient.name)}</a
+                  >
+                </td>
+                <td>${escapeHtml(patient.age)}</td>
+                <td>${escapeHtml(patient.gender)}</td>
+                <td>${escapeHtml(patient.icPassportNo)}</td>
+                <td>${escapeHtml(patient.mobileNo)}</td>
+                <td>${escapeHtml(patient.city)}</td>
+                <td>
+                  <span class="badge ${patient.hasChronicDisease === "Y" ? "badge-danger-soft" : "badge-success-soft"}">
+                    ${patient.hasChronicDisease === "Y" ? "Yes" : "No"}
+                  </span>
+                </td>
+                <td class="text-nowrap">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
+                    onclick="viewPatientDetails(this)"
+                    data-id="${escapeHtml(patient.id)}"
+                    title="View"
+                  >
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
+                    onclick="editPatient(this)"
+                    data-id="${escapeHtml(patient.id)}"
+                    title="Edit"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
+                    onclick="deletePatient(this)"
+                    data-id="${escapeHtml(patient.id)}"
+                    title="Delete"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+
+        if (pageItems.length === 0) {
+          patientsList.innerHTML = `
+            <tr id="noPatients">
+              <td colspan="8" class="text-center text-muted py-4">
+                No patients match your search or filter criteria.
+              </td>
+            </tr>
+          `;
+        }
+
+        patientsInfo.textContent = `Showing ${pageItems.length === 0 ? 0 : startIndex + 1} to ${Math.min(
+          startIndex + pageSize,
+          totalItems,
+        )} of ${totalItems} patients`;
+
+        renderPagination(totalPages);
+      }
+
+      function renderPagination(totalPages) {
+        patientsPagination.innerHTML = "";
+        if (totalPages <= 1) {
+          return;
+        }
+
+        const createPageButton = (
+          page,
+          label,
+          active = false,
+          disabled = false,
+        ) => {
+          return `
+            <li class="page-item ${active ? "active" : ""} ${disabled ? "disabled" : ""}">
+              <button class="page-link" type="button" data-page="${page}">${label}</button>
+            </li>
+          `;
+        };
+
+        let paginationHtml = createPageButton(
+          currentPage - 1,
+          "&laquo;",
+          false,
+          currentPage === 1,
+        );
+        for (let page = 1; page <= totalPages; page += 1) {
+          paginationHtml += createPageButton(page, page, page === currentPage);
+        }
+        paginationHtml += createPageButton(
+          currentPage + 1,
+          "&raquo;",
+          false,
+          currentPage === totalPages,
+        );
+
+        patientsPagination.innerHTML = paginationHtml;
+        patientsPagination
+          .querySelectorAll("button[data-page]")
+          .forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const page = parseInt(btn.dataset.page, 10);
+              if (!Number.isNaN(page) && page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderPatientsTable();
+              }
+            });
+          });
+      }
+
+      function attachPatientsTableEvents() {
+        patientSearch.addEventListener("input", () => {
+          currentPage = 1;
+          renderPatientsTable();
+        });
+
+        // Add event listeners to sortable headers
+        document.querySelectorAll("th.sortable").forEach((th) => {
+          th.addEventListener("click", () => {
+            const newSortBy = th.getAttribute("data-sort");
+
+            // Toggle direction if clicking the same column
+            if (newSortBy === currentSortBy) {
+              currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+            } else {
+              // New column, start with ascending
+              currentSortBy = newSortBy;
+              currentSortDir = "asc";
+            }
+
+            currentPage = 1;
+            updateSortArrows();
+            renderPatientsTable();
+          });
+        });
+
+        // Add event listeners to filter checkboxes
+        document.querySelectorAll(".filter-checkbox").forEach((checkbox) => {
+          checkbox.addEventListener("change", () => {
+            // Filter is applied when "Apply Filter" button is clicked
+          });
+        });
+
+        // Apply filter button
+        document
+          .getElementById("applyFilterBtn")
+          .addEventListener("click", applyFilter);
+
+        // Reset filters button
+        document
+          .getElementById("resetFiltersBtn")
+          .addEventListener("click", resetFiltersAndSort);
+      }
+
+      function resetFiltersAndSort() {
+        // Clear search
+        patientSearch.value = "";
+
+        // Clear filter checkboxes
+        document.querySelectorAll(".filter-checkbox").forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+
+        // Reset filter criteria
+        filterCriteria.gender = [];
+        filterCriteria.chronic = [];
+
+        // Reset sort
+        currentSortBy = "name";
+        currentSortDir = "asc";
+        updateSortArrows();
+
+        // Reset to first page and render
+        currentPage = 1;
+        renderPatientsTable();
+        showToast("Filters and sort reset!");
+      }
+
+      function applyFilter() {
+        filterCriteria.gender = Array.from(
+          document.querySelectorAll('input[data-filter="gender"]:checked'),
+        ).map((cb) => cb.value);
+
+        filterCriteria.chronic = Array.from(
+          document.querySelectorAll('input[data-filter="chronic"]:checked'),
+        ).map((cb) => cb.value);
+
+        currentPage = 1;
+        renderPatientsTable();
+      }
+
+      function updateSortArrows() {
+        document.querySelectorAll(".sort-arrow").forEach((arrow) => {
+          arrow.classList.remove("active", "asc", "desc");
+          if (arrow.getAttribute("data-field") === currentSortBy) {
+            arrow.classList.add("active");
+            arrow.classList.add(currentSortDir === "asc" ? "asc" : "desc");
+          }
+        });
+      }
+
+      function attachPatientNameHandlers() {
+        const patientNameLinks =
+          document.querySelectorAll(".patient-name-link");
+        patientNameLinks.forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+            viewPatientDetails(this);
+          });
+        });
+      }
+
+      // Initial load
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPatients();
+        attachPatientsTableEvents();
+        attachPatientNameHandlers();
+        updateSortArrows();
+
+        // Handle modal cleanup when hidden
+        const modalElement = document.getElementById("patientDetailsModal");
+        if (modalElement) {
+          modalElement.addEventListener("hidden.bs.modal", function () {
+            // Remove any leftover backdrops
+            document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+              backdrop.remove();
+            });
+            // Ensure body doesn't have overflow hidden
+            document.body.style.overflow = "";
+          });
+        }
+      });
+
+      // Chronic disease toggle
+      const chronicSelect = document.getElementById("hasChronicDisease");
+      const chronicInput =
+        document.getElementById("chronicDisease").parentElement;
+
+      function toggleChronic() {
+        if (chronicSelect.value === "Y") {
+          chronicInput.style.display = "block";
+        } else {
+          chronicInput.style.display = "none";
+        }
+      }
+
+      chronicSelect.addEventListener("change", toggleChronic);
+      document.addEventListener("DOMContentLoaded", toggleChronic);
+
+      // View patient details
+      async function viewPatientDetails(link) {
+        const id = link.getAttribute("data-id");
+        try {
+          const response = await fetch(`/patient/${id}`);
+          if (response.ok) {
+            const patient = await response.json();
+            displayPatientDetails(patient);
+            const modal = getPatientDetailsModal();
+            modal.show();
+          } else {
+            showToast("Error loading patient details");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showToast("Error: " + error.message);
+        }
+      }
+
+      function displayPatientDetails(patient) {
+        const content = document.getElementById("patientDetailsContent");
+        content.innerHTML = `
+          <div class="detail-item">
+            <div class="detail-label">Full Name</div>
+            <div class="detail-value">${patient.name || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">IC / Passport</div>
+            <div class="detail-value">${patient.icPassportNo || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Age</div>
+            <div class="detail-value">${patient.age || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Gender</div>
+            <div class="detail-value">${patient.gender || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Race</div>
+            <div class="detail-value">${patient.race || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Mobile Number</div>
+            <div class="detail-value">${patient.mobileNo || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Emergency Contact</div>
+            <div class="detail-value">${patient.emergencyContactName || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Emergency Contact No</div>
+            <div class="detail-value">${patient.emergencyContactNo || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Relationship</div>
+            <div class="detail-value">${patient.relationship || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Address</div>
+            <div class="detail-value">${patient.address || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Area</div>
+            <div class="detail-value">${patient.area || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Postcode</div>
+            <div class="detail-value">${patient.postcode || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">City</div>
+            <div class="detail-value">${patient.city || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Chronic Disease</div>
+            <div class="detail-value">
+              <span class="badge ${patient.hasChronicDisease === "Y" ? "badge-danger-soft" : "badge-success-soft"}">
+                ${patient.hasChronicDisease === "Y" ? "Yes" : "No"}
+              </span>
+            </div>
+          </div>
+          ${
+            patient.hasChronicDisease === "Y"
+              ? `
+          <div class="detail-item">
+            <div class="detail-label">Chronic Disease Details</div>
+            <div class="detail-value">${patient.chronicDisease || "-"}</div>
+          </div>
+          `
+              : ""
+          }
+          <div class="detail-item">
+            <div class="detail-label">Created Date</div>
+            <div class="detail-value">${patient.createdDate ? new Date(patient.createdDate).toLocaleDateString("en-GB") : "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Last Updated</div>
+            <div class="detail-value">${patient.lastModifiedDate ? new Date(patient.lastModifiedDate).toLocaleDateString("en-GB") : "-"}</div>
+          </div>
+        `;
+      }
+    </script>
+  </body>
+</html>
