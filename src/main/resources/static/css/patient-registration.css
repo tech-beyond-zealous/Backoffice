@@ -1,72 +1,7 @@
-:root {
-  --primary-color: #1f6ac7;
-  --primary-light: #e8f1fb;
-  --primary-dark: #1557a0;
-}
+/* Import base styles */
+@import url("base.css");
 
-.gs-main {
-  width: 100%;
-}
-
-@media (min-width: 768px) {
-  .gs-main {
-    width: 90%;
-  }
-}
-
-.form-group-compact {
-  display: block;
-}
-
-.input-field {
-  padding: 0.5rem 0.7rem;
-  border: 1px solid #dee2e6;
-  border-radius: 0.4rem;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  width: 100%;
-}
-
-.input-field::placeholder {
-  color: #6c757d;
-  font-weight: 500;
-}
-
-.input-field:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
-}
-
-.section-heading {
-  margin-top: 1rem;
-  margin-bottom: 0.6rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.section-heading:first-of-type {
-  margin-top: 0;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 0.6rem;
-}
-
-@media (min-width: 768px) {
-  .form-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .form-grid .col-span-2 {
-    grid-column: span 2 / span 2;
-  }
-}
+/* Patient Registration Specific Styles */
 
 .patients-table {
   font-size: 0.85rem;
@@ -80,144 +15,9 @@
   background-color: #f8f9fa;
 }
 
-.table-header-custom {
-  color: white;
-}
-
-.patients-table thead.table-header-custom th {
-  background-color: var(--primary-color) !important;
-  border: none !important;
-  font-weight: 500 !important;
-  color: white !important;
-}
-
-.patients-table thead.table-header-custom th.sortable {
-  cursor: pointer;
-  user-select: none;
-  color: white !important;
-}
-
-.patients-table th.sortable:hover {
-  opacity: 0.9;
-}
-
-.sort-arrow {
-  margin-left: 0.4rem;
-  font-size: 1rem;
-  opacity: 0.4;
-}
-
-.sort-arrow::before {
-  content: "↑↓";
-}
-
-.sort-arrow.active {
-  opacity: 1;
-}
-
-.sort-arrow.active::before {
-  content: "";
-}
-
-.sort-arrow.asc::before {
-  content: "▲";
-}
-
-.sort-arrow.desc::before {
-  content: "▼";
-}
-
-.filter-checkbox {
-  margin-right: 0.5rem;
-}
-
 .patients-table td {
   vertical-align: middle;
   padding: 0.5rem 0.6rem;
-}
-
-.btn-sm-custom {
-  padding: 0.3rem 0.5rem;
-  font-size: 0.75rem;
-}
-
-.section-divider {
-  margin-top: 2rem;
-  margin-bottom: 0.7rem;
-  border-bottom: 1px solid #dee2e6;
-  padding-bottom: 0.7rem;
-}
-
-.section-divider h3 {
-  font-size: 0.95rem;
-  margin: 0;
-}
-
-.btn {
-  border-radius: 0.6rem;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-
-.table-tools {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.table-tools .input-group,
-.table-tools .form-select {
-  min-width: 14rem;
-}
-
-.table-tools .form-select {
-  max-width: 12rem;
-}
-
-.pagination-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.page-item .page-link {
-  min-width: 2.6rem;
-  text-align: center;
-}
-
-.action-icon {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@media (max-width: 768px) {
-  .table-tools {
-    grid-template-columns: 1fr;
-  }
-}
-
-.card {
-  border: none;
-  border-radius: 0.8rem;
-}
-
-.card-body {
-  background: white;
-}
-
-.card-title {
-  font-weight: 600;
-  color: var(--primary-color);
 }
 
 .patients-table tbody tr {
@@ -229,30 +29,6 @@
   background-color: var(--primary-light);
   transform: scale(1.01);
   border-left: 4px solid var(--primary-color);
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-dark);
-  border-color: var(--primary-dark);
-}
-
-.badge-danger-soft {
-  background-color: #fde2e2;
-  color: #b02a37;
-}
-
-.badge-success-soft {
-  background-color: #e6f4ea;
-  color: #198754;
-}
-
-body {
-  background: linear-gradient(to bottom, #f8fbff, #eef4fb);
 }
 
 .form-edit-mode {
@@ -271,44 +47,4 @@ body {
 .patient-name-link:hover {
   text-decoration: underline;
   color: var(--primary-dark);
-}
-
-.modal-header {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--primary-dark)
-  );
-  color: white;
-}
-
-.details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-@media (max-width: 768px) {
-  .details-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.detail-item {
-  border-bottom: 1px solid #e9ecef;
-  padding-bottom: 0.8rem;
-}
-
-.detail-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-value {
-  font-size: 0.95rem;
-  color: #212529;
-  margin-top: 0.3rem;
 }

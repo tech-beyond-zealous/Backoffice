@@ -1,6 +1,23 @@
-# Patient Registration CSS Base Template for Thymeleaf + Spring Boot
+# Base CSS Framework for Spring Boot + Thymeleaf
 
-This README describes how to use `patient-registration.css` as a reusable base styling template in a Spring Boot + Thymeleaf application.
+This README explains how to use `base.css` as a reusable foundation for styling Spring Boot + Thymeleaf applications.
+
+## What base.css Provides
+
+`base.css` contains the core, reusable styling foundation that can be used across any page in your application:
+
+- **CSS Variables**: Theme colors (`--primary-color`, `--primary-light`, `--primary-dark`)
+- **Responsive Layouts**: `.gs-main` container, `.form-grid` responsive forms
+- **Form Elements**: `.input-field`, `.section-heading`, `.form-group-compact`
+- **Tables**: General table styling, `.table-header-custom`, sorting arrows
+- **Buttons**: `.btn`, `.btn-primary`, `.btn-sm-custom`, `.action-icon`
+- **Badges**: `.badge-success-soft`, `.badge-danger-soft`
+- **Cards**: `.card`, `.card-body`, `.card-title`
+- **Modals**: `.modal-header` gradient background
+- **Pagination**: `.pagination-wrapper` layout
+- **Details Grid**: `.details-grid` for view modals
+- **Body Background**: Gradient background
+- **Toast**: Basic toast styling
 
 ## Thymeleaf Template Base
 
@@ -22,7 +39,7 @@ Example Thymeleaf page structure using this CSS:
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
       rel="stylesheet"
     />
-    <link th:href="@{/css/patient-registration.css}" rel="stylesheet" />
+    <link th:href="@{/css/base.css}" rel="stylesheet" />
   </head>
   <body>
     <!-- Include navigation fragment -->
@@ -65,59 +82,44 @@ Override the theme colors in your own stylesheet or in the same CSS file:
 }
 ```
 
-## UI Components Used in the Patient Registration System
+## Installation
 
-### Modals
+1. Place the CSS file in Spring Boot static resources:
 
-A modal is a popup window that appears on top of the page to focus the user on one task.
+```text
+src/main/resources/static/css/base.css
+```
 
-📌 In this system, modals are used for:
+2. In your Thymeleaf template `<head>`, include the CSS with the Thymeleaf path expression:
 
-- ➕ **Add Patient** (#patientFormModal)
-- ✏️ **Edit Patient** (same modal, different mode)
-- 👁️ **View Patient Details** (#patientDetailsModal)
-- 🔍 **Filter Patients** (#filterModal)
+```html
+<link th:href="@{/css/base.css}" rel="stylesheet" />
+```
 
-### Toasts
+Also include Bootstrap and Bootstrap Icons in the same `<head>`:
 
-A toast is a small, temporary notification that appears in the corner of the screen.
+```html
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+  rel="stylesheet"
+/>
+```
 
-📌 In this system, toasts are used for:
+3. Before the closing `</body>` tag, load Bootstrap JavaScript:
 
-- ✅ Patient saved successfully
-- ❌ Error saving patient
-- 🗑️ Patient deleted successfully
+```html
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+```
 
-### Buttons
+## Reusable Components (from base.css)
 
-Buttons trigger actions such as opening modals, submitting forms, or resetting filters.
+The following components are available in `base.css` and can be reused across any page in your application:
 
-📌 In this system, buttons are used for:
-
-- ➕ **Add Patient** (opens #patientFormModal)
-- ✏️ **Edit Patient** (opens #patientFormModal in edit mode)
-- 👁️ **View Patient Details** (opens #patientDetailsModal)
-- 🗑️ **Delete Patient** (performs delete action)
-- 🔄 **Reset Filters** (#resetFiltersBtn)
-- 🔍 **Apply Filters** (#applyFilterBtn)
-
-### Tables
-
-A table displays structured data in rows and columns.
-
-📌 In this system, tables are used for:
-
-- **Patient List** (.patients-table) showing: Name, Age, Gender, IC/Passport, Mobile, City, Chronic Disease, Actions
-
-### Pagination
-
-Pagination divides data into pages to avoid overwhelming the user.
-
-📌 In this system, pagination is used for:
-
-- Navigating patient list pages (#patientsPagination)
-
-## Reusable Components
+The following components are available in `base.css` and can be reused across any page in your application:
 
 ### Responsive Form Grid
 
@@ -588,16 +590,16 @@ Spring Boot automatically serves static content from `src/main/resources/static/
 ```
 src/main/resources/
 ├── static/css/
-│   └── patient-registration.css
+│   └── base.css                    (reusable foundation styles)
 └── templates/
-    └── patient-registration.html
+    └── your-page.html              (your application pages)
 ```
 
 ## Integration Notes
 
-- Use `th:href="@{/css/patient-registration.css}"` in Thymeleaf layouts.
-- Keep Bootstrap CSS and JS imports in the template.
-- Load scripts after the page content so modal and table interactions work correctly.
+- Use `th:href="@{/css/base.css}"` in Thymeleaf templates
+- Keep Bootstrap CSS and JS imports in every template that uses this framework
+- Load scripts after the page content so modal and table interactions work correctly
 
 ## Customization
 
@@ -623,13 +625,14 @@ Add new styles if you need additional variants or layout helpers.
 
 ## Contributing
 
-When extending this template:
+When extending `base.css`:
 
-1. Keep component names consistent with the CSS classes in this file.
-2. Preserve the responsive behavior on mobile and desktop.
-3. Test pages in a Spring Boot environment with Thymeleaf.
-4. Update this README when new reusable components are added.
+1. Keep component names consistent and semantic
+2. Preserve the mobile-first responsive approach (mobile first, then enhance for desktop)
+3. Always test new components across breakpoints
+4. Update this README when new reusable components are added
+5. Use CSS variables for themeable colors instead of hard-coded hex values
 
 ## License
 
-This template is part of the GoSmart BackOffice project and is intended as a reusable base for patient management pages.
+This CSS framework is part of the GoSmart BackOffice project and is intended as a reusable foundation for healthcare management applications.
