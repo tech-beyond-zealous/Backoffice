@@ -64,8 +64,9 @@ public class CaregiverController {
 
     @DeleteMapping("/caregiver/{id}")
     @ResponseBody
-    public void deleteCaregiver(@PathVariable Long id) {
-        caregiverService.deleteById(id);
+    public void deleteCaregiver(@PathVariable Long id, HttpServletRequest request) {
+        String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        caregiverService.softDelete(id, userId);
     }
 
     @GetMapping("/caregiver/{id}")

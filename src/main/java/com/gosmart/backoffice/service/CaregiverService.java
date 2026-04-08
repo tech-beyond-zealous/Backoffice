@@ -42,7 +42,11 @@ public class CaregiverService {
     /**
      * Delete a caregiver by ID.
      */
-    public void deleteById(Long id) {
-        caregiverRepository.deleteById(id);
+    public void softDelete(Long id, String userId) {
+        caregiverRepository.findById(id).ifPresent(caregiver -> {
+            caregiver.setStatus("D");
+            caregiver.setModifyBy(userId);
+            caregiverRepository.save(caregiver);
+        });
     }
 }
