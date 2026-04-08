@@ -318,6 +318,39 @@
             ></button>
           </div>
           <div class="modal-body">
+            <div class="mb-4">
+              <h6 class="mb-3">Status</h6>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterActive"
+                  value="A"
+                  data-filter="status"
+                />
+                <label class="form-check-label" for="filterActive"> Active </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterInactive"
+                  value="X"
+                  data-filter="status"
+                />
+                <label class="form-check-label" for="filterInactive"> Inactive </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterDeleted"
+                  value="D"
+                  data-filter="status"
+                />
+                <label class="form-check-label" for="filterDeleted"> Deleted </label>
+              </div>
+            </div>
           </div>
           <div class="modal-footer">
             <button
@@ -356,6 +389,9 @@
       const pageSize = 6;
       let currentSortBy = "name";
       let currentSortDir = "asc"; // 'asc' or 'desc'
+      let filterCriteria = {
+        status: [],
+      };
       
 
       // Initialize modal once
@@ -493,7 +529,11 @@
             .map((value) => value.toString().toLowerCase())
             .some((value) => value.includes(searchTerm));
 
-          return matchSearch;
+          const matchStatus =
+            filterCriteria.status.length === 0 ||
+            filterCriteria.status.includes(caregiver.status);
+
+          return matchSearch && matchStatus;
         });
 
         filtered.sort((a, b) => {
@@ -708,6 +748,9 @@
           checkbox.checked = false;
         });
 
+        // Reset filter criteria
+        filterCriteria.status = [];
+
         // Reset sort
         currentSortBy = "name";
         currentSortDir = "asc";
@@ -720,6 +763,10 @@
       }
 
       function applyFilter() {
+        filterCriteria.status = Array.from(
+          document.querySelectorAll('input[data-filter="status"]:checked'),
+        ).map((cb) => cb.value);
+
         currentPage = 1;
         renderCaregiversTable();
       }
