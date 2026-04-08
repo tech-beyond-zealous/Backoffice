@@ -11,6 +11,7 @@ The database setup script performs five main operations:
 3. Create function groups and assign functions
 4. Grant user permissions for all modules
 5. Create the patient registration table
+6. Create the caregiver table
 
 ---
 
@@ -266,6 +267,42 @@ CREATE TABLE patient_registration (
 
 ---
 
+## Step 6: Create Caregiver Table
+
+Set up the table that stores caregiver information.
+
+```sql
+CREATE TABLE caregiver (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  medical_provider_id INT NULL,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL,
+  mobile_number VARCHAR(20) NOT NULL,
+  user_id VARCHAR(100) NULL,
+  create_dt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  create_by VARCHAR(100) NULL,
+  modify_dt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  modify_by VARCHAR(100) NULL,
+  status char(1) DEFAULT 'A'
+);
+```
+
+**Column Descriptions:**
+
+- `id`: Auto-incrementing primary key
+- `medical_provider_id`: Optional identifier for the medical provider
+- `name`: Caregiver's full name (required)
+- `email`: Caregiver's email address (required)
+- `mobile_number`: Caregiver's primary phone number (required)
+- `user_id`: Link to the system user ID (optional)
+- `create_dt`: Timestamp when record was created (auto-set)
+- `create_by`: User ID (email) who created the record
+- `modify_dt`: Timestamp when record was last modified (auto-updated)
+- `modify_by`: User ID (email) who last modified the record
+- `status`: 'A' = Active, 'I' = Inactive, 'D' = Deleted (soft delete)
+
+---
+
 ## Running the Setup
 
 ### Option 1: MySQL Command Line
@@ -318,6 +355,9 @@ SELECT * FROM user_function WHERE user_id = 'adriananuarkamal@gmail.com';
 
 -- Check patient registration table structure
 DESCRIBE patient_registration;
+
+-- Check caregiver table structure
+DESCRIBE caregiver;
 ```
 
 Expected results:

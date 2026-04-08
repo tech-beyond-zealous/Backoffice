@@ -1,0 +1,50 @@
+/* Import base styles */
+@import url("base.css");
+
+/* Caregiver Registration Specific Styles */
+
+.caregivers-table {
+  font-size: 0.85rem;
+}
+
+.caregivers-table th {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.6rem;
+  background-color: #f8f9fa;
+}
+
+.caregivers-table td {
+  vertical-align: middle;
+  padding: 0.5rem 0.6rem;
+}
+
+.caregivers-table tbody tr {
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.caregivers-table tbody tr:hover {
+  background-color: var(--primary-light);
+  transform: scale(1.01);
+  border-left: 4px solid var(--primary-color);
+}
+
+.form-edit-mode {
+  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.3);
+  border-radius: 0.6rem;
+}
+
+.caregiver-name-link {
+  cursor: pointer;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.caregiver-name-link:hover {
+  text-decoration: underline;
+  color: var(--primary-dark);
+}

@@ -1,0 +1,82 @@
+package com.gosmart.backoffice.web.controller;
+
+import com.gosmart.backoffice.domain.CaregiverEntity;
+import com.gosmart.backoffice.service.CaregiverService;
+import com.gosmart.backoffice.service.ProtectedPageModelService;
+import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+@Controller
+public class CaregiverController {
+
+    private final ProtectedPageModelService protectedPageModelService;
+    private final CaregiverService caregiverService;
+
+    public CaregiverController(
+            ProtectedPageModelService protectedPageModelService,
+            CaregiverService caregiverService
+    ) {
+        this.protectedPageModelService = protectedPageModelService;
+        this.caregiverService = caregiverService;
+    }
+
+    @GetMapping("/caregiver/registration")
+    public String registrationPage(HttpServletRequest request, Model model) {
+        protectedPageModelService.apply(model, request, null);
+        model.addAttribute("caregivers", caregiverService.findAll());
+        return "caregiver-registration";
+    }
+
+    @PostMapping("/caregiver/save")
+    @ResponseBody
+    public CaregiverEntity saveCaregiver(@RequestBody CaregiverEntity caregiver, HttpServletRequest request) {
+        String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        caregiver.setCreateBy(userId);
+        caregiver.setModifyBy(userId);
+        return caregiverService.save(caregiver);
+    }
+
+    @PutMapping("/caregiver/{id}")
+    @ResponseBody
+    public CaregiverEntity updateCaregiver(@PathVariable Long id, @RequestBody CaregiverEntity caregiver, HttpServletRequest request) {
+        Optional<CaregiverEntity> existing = caregiverService.findById(id);
+        if (existing.isPresent()) {
+            CaregiverEntity toUpdate = existing.get();
+            String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+            toUpdate.setMedicalProviderId(caregiver.getMedicalProviderId());
+            toUpdate.setName(caregiver.getName());
+            toUpdate.setEmail(caregiver.getEmail());
+            toUpdate.setMobileNumber(caregiver.getMobileNumber());
+            toUpdate.setUserId(caregiver.getUserId());
+            toUpdate.setModifyBy(userId);
+            toUpdate.setStatus(caregiver.getStatus());
+            // Following your established pattern of updating specific entity fields manually
+            return caregiverService.save(toUpdate);
+        }
+        return null;
+    }
+
+    @DeleteMapping("/caregiver/{id}")
+    @ResponseBody
+    public void deleteCaregiver(@PathVariable Long id) {
+        caregiverService.deleteById(id);
+    }
+
+    @GetMapping("/caregiver/{id}")
+    @ResponseBody
+    public Optional<CaregiverEntity> getCaregiver(@PathVariable Long id) {
+        return caregiverService.findById(id);
+    }
+
+    @GetMapping("/caregiver/all")
+    @ResponseBody
+    public List<CaregiverEntity> getAllCaregivers() {
+        return caregiverService.findAll();
+    }
+}
