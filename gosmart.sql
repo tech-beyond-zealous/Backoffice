@@ -215,6 +215,30 @@ INSERT INTO `user_session` (`id`, `create_dt`, `last_activity_dt`, `expire_dt`, 
 UNLOCK TABLES;
 
 --
+-- Table structure for table `caregiver`
+--
+
+DROP TABLE IF EXISTS `caregiver`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `caregiver` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `medical_provider_id` int DEFAULT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `mobile_number` varchar(20) NOT NULL,
+  `user_id` varchar(100) DEFAULT NULL,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `create_by` varchar(100) DEFAULT NULL,
+  `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modify_by` varchar(100) DEFAULT NULL,
+  `status` char(1) DEFAULT 'A',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
 -- Dumping events for database 'gosmart'
 --
 
