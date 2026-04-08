@@ -79,6 +79,7 @@
                       Email <span class="sort-arrow" data-field="email"></span>
                     </th>
                     <th>Mobile</th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -102,6 +103,12 @@
                     </td>
                     <td th:text="${caregiver.email}">-</td>
                     <td th:text="${caregiver.mobileNumber}">-</td>
+                    <td>
+                      <span
+                        th:class="${caregiver.status == 'A' ? 'badge badge-success-soft' : (caregiver.status == 'X' ? 'badge badge-warning-soft' : 'badge badge-danger-soft')}"
+                        th:text="${caregiver.status == 'A' ? 'Active' : (caregiver.status == 'X' ? 'Inactive' : 'Deleted')}"
+                      ></span>
+                    </td>
                     <td class="text-nowrap">
                       <button
                         type="button"
@@ -229,6 +236,14 @@
                   "
                   oninput="this.setCustomValidity('')"
                 />
+              </div>
+              <div class="form-group-compact">
+                <select id="status" name="status" class="input-field">
+                  <option value="" disabled>Select Status</option>
+                  <option value="A" selected>Active</option>
+                  <option value="X">Inactive</option>
+                  <option value="D">Deleted</option>
+                </select>
               </div>
             </form>
           </div>
@@ -402,6 +417,7 @@
         document.getElementById("name").value = caregiver.name || "";
         document.getElementById("email").value = caregiver.email || "";
         document.getElementById("mobileNumber").value = caregiver.mobileNumber || "";
+        document.getElementById("status").value = caregiver.status || "A";
         document.getElementById("caregiverFormModalLabel").textContent = "Edit Caregiver";
         submitBtn.textContent = "Update Caregiver";
       }
@@ -521,6 +537,7 @@
                 data-name="${escapeHtml(caregiver.name)}"
                 data-email="${escapeHtml(caregiver.email)}"
                 data-mobile="${escapeHtml(caregiver.mobileNumber)}"
+                data-status="${escapeHtml(caregiver.status)}"
               >
                 <td>
                   <a
@@ -532,6 +549,11 @@
                 </td>
                 <td>${escapeHtml(caregiver.email)}</td>
                 <td>${escapeHtml(caregiver.mobileNumber)}</td>
+                <td>
+                  <span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">
+                    ${caregiver.status === 'A' ? 'Active' : (caregiver.status === 'X' ? 'Inactive' : 'Deleted')}
+                  </span>
+                </td>
                 <td class="text-nowrap">
                   <button
                     type="button"
@@ -796,6 +818,12 @@
           <div class="detail-item">
             <div class="detail-label">Mobile Number</div>
             <div class="detail-value">${caregiver.mobileNumber || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Status</div>
+            <div class="detail-value">
+              <span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">${caregiver.status === 'A' ? 'Active' : (caregiver.status === 'X' ? 'Inactive' : 'Deleted')}</span>
+            </div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Created By</div>

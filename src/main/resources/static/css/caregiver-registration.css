@@ -48,3 +48,18 @@
   text-decoration: underline;
   color: var(--primary-dark);
 }
+
+.badge-success-soft {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.badge-danger-soft {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.badge-warning-soft {
+  background-color: #fff3cd;
+  color: #664d03;
+}
