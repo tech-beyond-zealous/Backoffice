@@ -1,6 +1,7 @@
 package com.gosmart.backoffice.web.controller;
 
 import com.gosmart.backoffice.domain.CaregiverEntity;
+import com.gosmart.backoffice.dto.UserFunctionPermission;
 import com.gosmart.backoffice.service.CaregiverService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
@@ -29,7 +30,11 @@ public class CaregiverController {
     @GetMapping("/caregiver/registration")
     public String registrationPage(HttpServletRequest request, Model model) {
         protectedPageModelService.apply(model, request, null);
+        UserFunctionPermission permission = (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
         model.addAttribute("caregivers", caregiverService.findAll());
+        model.addAttribute("permission", permission);
+        model.addAttribute("requestPath", request.getRequestURI());
+        model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));
         return "caregiver-registration";
     }
 
