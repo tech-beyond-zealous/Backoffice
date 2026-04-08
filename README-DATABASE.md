@@ -263,7 +263,7 @@ CREATE TABLE patient_registration (
 - `modify_dt`: Timestamp when record was last modified (auto-updated)
 - `create_by`: User ID who created the record
 - `modify_by`: User ID who last modified the record
-- `status`: 'A' = Active, 'I' = Inactive, 'D' = Deleted (soft delete)
+- `status`: 'A' = Active, 'X' = Inactive, 'D' = Deleted (soft delete)
 
 ---
 
@@ -299,7 +299,7 @@ CREATE TABLE caregiver (
 - `create_by`: User ID (email) who created the record
 - `modify_dt`: Timestamp when record was last modified (auto-updated)
 - `modify_by`: User ID (email) who last modified the record
-- `status`: 'A' = Active, 'I' = Inactive, 'D' = Deleted (soft delete)
+- `status`: 'A' = Active, 'X' = Inactive, 'D' = Deleted (soft delete)
 
 ---
 
