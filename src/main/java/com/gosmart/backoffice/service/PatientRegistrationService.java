@@ -24,17 +24,17 @@ public class PatientRegistrationService {
     }
 
     /**
-     * Get all patient registrations.
+     * Get all active patient registrations.
      */
     public List<PatientRegistration> findAll() {
-        return patientRegistrationRepository.findAll();
+        return patientRegistrationRepository.findByStatus("A");
     }
 
     /**
-     * Get a patient registration by ID.
+     * Get an active patient registration by ID.
      */
     public Optional<PatientRegistration> findById(Long id) {
-        return patientRegistrationRepository.findById(id);
+        return patientRegistrationRepository.findByIdAndStatus(id, "A");
     }
 
     /**
@@ -52,30 +52,19 @@ public class PatientRegistrationService {
     }
 
     /**
-     * Delete a patient registration by ID.
-     */
-    public void deleteById(Long id) {
-        patientRegistrationRepository.deleteById(id);
-    }
-
-    /**
-     * Soft delete a patient registration by ID and record who deleted it.
+     * Soft delete a patient registration by ID (set status to 'D' and update modify_by and modify_dt).
      */
     public void deleteById(Long id, String currentUser) {
-        Optional<PatientRegistration> optionalPatient = patientRegistrationRepository.findById(id);
+    Optional<PatientRegistration> optionalPatient = patientRegistrationRepository.findById(id);
+
         if (optionalPatient.isPresent()) {
             PatientRegistration patient = optionalPatient.get();
             patient.setStatus("D");
             patient.setModifyBy(currentUser);
             patient.setModifyDt(java.time.LocalDateTime.now());
+
             patientRegistrationRepository.save(patient);
         }
     }
 
-    /**
-     * Delete a patient registration.
-     */
-    public void delete(PatientRegistration patient) {
-        patientRegistrationRepository.delete(patient);
-    }
 }
