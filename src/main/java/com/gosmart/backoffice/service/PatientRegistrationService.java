@@ -59,6 +59,20 @@ public class PatientRegistrationService {
     }
 
     /**
+     * Soft delete a patient registration by ID and record who deleted it.
+     */
+    public void deleteById(Long id, String currentUser) {
+        Optional<PatientRegistration> optionalPatient = patientRegistrationRepository.findById(id);
+        if (optionalPatient.isPresent()) {
+            PatientRegistration patient = optionalPatient.get();
+            patient.setStatus("D");
+            patient.setModifyBy(currentUser);
+            patient.setModifyDt(java.time.LocalDateTime.now());
+            patientRegistrationRepository.save(patient);
+        }
+    }
+
+    /**
      * Delete a patient registration.
      */
     public void delete(PatientRegistration patient) {

@@ -238,6 +238,53 @@ CREATE TABLE `caregiver` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
+-- =========================================
+-- PATIENT -> REGISTRATION
+-- =========================================
+
+CREATE TABLE patient_registration (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+
+    -- Basic Info
+    name VARCHAR(100) NOT NULL,
+    age INT,
+    gender VARCHAR(10),
+    race VARCHAR(50),
+
+    -- Identity
+    ic_passport_no VARCHAR(20) NOT NULL,
+
+    -- Contact
+    mobile_no VARCHAR(20),
+
+    -- Emergency Contact
+    emergency_contact_name VARCHAR(100),
+    emergency_contact_no VARCHAR(20),
+    relationship VARCHAR(50),
+
+    -- Address
+    address VARCHAR(255),
+    area VARCHAR(100),
+    postcode VARCHAR(10),
+    city VARCHAR(100),
+
+    -- Medical Info
+    has_chronic_disease CHAR(1) DEFAULT 'N',
+    chronic_disease VARCHAR(255),
+
+    -- System Link
+    gosmart_user_id BIGINT,
+    medical_provider_id BIGINT, 
+
+    -- Audit Fields (MUST HAVE)
+    create_dt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    modify_dt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    create_by VARCHAR(100),
+    modify_by VARCHAR(100),
+
+    status CHAR(1) DEFAULT 'A'
+);
+
 --
 -- Dumping events for database 'gosmart'
 --

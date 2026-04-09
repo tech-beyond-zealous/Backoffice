@@ -47,8 +47,11 @@ public class PatientRegistration {
     // Audit
     private LocalDateTime createDt;
     private LocalDateTime modifyDt;
-    private Long createBy;
-    private Long modifyBy;
+    @Column(name = "create_by")
+    private String createBy;
+
+    @Column(name = "modify_by")
+    private String modifyBy;
 
     private String status;
 
@@ -210,23 +213,32 @@ public class PatientRegistration {
         return modifyDt;
     }
 
-    public Long getCreateBy() {
+    public String getCreateBy() {
         return createBy;
     }
 
-    public void setCreateBy(Long createBy) {
+    public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
 
-    public Long getModifyBy() {
+    public String getModifyBy() {
         return modifyBy;
     }
 
-    public void setModifyBy(Long modifyBy) {
+    public void setModifyBy(String modifyBy) {
         this.modifyBy = modifyBy;
+    }
+
+    public void setModifyDt(LocalDateTime modifyDt) {
+        this.modifyDt = modifyDt;
     }
 
     public String getStatus() {
         return status;
     }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+   
 }

@@ -3,6 +3,7 @@ package com.gosmart.backoffice.web.controller;
 import com.gosmart.backoffice.domain.PatientRegistration;
 import com.gosmart.backoffice.service.PatientRegistrationService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
+import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import org.springframework.stereotype.Controller;
@@ -37,13 +38,23 @@ public class PatientRegistrationController {
 
     @PostMapping("/patient/save")
     @ResponseBody
-    public PatientRegistration savePatient(@RequestBody PatientRegistration patient) {
+    public PatientRegistration savePatient(@RequestBody PatientRegistration patient, HttpServletRequest request) {
+        // Get logged-in user_id from auth interceptor attribute
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+
+        // Set create_by and modify_by automatically
+        patient.setCreateBy(currentUserId);
+        patient.setModifyBy(currentUserId);
+
         return patientRegistrationService.save(patient);
     }
 
     @PutMapping("/patient/{id}")
     @ResponseBody
-    public PatientRegistration updatePatient(@PathVariable Long id, @RequestBody PatientRegistration patient) {
+    public PatientRegistration updatePatient(@PathVariable Long id, @RequestBody PatientRegistration patient, HttpServletRequest request) {
         Optional<PatientRegistration> existing = patientRegistrationService.findById(id);
         if (existing.isPresent()) {
             PatientRegistration toUpdate = existing.get();
@@ -62,7 +73,14 @@ public class PatientRegistrationController {
             toUpdate.setCity(patient.getCity());
             toUpdate.setHasChronicDisease(patient.getHasChronicDisease());
             toUpdate.setChronicDisease(patient.getChronicDisease());
-            toUpdate.setModifyBy(patient.getModifyBy());
+
+            // Set modify_by automatically
+            String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+            if (currentUserId == null) {
+                throw new IllegalStateException("Logged-in user id is missing from request attributes");
+            }
+            toUpdate.setModifyBy(currentUserId);
+
             return patientRegistrationService.save(toUpdate);
         }
         return null;
@@ -70,8 +88,14 @@ public class PatientRegistrationController {
 
     @DeleteMapping("/patient/{id}")
     @ResponseBody
-    public void deletePatient(@PathVariable Long id) {
-        patientRegistrationService.deleteById(id);
+    public void deletePatient(@PathVariable Long id, HttpServletRequest request) {
+
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+
+        patientRegistrationService.deleteById(id, currentUserId);
     }
 
     @GetMapping("/patient/{id}")
