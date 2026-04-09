@@ -36,7 +36,7 @@
                   id="caregiverSearch"
                   type="search"
                   class="form-control"
-                  placeholder="Search by name, email, mobile"
+                  placeholder="Search by Name, Email, Mobile Number, User Id"
                 />
               </div>
               <div class="d-flex gap-2">
@@ -79,7 +79,10 @@
                     <th class="sortable" data-sort="email">
                       Email <span class="sort-arrow" data-field="email"></span>
                     </th>
-                    <th>Mobile</th>
+                    <th class="sortable" data-sort="userId">
+                      User Id <span class="sort-arrow" data-field="userId"></span>
+                    </th>
+                    <th>Mobile Number</th>
                     <th>Status</th>
                     <th>Actions</th>
                   </tr>
@@ -91,6 +94,7 @@
                     data-id="${caregiver.id}"
                     data-name="${caregiver.name}"
                     data-email="${caregiver.email}"
+                    data-userId="${caregiver.userId}"
                     data-mobile="${caregiver.mobileNumber}"
                   >
                     <td>
@@ -103,6 +107,7 @@
                       >
                     </td>
                     <td th:text="${caregiver.email}">-</td>
+                    <td th:text="${caregiver.userId}">-</td>
                     <td th:text="${caregiver.mobileNumber}">-</td>
                     <td>
                       <span
@@ -216,6 +221,17 @@
                 name="email"
                 class="input-field"
                 placeholder="Email Address *"
+                required
+              />
+            </div>
+
+            <div class="form-group-compact">
+              <input
+                type="email"
+                id="userId"
+                name="userId"
+                class="input-field"
+                placeholder="User Id *"
                 required
               />
             </div>
@@ -462,6 +478,7 @@
         document.getElementById("caregiverId").value = caregiver.id;
         document.getElementById("name").value = caregiver.name || "";
         document.getElementById("email").value = caregiver.email || "";
+        document.getElementById("userId").value = caregiver.userId || "";
         document.getElementById("mobileNumber").value = caregiver.mobileNumber || "";
         document.getElementById("status").value = caregiver.status || "A";
         document.getElementById("caregiverFormModalLabel").textContent = "Edit Caregiver";
@@ -533,6 +550,7 @@
           const matchSearch = [
             caregiver.name,
             caregiver.email,
+            caregiver.userId,
             caregiver.mobileNumber,
           ]
             .filter(Boolean)
@@ -586,6 +604,7 @@
                 data-id="${escapeHtml(caregiver.id)}"
                 data-name="${escapeHtml(caregiver.name)}"
                 data-email="${escapeHtml(caregiver.email)}"
+                data-userId="${escapeHtml(caregiver.userId)}"
                 data-mobile="${escapeHtml(caregiver.mobileNumber)}"
                 data-status="${escapeHtml(caregiver.status)}"
               >
@@ -598,6 +617,7 @@
                   >
                 </td>
                 <td>${escapeHtml(caregiver.email)}</td>
+                <td>${escapeHtml(caregiver.userId)}</td>
                 <td>${escapeHtml(caregiver.mobileNumber)}</td>
                 <td>
                   <span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">
@@ -874,6 +894,10 @@
           <div class="detail-item">
             <div class="detail-label">Email</div>
             <div class="detail-value">${caregiver.email || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">User Id</div>
+            <div class="detail-value">${caregiver.userId || "-"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Mobile Number</div>

@@ -23,7 +23,7 @@ public class CaregiverEntity {
     @Column(name = "mobile_number", nullable = false, length = 20)
     private String mobileNumber;
 
-    @Column(name = "user_id", length = 100)
+    @Column(name = "user_id", nullable = false, length = 100)
     private String userId;
 
     @Column(name = "create_dt")

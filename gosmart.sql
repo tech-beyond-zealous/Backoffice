@@ -257,7 +257,7 @@ CREATE TABLE `caregiver` (
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `mobile_number` varchar(20) NOT NULL,
-  `user_id` varchar(100) DEFAULT NULL,
+  `user_id` varchar(100) NOT NULL,
   `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
   `create_by` varchar(100) DEFAULT NULL,
   `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
