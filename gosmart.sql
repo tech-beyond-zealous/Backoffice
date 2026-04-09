@@ -215,6 +215,36 @@ INSERT INTO `user_session` (`id`, `create_dt`, `last_activity_dt`, `expire_dt`, 
 UNLOCK TABLES;
 
 --
+-- Table structure for table `medical_provider`
+--
+
+DROP TABLE IF EXISTS `medical_provider`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE medical_provider (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime NOT NULL,
+  `create_by` varchar(50) NOT NULL,
+  `code` varchar(10) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `status` char(1) NOT NULL,
+  PRIMARY KEY (id),
+  KEY `uk_medical_provider_code` (`code`),
+  KEY `un_medical_provider_name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `medical_provider`
+--
+
+LOCK TABLES `medical_provider` WRITE;
+/*!40000 ALTER TABLE `medical_provider` DISABLE KEYS */;
+INSERT INTO `medical_provider` (`id`, `create_dt`, `create_by`, `code`, `name`, `status`) VALUES (1,'2026-04-03 11:45:00','tanc08@gmail.com','KLNLEO','Klinik Leo','A'),(2,'2026-04-03 11:45:00','tanc08@gmail.com','KCC','Kiropraktis Chiropractic Center','A');
+/*!40000 ALTER TABLE `medical_provider` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `caregiver`
 --
 
