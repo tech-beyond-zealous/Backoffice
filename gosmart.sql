@@ -272,49 +272,33 @@ CREATE TABLE `caregiver` (
 -- PATIENT -> REGISTRATION
 -- =========================================
 
-CREATE TABLE patient_registration (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE `patient_registration` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `medical_provider_id` int NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `age` int DEFAULT NULL,
+  `gender` varchar(10) DEFAULT NULL,
+  `race` varchar(50) DEFAULT NULL,
+  `ic_passport_no` varchar(20) NOT NULL,
+  `mobile_no` varchar(20) DEFAULT NULL,
+  `emergency_contact_name` varchar(100) DEFAULT NULL,
+  `emergency_contact_no` varchar(20) DEFAULT NULL,
+  `relationship` varchar(50) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `area` varchar(100) DEFAULT NULL,
+  `postcode` varchar(10) DEFAULT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `has_chronic_disease` char(1) DEFAULT 'N',
+  `chronic_disease` varchar(255) DEFAULT NULL,
+  `gosmart_user_id` bigint DEFAULT NULL,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `create_by` varchar(100) DEFAULT NULL,
+  `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modify_by` varchar(100) DEFAULT NULL,
+  `status` char(1) DEFAULT 'A',
 
-    -- Basic Info
-    name VARCHAR(100) NOT NULL,
-    age INT,
-    gender VARCHAR(10),
-    race VARCHAR(50),
-
-    -- Identity
-    ic_passport_no VARCHAR(20) NOT NULL,
-
-    -- Contact
-    mobile_no VARCHAR(20),
-
-    -- Emergency Contact
-    emergency_contact_name VARCHAR(100),
-    emergency_contact_no VARCHAR(20),
-    relationship VARCHAR(50),
-
-    -- Address
-    address VARCHAR(255),
-    area VARCHAR(100),
-    postcode VARCHAR(10),
-    city VARCHAR(100),
-
-    -- Medical Info
-    has_chronic_disease CHAR(1) DEFAULT 'N',
-    chronic_disease VARCHAR(255),
-
-    -- System Link
-    gosmart_user_id BIGINT,
-    medical_provider_id BIGINT, 
-
-    -- Audit Fields (MUST HAVE)
-    create_dt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    modify_dt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    create_by VARCHAR(100),
-    modify_by VARCHAR(100),
-
-    status CHAR(1) DEFAULT 'A'
-);
-
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 --
 -- Dumping events for database 'gosmart'
 --
