@@ -1,6 +1,7 @@
 package com.gosmart.backoffice.web.controller;
 
 import com.gosmart.backoffice.domain.PatientRegistration;
+import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PatientRegistrationService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
@@ -20,19 +21,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class PatientRegistrationController {
     private final ProtectedPageModelService protectedPageModelService;
     private final PatientRegistrationService patientRegistrationService;
+    private final MedicalProviderService medicalProviderService;
 
     public PatientRegistrationController(
             ProtectedPageModelService protectedPageModelService,
-            PatientRegistrationService patientRegistrationService
+            PatientRegistrationService patientRegistrationService,
+            MedicalProviderService medicalProviderService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.patientRegistrationService = patientRegistrationService;
+        this.medicalProviderService = medicalProviderService;
     }
 
     @GetMapping("/patient/registration")
     public String registrationPage(HttpServletRequest request, Model model) {
         protectedPageModelService.apply(model, request, null);
         model.addAttribute("patients", patientRegistrationService.findAll());
+        model.addAttribute("medicalProviders", medicalProviderService.findAll());
         return "patient-registration";
     }
 
@@ -73,6 +78,7 @@ public class PatientRegistrationController {
             toUpdate.setCity(patient.getCity());
             toUpdate.setHasChronicDisease(patient.getHasChronicDisease());
             toUpdate.setChronicDisease(patient.getChronicDisease());
+            toUpdate.setMedicalProviderId(patient.getMedicalProviderId());
 
             // Set modify_by automatically
             String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);

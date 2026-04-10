@@ -72,6 +72,13 @@
               <table class="table table-hover align-middle patients-table">
                 <thead class="table-header-custom">
                   <tr>
+                    <th class="sortable" data-sort="medicalProviderCode">
+                      Medical Provider
+                      <span
+                        class="sort-arrow"
+                        data-field="medicalProviderCode"
+                      ></span>
+                    </th>
                     <th class="sortable" data-sort="name">
                       Name <span class="sort-arrow" data-field="name"></span>
                     </th>
@@ -104,6 +111,16 @@
                     data-city="${patient.city}"
                     data-chronic="${patient.hasChronicDisease}"
                   >
+                    <td>
+                      <span
+                        th:each="provider : ${medicalProviders}"
+                        th:if="${provider.id == patient.medicalProviderId}"
+                        th:text="${provider.code}"
+                      ></span>
+                      <span th:if="${patient.medicalProviderId == null}"
+                        >-</span
+                      >
+                    </td>
                     <td>
                       <a
                         class="patient-name-link"
@@ -156,7 +173,7 @@
                     </td>
                   </tr>
                   <tr id="noPatients" th:if="${#lists.isEmpty(patients)}">
-                    <td colspan="8" class="text-center text-muted py-4">
+                    <td colspan="9" class="text-center text-muted py-4">
                       No patients registered yet
                     </td>
                   </tr>
@@ -206,6 +223,33 @@
           <div class="modal-body">
             <form id="patientForm" class="form-grid">
               <input type="hidden" id="patientId" name="id" />
+
+              <!-- Medical Provider -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person-badge"></i> Medical Provider
+              </h3>
+              <div class="form-group-compact col-span-2">
+                <label
+                  for="medicalProviderId"
+                  class="form-label visually-hidden"
+                  >Medical Provider</label
+                >
+                <select
+                  id="medicalProviderId"
+                  name="medicalProviderId"
+                  class="input-field"
+                  required
+                >
+                  <option value="" disabled selected>
+                    Select Medical Provider *
+                  </option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.name}"
+                  ></option>
+                </select>
+              </div>
 
               <!-- Basic Info -->
               <h3 class="section-heading col-span-2">
@@ -489,6 +533,17 @@
           </div>
           <div class="modal-body">
             <div class="mb-4">
+              <h6 class="mb-3">Medical Provider</h6>
+              <select id="filterMedicalProvider" class="form-select">
+                <option value="">All Providers</option>
+                <option
+                  th:each="provider : ${medicalProviders}"
+                  th:value="${provider.id}"
+                  th:text="${provider.code + ' - ' + provider.name}"
+                ></option>
+              </select>
+            </div>
+            <div class="mb-4">
               <h6 class="mb-3">Gender</h6>
               <div class="form-check">
                 <input
@@ -563,7 +618,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
+    <script th:inline="javascript">
+      const medicalProviders = /*[[${medicalProviders}]]*/ [];
       const form = document.getElementById("patientForm");
       const patientId = document.getElementById("patientId");
       const submitBtn = document.getElementById("submitBtn");
@@ -573,6 +629,13 @@
       const patientsPagination = document.getElementById("patientsPagination");
       const patientsInfo = document.getElementById("patientsInfo");
 
+      const providerCodeMap = new Map(
+        medicalProviders.map((provider) => [
+          String(provider.id),
+          provider.code,
+        ]),
+      );
+
       let allPatients = [];
       let currentPage = 1;
       const pageSize = 6;
@@ -581,6 +644,7 @@
       let filterCriteria = {
         gender: [],
         chronic: [],
+        medicalProviderId: "",
       };
 
       // Initialize modal once
@@ -677,6 +741,8 @@
         document.getElementById("area").value = patient.area || "";
         document.getElementById("postcode").value = patient.postcode || "";
         document.getElementById("city").value = patient.city || "";
+        document.getElementById("medicalProviderId").value =
+          patient.medicalProviderId || "";
         document.getElementById("hasChronicDisease").value =
           patient.hasChronicDisease || "N";
         document.getElementById("chronicDisease").value =
@@ -747,7 +813,16 @@
         if (field === "age") {
           return parseInt(patient.age, 10) || 0;
         }
+        if (field === "medicalProviderCode") {
+          return getMedicalProviderCode(
+            patient.medicalProviderId,
+          ).toLowerCase();
+        }
         return (patient[field] || "").toString().toLowerCase();
+      }
+
+      function getMedicalProviderCode(providerId) {
+        return providerCodeMap.get(String(providerId)) || "-";
       }
 
       function filterAndSortPatients() {
@@ -770,8 +845,12 @@
           const matchChronic =
             filterCriteria.chronic.length === 0 ||
             filterCriteria.chronic.includes(patient.hasChronicDisease);
+          const matchProvider =
+            !filterCriteria.medicalProviderId ||
+            String(patient.medicalProviderId) ===
+              filterCriteria.medicalProviderId;
 
-          return matchSearch && matchGender && matchChronic;
+          return matchSearch && matchGender && matchChronic && matchProvider;
         });
 
         filtered.sort((a, b) => {
@@ -820,6 +899,7 @@
                 data-city="${escapeHtml(patient.city)}"
                 data-chronic="${escapeHtml(patient.chronic)}"
               >
+                <td>${escapeHtml(getMedicalProviderCode(patient.medicalProviderId))}</td>
                 <td>
                   <a
                     class="patient-name-link"
@@ -875,7 +955,7 @@
         if (pageItems.length === 0) {
           patientsList.innerHTML = `
             <tr id="noPatients">
-              <td colspan="8" class="text-center text-muted py-4">
+              <td colspan="9" class="text-center text-muted py-4">
                 No patients match your search or filter criteria.
               </td>
             </tr>
@@ -992,9 +1072,16 @@
           checkbox.checked = false;
         });
 
+        // Clear provider filter
+        const providerFilter = document.getElementById("filterMedicalProvider");
+        if (providerFilter) {
+          providerFilter.value = "";
+        }
+
         // Reset filter criteria
         filterCriteria.gender = [];
         filterCriteria.chronic = [];
+        filterCriteria.medicalProviderId = "";
 
         // Reset sort
         currentSortBy = "name";
@@ -1016,10 +1103,14 @@
           document.querySelectorAll('input[data-filter="chronic"]:checked'),
         ).map((cb) => cb.value);
 
+        const providerFilter = document.getElementById("filterMedicalProvider");
+        filterCriteria.medicalProviderId = providerFilter
+          ? providerFilter.value
+          : "";
+
         currentPage = 1;
         renderPatientsTable();
       }
-
       function updateSortArrows() {
         document.querySelectorAll(".sort-arrow").forEach((arrow) => {
           arrow.classList.remove("active", "asc", "desc");

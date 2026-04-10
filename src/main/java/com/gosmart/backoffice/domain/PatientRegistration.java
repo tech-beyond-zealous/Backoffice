@@ -43,6 +43,8 @@ public class PatientRegistration {
 
     // System Link
     private Long gosmartUserId;
+    @Column(name = "medical_provider_id")
+    private Long medicalProviderId;
 
     // Audit
     private LocalDateTime createDt;
@@ -203,6 +205,14 @@ public class PatientRegistration {
 
     public void setGosmartUserId(Long gosmartUserId) {
         this.gosmartUserId = gosmartUserId;
+    }
+
+    public Long getMedicalProviderId() {
+        return medicalProviderId;
+    }
+
+    public void setMedicalProviderId(Long medicalProviderId) {
+        this.medicalProviderId = medicalProviderId;
     }
 
     public LocalDateTime getCreateDt() {
