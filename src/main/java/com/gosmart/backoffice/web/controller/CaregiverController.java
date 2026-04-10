@@ -3,6 +3,7 @@ package com.gosmart.backoffice.web.controller;
 import com.gosmart.backoffice.domain.CaregiverEntity;
 import com.gosmart.backoffice.dto.UserFunctionPermission;
 import com.gosmart.backoffice.service.CaregiverService;
+import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 
@@ -18,13 +19,16 @@ public class CaregiverController {
 
     private final ProtectedPageModelService protectedPageModelService;
     private final CaregiverService caregiverService;
+    private final MedicalProviderService medicalProviderService;
 
     public CaregiverController(
             ProtectedPageModelService protectedPageModelService,
-            CaregiverService caregiverService
+            CaregiverService caregiverService,
+            MedicalProviderService medicalProviderService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.caregiverService = caregiverService;
+        this.medicalProviderService = medicalProviderService;
     }
 
     @GetMapping("/caregiver/registration")
@@ -32,6 +36,7 @@ public class CaregiverController {
         protectedPageModelService.apply(model, request, null);
         UserFunctionPermission permission = (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
         model.addAttribute("caregivers", caregiverService.findAll());
+        model.addAttribute("medicalProviders", medicalProviderService.findAll());
         model.addAttribute("permission", permission);
         model.addAttribute("requestPath", request.getRequestURI());
         model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));

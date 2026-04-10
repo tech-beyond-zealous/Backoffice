@@ -73,6 +73,13 @@
               <table class="table table-hover align-middle caregivers-table">
                 <thead class="table-header-custom">
                   <tr>
+                    <th class="sortable" data-sort="medicalProviderCode">
+                      Medical Provider
+                      <span
+                        class="sort-arrow"
+                        data-field="medicalProviderCode"
+                      ></span>
+                    </th>
                     <th class="sortable" data-sort="name">
                       Name <span class="sort-arrow" data-field="name"></span>
                     </th>
@@ -97,6 +104,15 @@
                     data-userId="${caregiver.userId}"
                     data-mobile="${caregiver.mobileNumber}"
                   >
+                    <td>
+                      <span
+                        th:each="provider : ${medicalProviders}"
+                        th:if="${provider.id == caregiver.medicalProviderId}"
+                        th:text="|${provider.name} (${provider.code})|"
+                      >
+                      </span>
+                      <span th:if="${caregiver.medicalProviderId == null}">-</span>
+                    </td>
                     <td>
                       <a
                         class="caregiver-name-link"
@@ -199,6 +215,32 @@
           <div class="modal-body">
             <form id="caregiverForm" class="form-grid">
               <input type="hidden" id="caregiverId" name="id" />
+
+              <!-- Medical Provider -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person-badge"></i> Medical Provider
+              </h3>
+              <div class="form-group-compact col-span-2">
+                <label
+                  for="medicalProviderId"
+                  class="form-label visually-hidden"
+                  >Medical Provider</label>
+                <select
+                  id="medicalProviderId"
+                  name="medicalProviderId"
+                  class="input-field"
+                  required
+                >
+                  <option value="" disabled selected>
+                    Select Medical Provider *
+                  </option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="|${provider.name} (${provider.code})|"
+                  ></option>
+                </select>
+              </div>
 
               <!-- Basic Info -->
               <h3 class="section-heading col-span-2">
@@ -339,6 +381,17 @@
           </div>
           <div class="modal-body">
             <div class="mb-4">
+              <h6 class="mb-3">Medical Provider</h6>
+              <select id="filterMedicalProvider" class="form-select">
+                <option value="">All Medical Providers</option>
+                <option
+                  th:each="provider : ${medicalProviders}"
+                  th:value="${provider.id}"
+                  th:text="|${provider.name} (${provider.code})|"
+                ></option>
+              </select>
+            </div>
+            <div class="mb-4">
               <h6 class="mb-3">Status</h6>
               <div class="form-check">
                 <input
@@ -401,6 +454,7 @@
         delete: [[${permission != null and permission.delete}]]
       };
 
+      const medicalProviders = /*[[${medicalProviders}]]*/ [];
       const form = document.getElementById("caregiverForm");
       const caregiverId = document.getElementById("caregiverId");
       const submitBtn = document.getElementById("submitBtn");
@@ -410,6 +464,13 @@
       const caregiversPagination = document.getElementById("caregiversPagination");
       const caregiversInfo = document.getElementById("caregiversInfo");
 
+      const providerCodeMap = new Map(
+        medicalProviders.map((provider) => [
+          String(provider.id),
+          `${provider.name} (${provider.code})`,
+        ]),
+      );
+
       let allCaregivers = [];
       let currentPage = 1;
       const pageSize = 6;
@@ -417,6 +478,7 @@
       let currentSortDir = "asc"; // 'asc' or 'desc'
       let filterCriteria = {
         status: [],
+        medicalProviderId: "",
       };
       
 
@@ -481,6 +543,7 @@
         document.getElementById("userId").value = caregiver.userId || "";
         document.getElementById("mobileNumber").value = caregiver.mobileNumber || "";
         document.getElementById("status").value = caregiver.status || "A";
+        document.getElementById("medicalProviderId").value = caregiver.medicalProviderId || "";
         document.getElementById("caregiverFormModalLabel").textContent = "Edit Caregiver";
         submitBtn.textContent = "Update Caregiver";
       }
@@ -540,7 +603,15 @@
       }
 
       function getCaregiverSortValue(caregiver, field) {
+        if (field === "medicalProviderCode") {
+          return getMedicalProviderCode(caregiver.medicalProviderId).toLowerCase();
+        }
+
         return (caregiver[field] || "").toString().toLowerCase();
+      }
+
+      function getMedicalProviderCode(providerId) {
+        return providerCodeMap.get(String(providerId)) || "-";
       }
 
       function filterAndSortCaregivers() {
@@ -561,7 +632,11 @@
             filterCriteria.status.length === 0 ||
             filterCriteria.status.includes(caregiver.status);
 
-          return matchSearch && matchStatus;
+          const matchProvider =
+            !filterCriteria.medicalProviderId ||
+            String(caregiver.medicalProviderId) === filterCriteria.medicalProviderId;  
+
+          return matchSearch && matchStatus && matchProvider;
         });
 
         filtered.sort((a, b) => {
@@ -608,6 +683,7 @@
                 data-mobile="${escapeHtml(caregiver.mobileNumber)}"
                 data-status="${escapeHtml(caregiver.status)}"
               >
+                <td>${escapeHtml(getMedicalProviderCode(caregiver.medicalProviderId))}</td>
                 <td>
                   <a
                     class="caregiver-name-link"
@@ -781,8 +857,15 @@
           checkbox.checked = false;
         });
 
+        // Clear provider filter
+        const providerFilter = document.getElementById("filterMedicalProvider");
+        if (providerFilter) {
+          providerFilter.value = "";
+        }
+
         // Reset filter criteria
         filterCriteria.status = [];
+        filterCriteria.medicalProviderId = "";
 
         // Reset sort
         currentSortBy = "name";
@@ -799,6 +882,9 @@
         filterCriteria.status = Array.from(
           document.querySelectorAll('input[data-filter="status"]:checked'),
         ).map((cb) => cb.value);
+
+        const providerFilter = document.getElementById("filterMedicalProvider");
+        filterCriteria.medicalProviderId = providerFilter ? providerFilter.value : "";
 
         currentPage = 1;
         renderCaregiversTable();
