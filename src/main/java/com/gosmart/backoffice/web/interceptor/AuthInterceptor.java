@@ -9,6 +9,7 @@ import com.gosmart.backoffice.security.JwtProvider;
 import com.gosmart.backoffice.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -49,7 +50,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         String token = authCookie.readToken(request);
         if (token == null || token.isBlank()) {
             log.debug("Auth blocked: missing token path={}", request.getRequestURI());
-            response.sendRedirect("/login?reason=idle_timeout");
+            handleAuthFailure(request, response, "idle_timeout");
             return false;
         }
 
@@ -58,21 +59,21 @@ public class AuthInterceptor implements HandlerInterceptor {
             claims = jwtProvider.parseAndValidate(token);
         } catch (Exception e) {
             log.info("Auth blocked: invalid token path={}", request.getRequestURI());
-            response.sendRedirect("/login?reason=invalid");
+            handleAuthFailure(request, response, "invalid");
             return false;
         }
 
         Instant now = Instant.now();
         if (claims.expiresAt().isBefore(now)) {
             log.info("Auth blocked: token expired userId={} path={}", claims.userId(), request.getRequestURI());
-            response.sendRedirect("/login?reason=expired");
+            handleAuthFailure(request, response, "expired");
             return false;
         }
 
         Optional<UserSessionEntity> sessionOpt = authService.findSession(claims.sessionId());
         if (sessionOpt.isEmpty()) {
             log.info("Auth blocked: session not found userId={} path={}", claims.userId(), request.getRequestURI());
-            response.sendRedirect("/login?reason=invalid");
+            handleAuthFailure(request, response, "invalid");
             return false;
         }
 
@@ -80,10 +81,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (session.getRevokeDt() != null) {
             if (AuthService.REVOKE_REASON_MULTI_LOGIN.equals(session.getRevokeReason())) {
                 log.info("Auth blocked: session revoked (multi_login) userId={} path={}", session.getUserId(), request.getRequestURI());
-                response.sendRedirect("/login?reason=multi_login");
+                handleAuthFailure(request, response, "multi_login");
             } else {
                 log.info("Auth blocked: session revoked userId={} reason={} path={}", session.getUserId(), session.getRevokeReason(), request.getRequestURI());
-                response.sendRedirect("/login?reason=logout");
+                handleAuthFailure(request, response, "logout");
             }
             return false;
         }
@@ -91,12 +92,12 @@ public class AuthInterceptor implements HandlerInterceptor {
         LocalDateTime nowLocal = LocalDateTime.now(sessionOffset);
         if (session.getExpireDt() == null || session.getExpireDt().isBefore(nowLocal)) {
             log.info("Auth blocked: idle timeout userId={} path={}", session.getUserId(), request.getRequestURI());
-            response.sendRedirect("/login?reason=idle_timeout");
+            handleAuthFailure(request, response, "idle_timeout");
             return false;
         }
         if (!claims.userId().equals(session.getUserId())) {
             log.info("Auth blocked: subject mismatch tokenUserId={} sessionUserId={} path={}", claims.userId(), session.getUserId(), request.getRequestURI());
-            response.sendRedirect("/login?reason=invalid");
+            handleAuthFailure(request, response, "invalid");
             return false;
         }
 
@@ -154,5 +155,25 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     private static boolean isYes(String value) {
         return value != null && "Y".equals(value.trim().toUpperCase(Locale.ROOT));
+    }
+
+    private void handleAuthFailure(HttpServletRequest request, HttpServletResponse response, String reason) throws IOException {
+        if (isAjaxRequest(request)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setHeader("X-Session-Expired", "true");
+            response.setHeader("X-Session-Reason", reason);
+            return;
+        }
+        response.sendRedirect("/login?reason=" + reason);
+    }
+
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        String requestedWith = request.getHeader("X-Requested-With");
+        if (requestedWith != null && !requestedWith.isBlank()) {
+            return true;
+        }
+
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.toLowerCase(Locale.ROOT).contains("application/json");
     }
 }

@@ -447,7 +447,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/session-fetch.js}"></script>
     <script th:inline="javascript">
+      const { fetchWithSessionHandling } = window.GSAuth;
       const permissions = {
         view: [[${permission != null and permission.view}]],
         edit: [[${permission != null and permission.edit}]],
@@ -514,7 +516,7 @@
         const method = data.id ? "PUT" : "POST";
 
         try {
-          const response = await fetch(url, {
+          const response = await fetchWithSessionHandling(url, {
             method: method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -551,7 +553,7 @@
       async function editCaregiver(button) {
         const id = button.getAttribute("data-id");
         try {
-          const response = await fetch(`/caregiver/${id}`);
+          const response = await fetchWithSessionHandling(`/caregiver/${id}`);
           if (response.ok) {
             const caregiver = await response.json();
             populateForm(caregiver);
@@ -569,7 +571,7 @@
 
         const id = button.getAttribute("data-id");
         try {
-          const response = await fetch(`/caregiver/${id}`, { method: "DELETE" });
+          const response = await fetchWithSessionHandling(`/caregiver/${id}`, { method: "DELETE" });
           if (response.ok) {
             loadCaregivers();
             showToast("Caregiver deleted successfully!");
@@ -592,7 +594,7 @@
 
       async function loadCaregivers() {
         try {
-          const response = await fetch("/caregiver/all");
+          const response = await fetchWithSessionHandling("/caregiver/all");
           if (response.ok) {
             allCaregivers = await response.json();
             renderCaregiversTable();
@@ -955,7 +957,7 @@
       async function viewCaregiverDetails(link) {
         const id = link.getAttribute("data-id");
         try {
-          const response = await fetch(`/caregiver/${id}`);
+          const response = await fetchWithSessionHandling(`/caregiver/${id}`);
           if (response.ok) {
             const caregiver = await response.json();
             displayCaregiverDetails(caregiver);
