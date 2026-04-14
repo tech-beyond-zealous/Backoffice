@@ -26,6 +26,12 @@ app:
     cookie-same-site: Lax
     idle-timeout-minutes: 5
     jwt-secret: af5a3e292cf54d15a9074d3ea7b0bc0278896a0eca044485b4f61c822be8fd6d
+  csrf:
+    cookie-name: GS_CSRF
+    cookie-path: /
+    cookie-secure: false
+    cookie-same-site: Lax
+    header-name: X-CSRF-TOKEN
 
 logging:
   pattern:

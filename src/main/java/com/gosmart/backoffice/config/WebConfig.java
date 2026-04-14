@@ -1,6 +1,7 @@
 package com.gosmart.backoffice.config;
 
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
+import com.gosmart.backoffice.web.interceptor.CsrfInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Configuration;
@@ -13,14 +14,19 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     private final AuthInterceptor authInterceptor;
+    private final CsrfInterceptor csrfInterceptor;
 
-    public WebConfig(AuthInterceptor authInterceptor) {
+    public WebConfig(AuthInterceptor authInterceptor, CsrfInterceptor csrfInterceptor) {
         this.authInterceptor = authInterceptor;
+        this.csrfInterceptor = csrfInterceptor;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new NoCacheInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/js/**");
+        registry.addInterceptor(csrfInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/js/**");
         registry.addInterceptor(authInterceptor)

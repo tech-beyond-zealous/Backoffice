@@ -67,6 +67,7 @@
     </div>
 </div>
 
+<script th:src="@{/js/session-fetch.js}"></script>
 <script>
     (() => {
         const form = document.getElementById("loginForm");
@@ -90,6 +91,11 @@
             if (loading) loading.classList.remove("d-none");
         };
 
+        const hideLoading = () => {
+            if (submitBtn) submitBtn.disabled = false;
+            if (loading) loading.classList.add("d-none");
+        };
+
         const validate = () => {
             let ok = true;
             if (userId.value.trim() === "") {
@@ -108,12 +114,42 @@
             return ok;
         };
 
-        form.addEventListener("submit", (e) => {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
             if (!validate()) {
-                e.preventDefault();
                 return;
             }
             showLoading();
+
+            const gsAuth = window.GSAuth || {};
+            const doFetch = gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
+            const formData = new FormData(form);
+            const body = new URLSearchParams(formData);
+            try {
+                const response = await doFetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Accept": "text/html"
+                    },
+                    body: body
+                });
+                if (response.redirected && response.url) {
+                    window.location.href = response.url;
+                    return;
+                }
+                const html = await response.text();
+                if (html) {
+                    document.open();
+                    document.write(html);
+                    document.close();
+                    return;
+                }
+            } catch (err) {
+                setError(passwordError, "Login failed");
+            } finally {
+                hideLoading();
+            }
         });
 
         userId.addEventListener("input", validate);

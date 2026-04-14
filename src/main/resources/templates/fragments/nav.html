@@ -37,3 +37,31 @@
         </div>
     </div>
 </nav>
+<script th:src="@{/js/session-fetch.js}"></script>
+<script>
+    (() => {
+        const form = document.getElementById("logoutForm");
+        if (!form) return;
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const gsAuth = window.GSAuth || {};
+            const doFetch = gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
+            try {
+                const response = await doFetch(form.action, {
+                    method: "POST",
+                    headers: {
+                        "Accept": "text/html"
+                    }
+                });
+                if (response.redirected && response.url) {
+                    window.location.href = response.url;
+                    return;
+                }
+                window.location.href = "/login?reason=logout";
+            } catch (err) {
+                window.location.href = "/login?reason=logout";
+            }
+        });
+    })();
+</script>
