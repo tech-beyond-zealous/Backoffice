@@ -267,6 +267,69 @@ CREATE TABLE `caregiver` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Table structure for table `medical_package`
+--
+
+DROP TABLE IF EXISTS `medical_package`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `medical_package` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime NOT NULL,
+  `create_by` varchar(100) NOT NULL,
+  `medical_provider_id` int NOT NULL,
+  `code` varchar(10) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `amount_month` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `amount_year` decimal(8,2) NOT NULL DEFAULT '0.00',
+  `status` char(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_status` (`status`),
+  KEY `uk_medical_provider_id_name` (`medical_provider_id`,`name`,`code`) /*!80000 INVISIBLE */,
+  KEY `idx_code` (`code`) /*!80000 INVISIBLE */,
+  KEY `idx_name` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `medical_package`
+--
+
+LOCK TABLES `medical_package` WRITE;
+/*!40000 ALTER TABLE `medical_package` DISABLE KEYS */;
+INSERT INTO `medical_package` (`id`, `create_dt`, `create_by`, `medical_provider_id`, `code`, `name`, `amount_month`, `amount_year`, `status`) VALUES (2,'2026-04-14 13:30:00','tanc08@gmail.com',1,'CARE','Care',65.00,600.00,'A'),(3,'2026-04-14 13:30:00','tanc08@gmail.com',1,'CAREP','Care Plus',130.00,1450.00,'A'),(4,'2026-04-14 13:30:00','tanc08@gmail.com',1,'PREM','Premium',300.00,3450.00,'A');
+/*!40000 ALTER TABLE `medical_package` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `package_subscription`
+--
+
+DROP TABLE IF EXISTS `package_subscription`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `package_subscription` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime NOT NULL,
+  `create_by` varchar(100) NOT NULL,
+  `modify_dt` datetime DEFAULT NULL,
+  `modify_by` varchar(100) DEFAULT NULL,
+  `user_id` varchar(100) NOT NULL,
+  `medical_package_id` int NOT NULL,
+  `amount` decimal(8,2) NOT NULL,
+  `mode` char(1) NOT NULL,
+  `expration_dt` datetime NOT NULL,
+  `remark` varchar(500) DEFAULT NULL,
+  `status` char(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`) /*!80000 INVISIBLE */,
+  KEY `idx_medical_package_id` (`medical_package_id`),
+  KEY `idx_expiration_dt` (`expration_dt`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
 
 -- =========================================
 -- PATIENT -> REGISTRATION
