@@ -87,7 +87,8 @@
                       Email <span class="sort-arrow" data-field="email"></span>
                     </th>
                     <th class="sortable" data-sort="userId">
-                      User Id <span class="sort-arrow" data-field="userId"></span>
+                      User Id
+                      <span class="sort-arrow" data-field="userId"></span>
                     </th>
                     <th>Mobile Number</th>
                     <th>Status</th>
@@ -111,7 +112,9 @@
                         th:text="|${provider.name} (${provider.code})|"
                       >
                       </span>
-                      <span th:if="${caregiver.medicalProviderId == null}">-</span>
+                      <span th:if="${caregiver.medicalProviderId == null}"
+                        >-</span
+                      >
                     </td>
                     <td>
                       <a
@@ -205,7 +208,9 @@
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="caregiverFormModalLabel">Add Caregiver</h5>
+            <h5 class="modal-title" id="caregiverFormModalLabel">
+              Add Caregiver
+            </h5>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -225,7 +230,8 @@
                 <label
                   for="medicalProviderId"
                   class="form-label visually-hidden"
-                  >Medical Provider</label>
+                  >Medical Provider</label
+                >
                 <select
                   id="medicalProviderId"
                   name="medicalProviderId"
@@ -257,27 +263,27 @@
                   required
                 />
               </div>
-            <div class="form-group-compact">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                class="input-field"
-                placeholder="Email Address *"
-                required
-              />
-            </div>
+              <div class="form-group-compact">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  class="input-field"
+                  placeholder="Email Address *"
+                  required
+                />
+              </div>
 
-            <div class="form-group-compact">
-              <input
-                type="email"
-                id="userId"
-                name="userId"
-                class="input-field"
-                placeholder="User Id *"
-                required
-              />
-            </div>
+              <div class="form-group-compact">
+                <input
+                  type="email"
+                  id="userId"
+                  name="userId"
+                  class="input-field"
+                  placeholder="User Id *"
+                  required
+                />
+              </div>
 
               <!-- Contact -->
               <h3 class="section-heading col-span-2">
@@ -369,12 +375,13 @@
     </div>
 
     <!-- Filter Modal -->
-    <div 
-      class="modal fade" 
-      id="filterModal" 
+    <div
+      class="modal fade"
+      id="filterModal"
       tabindex="-1"
       data-bs-backdrop="static"
-      aria-hidden="true">
+      aria-hidden="true"
+    >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -408,7 +415,9 @@
                   value="A"
                   data-filter="status"
                 />
-                <label class="form-check-label" for="filterActive"> Active </label>
+                <label class="form-check-label" for="filterActive">
+                  Active
+                </label>
               </div>
               <div class="form-check">
                 <input
@@ -418,7 +427,9 @@
                   value="X"
                   data-filter="status"
                 />
-                <label class="form-check-label" for="filterInactive"> Inactive </label>
+                <label class="form-check-label" for="filterInactive">
+                  Inactive
+                </label>
               </div>
               <div class="form-check">
                 <input
@@ -428,7 +439,9 @@
                   value="D"
                   data-filter="status"
                 />
-                <label class="form-check-label" for="filterDeleted"> Deleted </label>
+                <label class="form-check-label" for="filterDeleted">
+                  Deleted
+                </label>
               </div>
             </div>
           </div>
@@ -489,7 +502,7 @@
         status: [],
         medicalProviderId: "",
       };
-      
+
 
       // Initialize modal once
       let caregiverDetailsModal = null;
@@ -643,7 +656,7 @@
 
           const matchProvider =
             !filterCriteria.medicalProviderId ||
-            String(caregiver.medicalProviderId) === filterCriteria.medicalProviderId;  
+            String(caregiver.medicalProviderId) === filterCriteria.medicalProviderId;
 
           return matchSearch && matchStatus && matchProvider;
         });
@@ -1004,21 +1017,23 @@
               <span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">${caregiver.status === 'A' ? 'Active' : (caregiver.status === 'X' ? 'Inactive' : 'Deleted')}</span>
             </div>
           </div>
-          <div class="detail-item">
-            <div class="detail-label">Created By</div>
-            <div class="detail-value">${caregiver.createBy || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Created Date/Time</div>
-            <div class="detail-value">${caregiver.createDt ? new Date(caregiver.createDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Last Modified By</div>
-            <div class="detail-value">${caregiver.modifyBy || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Last Updated/Time</div>
-            <div class="detail-value">${caregiver.modifyDt ? new Date(caregiver.modifyDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+          <div class="audit-grid col-span-2">
+            <div class="audit-item">
+              <div class="audit-label">Created Date/Time</div>
+              <div class="audit-value">${caregiver.createDt ? new Date(caregiver.createDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+            </div>
+            <div class="audit-item">
+              <div class="audit-label">Created By</div>
+              <div class="audit-value">${caregiver.createBy || "-"}</div>
+            </div>
+            <div class="audit-item">
+              <div class="audit-label">Last Updated</div>
+              <div class="audit-value">${caregiver.modifyDt ? new Date(caregiver.modifyDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+            </div>
+            <div class="audit-item">
+              <div class="audit-label">Modified By</div>
+              <div class="audit-value">${caregiver.modifyBy || "-"}</div>
+            </div>
           </div>
         `;
       }

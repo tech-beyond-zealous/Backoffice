@@ -1,0 +1,1411 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Subscription</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link th:href="@{/css/patient-subscription.css}" rel="stylesheet" />
+  </head>
+  <body>
+    <div
+      th:replace="~{fragments/nav :: topNav(${appVersion}, ${menuGroups}, ${userId}, ${selectedApplicationSystemId})}"
+    ></div>
+
+    <main class="container-fluid py-4">
+      <div class="gs-main mx-auto">
+        <div class="card shadow-sm rounded-4">
+          <div class="card-body p-5">
+            <h2 class="card-title mb-4">
+              <i class="bi bi-card-checklist"></i> Subscription List
+            </h2>
+            <div class="table-tools">
+              <div class="input-group flex-grow-1">
+                <span class="input-group-text">
+                  <i class="bi bi-search"></i>
+                </span>
+                <input
+                  id="subscriptionSearch"
+                  type="search"
+                  class="form-control"
+                  placeholder="Search by patient, package, or provider"
+                />
+              </div>
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  class="btn btn-outline-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#filterModal"
+                  title="Filter"
+                >
+                  <i class="bi bi-funnel"></i> Filter
+                </button>
+                <button
+                  type="button"
+                  id="resetFiltersBtn"
+                  class="btn btn-outline-secondary"
+                  title="Reset"
+                >
+                  <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+                <button
+                  type="button"
+                  id="addSubscriptionButton"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#subscriptionFormModal"
+                  title="Add Subscription"
+                >
+                  <i class="bi bi-plus"></i> Add Subscription
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle subscriptions-table">
+                <thead class="table-header-custom">
+                  <tr>
+                    <th class="sortable" data-sort="medicalProviderCode">
+                      Medical Provider
+                      <span
+                        class="sort-arrow"
+                        data-field="medicalProviderCode"
+                      ></span>
+                    </th>
+                    <th class="sortable" data-sort="patientName">
+                      Patient Name
+                      <span class="sort-arrow" data-field="patientName"></span>
+                    </th>
+                    <th class="sortable" data-sort="packageName">
+                      Package
+                      <span class="sort-arrow" data-field="packageName"></span>
+                    </th>
+                    <th class="sortable" data-sort="mode">
+                      Mode <span class="sort-arrow" data-field="mode"></span>
+                    </th>
+                    <th class="sortable" data-sort="expirationDate">
+                      Expiration Date
+                      <span
+                        class="sort-arrow"
+                        data-field="expirationDate"
+                      ></span>
+                    </th>
+                    <th class="sortable" data-sort="subscriptionStatus">
+                      Status
+                      <span
+                        class="sort-arrow"
+                        data-field="subscriptionStatus"
+                      ></span>
+                    </th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="subscriptionList">
+                  <tr id="noSubscriptionsRow" class="d-none">
+                    <td colspan="7" class="text-center text-muted py-4">
+                      No subscriptions found.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="pagination-wrapper">
+                <div id="subscriptionInfo" class="text-muted"></div>
+                <nav>
+                  <ul id="subscriptionPagination" class="pagination mb-0"></ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div
+      class="toast position-fixed bottom-0 end-0 p-3"
+      id="liveToast"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="toast-body bg-success text-white rounded"></div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="subscriptionFormModal"
+      tabindex="-1"
+      data-bs-backdrop="static"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="subscriptionFormModalLabel">
+              Add Subscription
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="subscriptionForm" class="form-grid" novalidate>
+              <input type="hidden" id="subscriptionId" name="subscriptionId" />
+
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person-badge"></i> Medical Provider
+              </h3>
+              <div class="form-group-compact col-span-2">
+                <label
+                  for="medicalProviderId"
+                  class="form-label visually-hidden"
+                >
+                  Medical Provider
+                </label>
+                <select
+                  id="medicalProviderId"
+                  name="medicalProviderId"
+                  class="input-field"
+                  required
+                  oninvalid="
+                    this.setCustomValidity('Please select a medical provider')
+                  "
+                  oninput="this.setCustomValidity('')"
+                >
+                  <option value="">Select Medical Provider *</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.code + ' - ' + provider.name}"
+                  ></option>
+                </select>
+              </div>
+
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person"></i> Subscription Details
+              </h3>
+              <div class="form-group-compact">
+                <label for="patientId" class="form-label visually-hidden">
+                  Patient
+                </label>
+                <select
+                  id="patientId"
+                  name="patientId"
+                  class="input-field"
+                  required
+                  disabled
+                  oninvalid="
+                    this.setCustomValidity('Please select a patient name')
+                  "
+                  oninput="this.setCustomValidity('')"
+                >
+                  <option value="">Select Patient *</option>
+                </select>
+              </div>
+              <div class="form-group-compact">
+                <label
+                  for="medicalPackageId"
+                  class="form-label visually-hidden"
+                >
+                  Package
+                </label>
+                <div class="input-group package-select-group">
+                  <select
+                    id="medicalPackageId"
+                    name="medicalPackageId"
+                    class="input-field package-select-input"
+                    required
+                    oninvalid="
+                      this.setCustomValidity('Please select a package name')
+                    "
+                    oninput="this.setCustomValidity('')"
+                  >
+                    <option value="">Select Package *</option>
+                    <option
+                      th:each="pkg : ${subscriptionPackages}"
+                      th:value="${pkg.id}"
+                      th:text="${#strings.toUpperCase(pkg.name)}"
+                    ></option>
+                  </select>
+                  <button
+                    type="button"
+                    id="togglePackageInfoButton"
+                    class="btn btn-outline-secondary package-info-button"
+                    title="View package pricing and details"
+                  >
+                    <i class="bi bi-info-circle"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="package-summary col-span-2 d-none"
+                id="packageSummary"
+              >
+                <div class="package-summary-title" id="packageSummaryTitle">
+                  Select a package to view its pricing and details.
+                </div>
+                <div class="package-summary-pricing">
+                  <span id="packagePricingLine">
+                    <span class="package-price-value">RM -</span>
+                    <span class="package-price-unit">/ month</span>
+                    <span class="package-price-separator">|</span>
+                    <span class="package-price-value">RM -</span>
+                    <span class="package-price-unit">/ year</span>
+                  </span>
+                </div>
+                <ul
+                  id="packageSummaryDetails"
+                  class="package-summary-list mb-0"
+                ></ul>
+              </div>
+
+              <div class="form-group-compact col-span-2">
+                <label class="form-label subscription-field-label">Mode</label>
+                <div class="mode-selector">
+                  <label class="mode-option" for="modeMonthly">
+                    <input
+                      type="radio"
+                      name="mode"
+                      id="modeMonthly"
+                      value="MONTHLY"
+                      required
+                      oninvalid="
+                        this.setCustomValidity(
+                          'Please select a subscription mode',
+                        )
+                      "
+                      oninput="this.setCustomValidity('')"
+                      onchange="this.setCustomValidity('')"
+                    />
+                    <span class="mode-option-card">
+                      <span class="mode-option-title">Monthly</span>
+                      <span class="mode-option-amount" id="monthlyModeLabel">
+                        Select a package first
+                      </span>
+                    </span>
+                  </label>
+                  <label class="mode-option" for="modeYearly">
+                    <input
+                      type="radio"
+                      name="mode"
+                      id="modeYearly"
+                      value="YEARLY"
+                      required
+                      oninvalid="
+                        this.setCustomValidity(
+                          'Please select a subscription mode',
+                        )
+                      "
+                      oninput="this.setCustomValidity('')"
+                      onchange="this.setCustomValidity('')"
+                    />
+                    <span class="mode-option-card">
+                      <span class="mode-option-title">Yearly</span>
+                      <span class="mode-option-amount" id="yearlyModeLabel">
+                        Select a package first
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-group-compact">
+                <label
+                  for="expirationDate"
+                  class="form-label subscription-field-label"
+                  >Expiration Date</label
+                >
+                <input
+                  type="date"
+                  id="expirationDate"
+                  name="expirationDate"
+                  class="input-field subscription-display-field"
+                  readonly
+                />
+              </div>
+              <div class="form-group-compact">
+                <label
+                  for="amountDisplay"
+                  class="form-label subscription-field-label"
+                  >Amount</label
+                >
+                <div id="amountDisplay" class="subscription-amount">-</div>
+              </div>
+
+              <div class="form-group-compact col-span-2">
+                <label for="remark" class="form-label subscription-field-label"
+                  >Remarks</label
+                >
+                <textarea
+                  id="remark"
+                  name="remark"
+                  class="input-field"
+                  rows="4"
+                  maxlength="500"
+                  placeholder="Enter remarks"
+                ></textarea>
+                <div class="text-end mt-1">
+                  <small id="remarkCount">0/500</small>
+                </div>
+              </div>
+
+              <div class="modal-footer col-span-2 px-0 pb-0">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  id="saveSubscriptionButton"
+                  type="submit"
+                  class="btn btn-primary"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="subscriptionDetailModal"
+      tabindex="-1"
+      aria-labelledby="subscriptionDetailModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="subscriptionDetailModalLabel">
+              Subscription Details
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card bg-light border-0 p-3">
+              <div class="details-grid">
+                <div class="detail-item">
+                  <div class="detail-label">Medical Provider</div>
+                  <div class="detail-value" id="detailProvider">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Patient Name</div>
+                  <div class="detail-value" id="detailPatient">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Package</div>
+                  <div class="detail-value" id="detailPackage">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Mode</div>
+                  <div class="detail-value" id="detailMode">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Amount</div>
+                  <div class="detail-value" id="detailAmount">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Start Date</div>
+                  <div class="detail-value" id="detailStartDate">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Expiration Date</div>
+                  <div class="detail-value" id="detailExpiration">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Days Remaining</div>
+                  <div class="detail-value" id="detailDaysLeft">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Status</div>
+                  <div class="detail-value" id="detailStatus">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Remarks</div>
+                  <div class="detail-value" id="detailRemark">-</div>
+                </div>
+              </div>
+
+              <div class="audit-grid col-span-2">
+                <div class="audit-item">
+                  <div class="audit-label">Created By</div>
+                  <div class="audit-value" id="detailCreatedBy">-</div>
+                </div>
+                <div class="audit-item">
+                  <div class="audit-label">Created Date/Time</div>
+                  <div class="audit-value" id="detailCreatedDateTime">-</div>
+                </div>
+                <div class="audit-item">
+                  <div class="audit-label">Last Updated</div>
+                  <div class="audit-value" id="detailModifiedDateTime">-</div>
+                </div>
+                <div class="audit-item">
+                  <div class="audit-label">Modified By</div>
+                  <div class="audit-value" id="detailModifiedBy">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="filterModal"
+      tabindex="-1"
+      aria-labelledby="filterModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="filterModalLabel">
+              Filter Subscriptions
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="filterMedicalProvider" class="form-label">
+                  Medical Provider
+                </label>
+                <select id="filterMedicalProvider" class="form-select">
+                  <option value="">All providers</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.code + ' - ' + provider.name}"
+                  ></option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="filterPackage" class="form-label">Package</label>
+                <select id="filterPackage" class="form-select">
+                  <option value="">All packages</option>
+                  <option
+                    th:each="pkg : ${subscriptionPackages}"
+                    th:value="${#strings.toUpperCase(pkg.name)}"
+                    th:text="${#strings.toUpperCase(pkg.name)}"
+                  ></option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="filterMode" class="form-label">Mode</label>
+                <select id="filterMode" class="form-select">
+                  <option value="">All modes</option>
+                  <option value="Monthly">Monthly</option>
+                  <option value="Yearly">Yearly</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="filterStatus" class="form-label">Status</label>
+                <select id="filterStatus" class="form-select">
+                  <option value="">All statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Expiring Soon">Expiring Soon</option>
+                  <option value="Expired">Expired</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="applySubscriptionFilters"
+              data-bs-dismiss="modal"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/session-fetch.js"></script>
+    <script th:inline="javascript">
+      const medicalProviders = /*[[${medicalProviders}]]*/ [];
+      const allPatients = /*[[${patients}]]*/ [];
+      const subscriptionPackages = /*[[${subscriptionPackages}]]*/ [];
+      let allSubscriptions = /*[[${subscriptions}]]*/ [];
+
+      const subscriptionSearch = document.getElementById("subscriptionSearch");
+      const subscriptionList = document.getElementById("subscriptionList");
+      const noSubscriptionsRow = document.getElementById("noSubscriptionsRow");
+      const subscriptionInfo = document.getElementById("subscriptionInfo");
+      const subscriptionPagination = document.getElementById(
+        "subscriptionPagination",
+      );
+      const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+      const filterMedicalProvider = document.getElementById(
+        "filterMedicalProvider",
+      );
+      const filterPackage = document.getElementById("filterPackage");
+      const filterMode = document.getElementById("filterMode");
+      const filterStatus = document.getElementById("filterStatus");
+
+      const subscriptionForm = document.getElementById("subscriptionForm");
+      const subscriptionFormModalElement = document.getElementById(
+        "subscriptionFormModal",
+      );
+      const subscriptionFormModalLabel = document.getElementById(
+        "subscriptionFormModalLabel",
+      );
+      const medicalProviderId = document.getElementById("medicalProviderId");
+      const patientId = document.getElementById("patientId");
+      const medicalPackageId = document.getElementById("medicalPackageId");
+      const modeMonthly = document.getElementById("modeMonthly");
+      const modeYearly = document.getElementById("modeYearly");
+      const monthlyModeLabel = document.getElementById("monthlyModeLabel");
+      const yearlyModeLabel = document.getElementById("yearlyModeLabel");
+      const togglePackageInfoButton = document.getElementById(
+        "togglePackageInfoButton",
+      );
+      const expirationDate = document.getElementById("expirationDate");
+      const amountDisplay = document.getElementById("amountDisplay");
+      const saveSubscriptionButton = document.getElementById(
+        "saveSubscriptionButton",
+      );
+      const remark = document.getElementById("remark");
+      const remarkCount = document.getElementById("remarkCount");
+      const packageSummary = document.getElementById("packageSummary");
+      const packageSummaryTitle = document.getElementById(
+        "packageSummaryTitle",
+      );
+      const packagePricingLine = document.getElementById("packagePricingLine");
+      const packageSummaryDetails = document.getElementById(
+        "packageSummaryDetails",
+      );
+
+      const detailProvider = document.getElementById("detailProvider");
+      const detailPatient = document.getElementById("detailPatient");
+      const detailPackage = document.getElementById("detailPackage");
+      const detailMode = document.getElementById("detailMode");
+      const detailAmount = document.getElementById("detailAmount");
+      const detailStartDate = document.getElementById("detailStartDate");
+      const detailExpiration = document.getElementById("detailExpiration");
+      const detailDaysLeft = document.getElementById("detailDaysLeft");
+      const detailStatus = document.getElementById("detailStatus");
+      const detailCreatedDateTime = document.getElementById(
+        "detailCreatedDateTime",
+      );
+      const detailCreatedBy = document.getElementById("detailCreatedBy");
+      const detailModifiedDateTime = document.getElementById(
+        "detailModifiedDateTime",
+      );
+      const detailModifiedBy = document.getElementById("detailModifiedBy");
+      const detailRemark = document.getElementById("detailRemark");
+
+      const subscriptionDetailModal = new bootstrap.Modal(
+        document.getElementById("subscriptionDetailModal"),
+      );
+
+      let editingSubscriptionId = null;
+      let currentPage = 1;
+      const pageSize = 6;
+      let currentSortBy = "patientName";
+      let currentSortDir = "asc";
+
+      function fetchWithSessionHandling(url, options) {
+        return (window.GSAuth?.fetchWithSessionHandling || fetch)(url, options);
+      }
+
+      function showToast(message, isError = false) {
+        const toastEl = document.getElementById("liveToast");
+        const toastBody = toastEl.querySelector(".toast-body");
+        toastBody.textContent = message;
+        toastBody.classList.toggle("bg-danger", isError);
+        toastBody.classList.toggle("bg-success", !isError);
+        new bootstrap.Toast(toastEl).show();
+      }
+
+      function normalize(value) {
+        return (value || "").toString().trim().toLowerCase();
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatCurrency(value) {
+        return value == null ? "-" : `RM ${Number(value).toFixed(2)}`;
+      }
+
+      function hasExistingSubscriptionForPatient(patientValue) {
+        return allSubscriptions.some((subscription) => {
+          if (String(subscription.patientId) !== String(patientValue)) {
+            return false;
+          }
+          if (!editingSubscriptionId) {
+            return true;
+          }
+          return String(subscription.id) !== String(editingSubscriptionId);
+        });
+      }
+
+      function setDuplicatePatientValidity() {
+        if (!patientId.value) {
+          patientId.setCustomValidity("");
+          return false;
+        }
+
+        const isDuplicate = hasExistingSubscriptionForPatient(patientId.value);
+        patientId.setCustomValidity(
+          isDuplicate
+            ? "Patient record already exists in the subscription list."
+            : "",
+        );
+        return isDuplicate;
+      }
+
+      function alertDuplicatePatientSelection() {
+        const isDuplicate = setDuplicatePatientValidity();
+        if (!isDuplicate) {
+          return false;
+        }
+
+        alert("This patient already has a subscription.");
+        patientId.reportValidity();
+        return true;
+      }
+
+      function getPackageById(id) {
+        return subscriptionPackages.find(
+          (pkg) => String(pkg.id) === String(id),
+        );
+      }
+
+      function getSelectedMode() {
+        if (modeMonthly.checked) {
+          return "MONTHLY";
+        }
+        if (modeYearly.checked) {
+          return "YEARLY";
+        }
+        return "";
+      }
+
+      function getSubscriptionSortValue(subscription, field) {
+        if (field === "expirationDate") {
+          return subscription.expirationDate
+            ? new Date(subscription.expirationDate).getTime()
+            : 0;
+        }
+        if (field === "subscriptionStatus") {
+          const statusRank = {
+            Active: 3,
+            "Expiring Soon": 2,
+            Expired: 1,
+          };
+          return statusRank[subscription.subscriptionStatus] || 0;
+        }
+        return normalize(subscription[field]);
+      }
+
+      function getStatusBadgeClass(status) {
+        if (status === "Expired") {
+          return "badge badge-danger-soft";
+        }
+        if (status === "Expiring Soon") {
+          return "badge badge-warning-soft";
+        }
+        return "badge badge-success-soft";
+      }
+
+      function updateSortArrows() {
+        document.querySelectorAll(".sort-arrow").forEach((arrow) => {
+          const isActive = arrow.dataset.field === currentSortBy;
+          arrow.classList.toggle("active", isActive);
+          arrow.classList.toggle("asc", isActive && currentSortDir === "asc");
+          arrow.classList.toggle("desc", isActive && currentSortDir === "desc");
+        });
+      }
+
+      function filterAndSortSubscriptions() {
+        const searchTerm = normalize(subscriptionSearch.value);
+        const selectedProviderId = filterMedicalProvider.value;
+        const selectedPackage = normalize(filterPackage.value);
+        const selectedMode = normalize(filterMode.value);
+        const selectedStatus = normalize(filterStatus.value);
+
+        const filtered = allSubscriptions.filter((subscription) => {
+          const matchesSearch =
+            !searchTerm ||
+            normalize(subscription.patientName).includes(searchTerm) ||
+            normalize(subscription.packageName).includes(searchTerm) ||
+            normalize(subscription.medicalProviderCode).includes(searchTerm);
+
+          const matchesProvider =
+            !selectedProviderId ||
+            String(subscription.medicalProviderId) ===
+              String(selectedProviderId);
+
+          const matchesPackage =
+            !selectedPackage ||
+            normalize(subscription.packageName) === selectedPackage;
+
+          const matchesMode =
+            !selectedMode || normalize(subscription.mode) === selectedMode;
+
+          const matchesStatus =
+            !selectedStatus ||
+            normalize(subscription.subscriptionStatus) === selectedStatus;
+
+          return (
+            matchesSearch &&
+            matchesProvider &&
+            matchesPackage &&
+            matchesMode &&
+            matchesStatus
+          );
+        });
+
+        filtered.sort((left, right) => {
+          const leftValue = getSubscriptionSortValue(left, currentSortBy);
+          const rightValue = getSubscriptionSortValue(right, currentSortBy);
+          let result = 0;
+
+          if (leftValue < rightValue) {
+            result = -1;
+          } else if (leftValue > rightValue) {
+            result = 1;
+          }
+
+          return currentSortDir === "asc" ? result : -result;
+        });
+
+        return filtered;
+      }
+
+      function renderPagination(totalPages) {
+        subscriptionPagination.innerHTML = "";
+        if (totalPages <= 1) {
+          return;
+        }
+
+        const createPageButton = (
+          page,
+          label,
+          active = false,
+          disabled = false,
+        ) => `
+          <li class="page-item ${active ? "active" : ""} ${disabled ? "disabled" : ""}">
+            <button class="page-link" type="button" data-page="${page}" ${disabled ? "disabled" : ""}>
+              ${label}
+            </button>
+          </li>
+        `;
+
+        let html = createPageButton(
+          currentPage - 1,
+          "&laquo;",
+          false,
+          currentPage === 1,
+        );
+        for (let page = 1; page <= totalPages; page += 1) {
+          html += createPageButton(page, page, page === currentPage);
+        }
+        html += createPageButton(
+          currentPage + 1,
+          "&raquo;",
+          false,
+          currentPage === totalPages,
+        );
+        subscriptionPagination.innerHTML = html;
+
+        subscriptionPagination
+          .querySelectorAll("button[data-page]")
+          .forEach((button) => {
+            button.addEventListener("click", () => {
+              const page = Number(button.dataset.page);
+              if (!Number.isNaN(page) && page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderSubscriptionsTable();
+              }
+            });
+          });
+      }
+
+      function renderSubscriptionsTable() {
+        const filtered = filterAndSortSubscriptions();
+        const totalItems = filtered.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const pageItems = filtered.slice(startIndex, startIndex + pageSize);
+
+        subscriptionList.innerHTML = pageItems
+          .map((subscription) => {
+            return `
+              <tr data-id="${escapeHtml(subscription.id)}">
+                <td>${escapeHtml(subscription.medicalProviderCode || "-")}</td>
+                <td>
+                  <a
+                    href="#"
+                    class="subscription-name-link"
+                    data-action="view"
+                    data-id="${escapeHtml(subscription.id)}"
+                  >
+                    ${escapeHtml(subscription.patientName || "-")}
+                  </a>
+                </td>
+                <td>${escapeHtml(subscription.packageName || "-")}</td>
+                <td>${escapeHtml(subscription.mode || "-")}</td>
+                <td>${escapeHtml(subscription.expirationDate || "-")}</td>
+                <td>
+                  <span class="${getStatusBadgeClass(subscription.subscriptionStatus)}">
+                    ${escapeHtml(subscription.subscriptionStatus || "Active")}
+                  </span>
+                </td>
+                <td class="text-nowrap">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
+                    data-action="view"
+                    data-id="${escapeHtml(subscription.id)}"
+                    title="View"
+                  >
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
+                    data-action="edit"
+                    data-id="${escapeHtml(subscription.id)}"
+                    title="Edit"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
+                    data-action="delete"
+                    data-id="${escapeHtml(subscription.id)}"
+                    title="Delete"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          })
+          .join("");
+
+        if (pageItems.length === 0) {
+          noSubscriptionsRow.classList.remove("d-none");
+          subscriptionList.appendChild(noSubscriptionsRow);
+        } else {
+          noSubscriptionsRow.classList.add("d-none");
+          subscriptionList.appendChild(noSubscriptionsRow);
+        }
+
+        subscriptionInfo.textContent = `Showing ${pageItems.length === 0 ? 0 : startIndex + 1} to ${Math.min(
+          startIndex + pageSize,
+          totalItems,
+        )} of ${totalItems} subscriptions`;
+
+        renderPagination(totalPages);
+        updateSortArrows();
+      }
+
+      function populatePatientOptions(selectedPatientId = "") {
+        const selectedProviderId = medicalProviderId.value;
+        const patients = allPatients
+          .filter(
+            (patient) =>
+              String(patient.medicalProviderId) === String(selectedProviderId),
+          )
+          .sort((left, right) =>
+            normalize(left.name).localeCompare(normalize(right.name)),
+          );
+
+        patientId.innerHTML = '<option value="">Select Patient *</option>';
+        patientId.disabled = !selectedProviderId;
+
+        patients.forEach((patient) => {
+          const option = document.createElement("option");
+          option.value = patient.id;
+          option.textContent = patient.icPassportNo
+            ? `${patient.name} (${patient.icPassportNo})`
+            : patient.name;
+          if (String(patient.id) === String(selectedPatientId)) {
+            option.selected = true;
+          }
+          patientId.appendChild(option);
+        });
+      }
+
+      function updatePackageSummary() {
+        const selectedPackage = getPackageById(medicalPackageId.value);
+
+        if (!selectedPackage) {
+          packageSummaryTitle.textContent =
+            "Select a package to view its pricing and details.";
+          packagePricingLine.innerHTML = `
+            <span class="package-price-value">RM -</span>
+            <span class="package-price-unit">/ month</span>
+            <span class="package-price-separator">|</span>
+            <span class="package-price-value">RM -</span>
+            <span class="package-price-unit">/ year</span>
+          `;
+          packageSummaryDetails.innerHTML = "";
+          monthlyModeLabel.textContent = "Select a package first";
+          yearlyModeLabel.textContent = "Select a package first";
+          amountDisplay.textContent = "-";
+          expirationDate.value = "";
+          return;
+        }
+
+        packageSummaryTitle.textContent =
+          `${selectedPackage.name}`.toUpperCase();
+        packagePricingLine.innerHTML = `
+          <span class="package-price-value">${formatCurrency(selectedPackage.monthlyAmount)}</span>
+          <span class="package-price-unit">/ month</span>
+          <span class="package-price-separator">|</span>
+          <span class="package-price-value">${formatCurrency(selectedPackage.yearlyAmount)}</span>
+          <span class="package-price-unit">/ year</span>
+        `;
+        monthlyModeLabel.textContent = formatCurrency(
+          selectedPackage.monthlyAmount,
+        );
+        yearlyModeLabel.textContent = formatCurrency(
+          selectedPackage.yearlyAmount,
+        );
+        packageSummaryDetails.innerHTML = "";
+
+        (selectedPackage.description || [])
+          .filter(Boolean)
+          .forEach((detail) => {
+            const item = document.createElement("li");
+            item.textContent = detail;
+            packageSummaryDetails.appendChild(item);
+          });
+
+        updateAmountAndExpiration();
+      }
+
+      function togglePackageSummaryVisibility(forceVisible = null) {
+        const shouldShow =
+          forceVisible == null
+            ? packageSummary.classList.contains("d-none")
+            : forceVisible;
+        packageSummary.classList.toggle("d-none", !shouldShow);
+      }
+
+      function updateAmountAndExpiration() {
+        const selectedPackage = getPackageById(medicalPackageId.value);
+        const selectedMode = getSelectedMode();
+
+        if (!selectedPackage || !selectedMode) {
+          amountDisplay.textContent = "-";
+          expirationDate.value = "";
+          return;
+        }
+
+        amountDisplay.textContent =
+          selectedMode === "YEARLY"
+            ? `${formatCurrency(selectedPackage.yearlyAmount)}/year`
+            : `${formatCurrency(selectedPackage.monthlyAmount)}/month`;
+
+        const baseDate = new Date();
+        if (selectedMode === "YEARLY") {
+          baseDate.setFullYear(baseDate.getFullYear() + 1);
+        } else {
+          baseDate.setMonth(baseDate.getMonth() + 1);
+        }
+        expirationDate.value = baseDate.toISOString().split("T")[0];
+      }
+
+      function updateRemarkCount() {
+        remarkCount.textContent = `${remark.value.length}/500`;
+      }
+
+      function updateSaveButtonState() {
+        setDuplicatePatientValidity();
+        saveSubscriptionButton.disabled = false;
+      }
+
+      function resetSubscriptionForm() {
+        editingSubscriptionId = null;
+        subscriptionForm.reset();
+        document.getElementById("subscriptionId").value = "";
+        subscriptionFormModalLabel.textContent = "Add Subscription";
+        patientId.innerHTML = '<option value="">Select Patient *</option>';
+        patientId.disabled = true;
+        monthlyModeLabel.textContent = "Select a package first";
+        yearlyModeLabel.textContent = "Select a package first";
+        amountDisplay.textContent = "-";
+        expirationDate.value = "";
+        packageSummaryTitle.textContent =
+          "Select a package to view its pricing and details.";
+        packagePricingLine.innerHTML = `
+          <span class="package-price-value">RM -</span>
+          <span class="package-price-unit">/ month</span>
+          <span class="package-price-separator">|</span>
+          <span class="package-price-value">RM -</span>
+          <span class="package-price-unit">/ year</span>
+        `;
+        packageSummaryDetails.innerHTML = "";
+        patientId.setCustomValidity("");
+        modeMonthly.setCustomValidity("");
+        modeYearly.setCustomValidity("");
+        togglePackageSummaryVisibility(false);
+        updateRemarkCount();
+        updateSaveButtonState();
+      }
+
+      function showSubscriptionDetails(subscription) {
+        detailProvider.textContent = subscription.medicalProviderCode || "-";
+        detailPatient.textContent = subscription.patientName || "-";
+        detailPackage.textContent = subscription.packageName || "-";
+        detailMode.textContent = subscription.mode || "-";
+        detailAmount.textContent = subscription.amount || "-";
+        detailStartDate.textContent = subscription.startDate || "-";
+        detailExpiration.textContent = subscription.expirationDate || "-";
+        detailDaysLeft.textContent = subscription.daysLeft || "-";
+        detailStatus.innerHTML = `<span class="${getStatusBadgeClass(
+          subscription.subscriptionStatus,
+        )}">${escapeHtml(subscription.subscriptionStatus || "-")}</span>`;
+        detailCreatedDateTime.textContent = subscription.createdDateTime || "-";
+        detailCreatedBy.textContent = subscription.createdBy || "-";
+        detailModifiedDateTime.textContent =
+          subscription.modifiedDateTime || "-";
+        detailModifiedBy.textContent = subscription.modifiedBy || "-";
+        detailRemark.textContent = subscription.remark || "-";
+        subscriptionDetailModal.show();
+      }
+
+      function startEditSubscription(subscription) {
+        editingSubscriptionId = subscription.id;
+        document.getElementById("subscriptionId").value = subscription.id;
+        subscriptionFormModalLabel.textContent = "Edit Subscription";
+        medicalProviderId.value = subscription.medicalProviderId || "";
+        populatePatientOptions(subscription.patientId);
+        medicalPackageId.value = subscription.medicalPackageId || "";
+        modeMonthly.checked = subscription.mode === "Monthly";
+        modeYearly.checked = subscription.mode === "Yearly";
+        remark.value = subscription.remark || "";
+        updatePackageSummary();
+        expirationDate.value = subscription.expirationDate || "";
+        updateAmountAndExpiration();
+        updateRemarkCount();
+        updateSaveButtonState();
+        bootstrap.Modal.getOrCreateInstance(
+          subscriptionFormModalElement,
+        ).show();
+      }
+
+      function resetSubscriptionFilters() {
+        subscriptionSearch.value = "";
+        filterMedicalProvider.value = "";
+        filterPackage.value = "";
+        filterMode.value = "";
+        filterStatus.value = "";
+        currentSortBy = "patientName";
+        currentSortDir = "asc";
+        currentPage = 1;
+        renderSubscriptionsTable();
+        showToast("Filters reset successfully.");
+      }
+
+      async function deleteSubscription(id) {
+        if (!confirm("Delete this subscription?")) {
+          return;
+        }
+
+        try {
+          const response = await fetchWithSessionHandling(
+            `/patient/subscription/${id}`,
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(await response.text());
+          }
+
+          allSubscriptions = allSubscriptions.filter(
+            (subscription) => String(subscription.id) !== String(id),
+          );
+          currentPage = 1;
+          renderSubscriptionsTable();
+          showToast("Subscription deleted successfully.");
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to delete subscription. Please try again.", true);
+        }
+      }
+
+      subscriptionForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        setDuplicatePatientValidity();
+        if (!subscriptionForm.checkValidity()) {
+          subscriptionForm.reportValidity();
+          return;
+        }
+        const selectedMode = getSelectedMode();
+
+        const payload = {
+          id: editingSubscriptionId ? Number(editingSubscriptionId) : null,
+          medicalProviderId: Number(medicalProviderId.value),
+          medicalPackageId: Number(medicalPackageId.value),
+          patientId: Number(patientId.value),
+          mode: selectedMode,
+          expirationDate: expirationDate.value,
+          remark: remark.value.trim(),
+        };
+
+        try {
+          const response = await fetchWithSessionHandling(
+            "/patient/subscription/save",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            },
+          );
+
+          if (!response.ok) {
+            const errorMessage = await response.text();
+            if (
+              errorMessage.includes(
+                "Patient record already exists in the subscription list.",
+              )
+            ) {
+              patientId.setCustomValidity(errorMessage);
+              alert("This patient already has a subscription.");
+              patientId.reportValidity();
+              updateSaveButtonState();
+              return;
+            }
+            throw new Error(errorMessage);
+          }
+
+          const savedSubscription = await response.json();
+          const existingIndex = allSubscriptions.findIndex(
+            (subscription) =>
+              String(subscription.id) === String(savedSubscription.id),
+          );
+
+          if (existingIndex >= 0) {
+            allSubscriptions.splice(existingIndex, 1, savedSubscription);
+          } else {
+            allSubscriptions.unshift(savedSubscription);
+          }
+
+          currentPage = 1;
+          renderSubscriptionsTable();
+          showToast("Subscription saved successfully.");
+          bootstrap.Modal.getInstance(subscriptionFormModalElement)?.hide();
+          resetSubscriptionForm();
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to save subscription. Please try again.", true);
+        }
+      });
+
+      document
+        .getElementById("addSubscriptionButton")
+        .addEventListener("click", () => {
+          resetSubscriptionForm();
+        });
+
+      document
+        .getElementById("applySubscriptionFilters")
+        .addEventListener("click", () => {
+          currentPage = 1;
+          renderSubscriptionsTable();
+          showToast("Filters applied successfully.");
+        });
+
+      medicalProviderId.addEventListener("change", () => {
+        populatePatientOptions();
+        updateSaveButtonState();
+      });
+
+      patientId.addEventListener("change", () => {
+        alertDuplicatePatientSelection();
+        updateSaveButtonState();
+      });
+
+      patientId.addEventListener("input", () => {
+        patientId.setCustomValidity("");
+        updateSaveButtonState();
+      });
+
+      medicalPackageId.addEventListener("change", () => {
+        updatePackageSummary();
+        togglePackageSummaryVisibility(false);
+        updateSaveButtonState();
+      });
+
+      medicalProviderId.addEventListener("input", () => {
+        medicalProviderId.setCustomValidity("");
+        updateSaveButtonState();
+      });
+
+      medicalPackageId.addEventListener("input", () => {
+        medicalPackageId.setCustomValidity("");
+        updateSaveButtonState();
+      });
+
+      togglePackageInfoButton.addEventListener("click", () => {
+        if (!medicalPackageId.value) {
+          showToast("Please select a package first.", true);
+          return;
+        }
+        updatePackageSummary();
+        togglePackageSummaryVisibility();
+      });
+
+      modeMonthly.addEventListener("change", () => {
+        modeMonthly.setCustomValidity("");
+        modeYearly.setCustomValidity("");
+        updateAmountAndExpiration();
+        updateSaveButtonState();
+      });
+      modeYearly.addEventListener("change", () => {
+        modeMonthly.setCustomValidity("");
+        modeYearly.setCustomValidity("");
+        updateAmountAndExpiration();
+        updateSaveButtonState();
+      });
+      remark.addEventListener("input", updateRemarkCount);
+
+      subscriptionSearch.addEventListener("input", () => {
+        currentPage = 1;
+        renderSubscriptionsTable();
+      });
+
+      filterMedicalProvider.addEventListener("change", () => {
+        currentPage = 1;
+        renderSubscriptionsTable();
+      });
+
+      filterMode.addEventListener("change", () => {
+        currentPage = 1;
+        renderSubscriptionsTable();
+      });
+
+      filterPackage.addEventListener("change", () => {
+        currentPage = 1;
+        renderSubscriptionsTable();
+      });
+
+      filterStatus.addEventListener("change", () => {
+        currentPage = 1;
+        renderSubscriptionsTable();
+      });
+
+      resetFiltersBtn.addEventListener("click", resetSubscriptionFilters);
+
+      document.querySelectorAll("th.sortable").forEach((header) => {
+        header.addEventListener("click", () => {
+          const nextSort = header.getAttribute("data-sort");
+          if (nextSort === currentSortBy) {
+            currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+          } else {
+            currentSortBy = nextSort;
+            currentSortDir = "asc";
+          }
+          renderSubscriptionsTable();
+        });
+      });
+
+      subscriptionList.addEventListener("click", (event) => {
+        const actionTarget = event.target.closest("[data-action]");
+        if (!actionTarget) {
+          return;
+        }
+
+        event.preventDefault();
+        const subscription = allSubscriptions.find(
+          (item) => String(item.id) === String(actionTarget.dataset.id),
+        );
+        if (!subscription) {
+          return;
+        }
+
+        if (actionTarget.dataset.action === "view") {
+          showSubscriptionDetails(subscription);
+          return;
+        }
+
+        if (actionTarget.dataset.action === "edit") {
+          startEditSubscription(subscription);
+          return;
+        }
+
+        if (actionTarget.dataset.action === "delete") {
+          deleteSubscription(subscription.id);
+        }
+      });
+
+      subscriptionFormModalElement.addEventListener("hidden.bs.modal", () => {
+        resetSubscriptionForm();
+      });
+
+      updateRemarkCount();
+      updateSaveButtonState();
+      renderSubscriptionsTable();
+    </script>
+  </body>
+</html>

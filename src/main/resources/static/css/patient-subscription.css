@@ -1,0 +1,223 @@
+@import url("base.css");
+
+/* Patient Subscription Specific Styles */
+
+.subscriptions-table {
+  font-size: 0.85rem;
+}
+
+.subscriptions-table th {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.6rem;
+  background-color: #f8f9fa;
+}
+
+.subscriptions-table td {
+  vertical-align: middle;
+  padding: 0.5rem 0.6rem;
+}
+
+.subscriptions-table tbody tr {
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.subscriptions-table tbody tr:hover {
+  background-color: var(--primary-light);
+  transform: scale(1.01);
+  border-left: 4px solid var(--primary-color);
+}
+
+.subscription-name-link {
+  cursor: pointer;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.subscription-name-link:hover {
+  text-decoration: underline;
+  color: var(--primary-dark);
+}
+
+.mode-selector {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.package-select-group {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.package-select-input {
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.package-info-button {
+  flex: 0 0 auto;
+  width: 46px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+@media (min-width: 768px) {
+  .mode-selector {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.mode-option {
+  position: relative;
+  margin: 0;
+  cursor: pointer;
+}
+
+.mode-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mode-option-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 68px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.8rem;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.mode-option-card:hover {
+  border-color: var(--primary-color);
+}
+
+.mode-option-title {
+  font-weight: 700;
+  color: #212529;
+}
+
+.mode-option-amount {
+  color: var(--primary-dark);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.mode-option input:checked + .mode-option-card {
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 0.15rem rgba(31, 106, 199, 0.15);
+}
+
+.mode-option input:checked + .mode-option-card .mode-option-amount {
+  color: var(--primary-color);
+}
+
+.package-summary {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #dbe7f7;
+  border-radius: 0.8rem;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.package-summary-title {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.package-summary-pricing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+  color: #495057;
+  font-weight: 400;
+}
+
+.package-price-value {
+  font-weight: 700;
+}
+
+.package-price-unit {
+  font-size: 0.82rem;
+  color: #6c757d;
+  margin-left: 0.12rem;
+}
+
+.package-price-separator {
+  margin: 0 0.35rem;
+  color: #6c757d;
+}
+
+.package-summary-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 1rem;
+  padding-left: 1rem;
+  color: #495057;
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .package-summary-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.package-summary-list li {
+  padding-right: 0.4rem;
+}
+
+.subscription-field-label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 0.45rem;
+}
+
+.subscription-amount {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.4rem;
+  background-color: #f8f9fa;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.subscription-display-field {
+  min-height: 42px;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #dee2e6;
+  border-radius: 0.4rem;
+  background-color: #f8f9fa;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+}
+
+.subscription-display-field[readonly] {
+  background-color: #f8f9fa;
+  color: var(--primary-dark);
+}
+
+.badge-warning-soft {
+  background-color: #fff3cd;
+  color: #664d03;
+}

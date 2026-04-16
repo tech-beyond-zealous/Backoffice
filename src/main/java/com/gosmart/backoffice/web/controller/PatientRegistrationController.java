@@ -75,6 +75,7 @@ public class PatientRegistrationController {
             toUpdate.setAddress(patient.getAddress());
             toUpdate.setArea(patient.getArea());
             toUpdate.setPostcode(patient.getPostcode());
+            toUpdate.setState(patient.getState());
             toUpdate.setCity(patient.getCity());
             toUpdate.setHasChronicDisease(patient.getHasChronicDisease());
             toUpdate.setChronicDisease(patient.getChronicDisease());

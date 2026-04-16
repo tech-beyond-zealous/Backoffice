@@ -80,7 +80,8 @@
                       ></span>
                     </th>
                     <th class="sortable" data-sort="name">
-                      Name <span class="sort-arrow" data-field="name"></span>
+                      Patient Name
+                      <span class="sort-arrow" data-field="name"></span>
                     </th>
                     <th class="sortable" data-sort="age">
                       Age <span class="sort-arrow" data-field="age"></span>
@@ -115,7 +116,7 @@
                       <span
                         th:each="provider : ${medicalProviders}"
                         th:if="${provider.id == patient.medicalProviderId}"
-                        th:text="${provider.code}"
+                        th:text="|${provider.name} (${provider.code})|"
                       ></span>
                       <span th:if="${patient.medicalProviderId == null}"
                         >-</span
@@ -298,13 +299,20 @@
                 </select>
               </div>
               <div class="form-group-compact">
-                <input
-                  type="text"
+                <select
                   id="race"
                   name="race"
                   class="input-field"
-                  placeholder="Race"
-                />
+                  required
+                  oninvalid="this.setCustomValidity('Please select a race')"
+                  oninput="this.setCustomValidity('')"
+                >
+                  <option value="" disabled selected>Select Race *</option>
+                  <option value="Chinese">Chinese</option>
+                  <option value="Indian">Indian</option>
+                  <option value="Malay">Malay</option>
+                  <option value="Others">Others</option>
+                </select>
               </div>
 
               <!-- Identity -->
@@ -427,6 +435,27 @@
                 />
               </div>
               <div class="form-group-compact">
+                <select id="state" name="state" class="input-field">
+                  <option value="" disabled selected>Select State</option>
+                  <option value="Johor">Johor</option>
+                  <option value="Kedah">Kedah</option>
+                  <option value="Kelantan">Kelantan</option>
+                  <option value="Melaka">Melaka</option>
+                  <option value="Negeri Sembilan">Negeri Sembilan</option>
+                  <option value="Pahang">Pahang</option>
+                  <option value="Perak">Perak</option>
+                  <option value="Perlis">Perlis</option>
+                  <option value="Pulau Pinang">Pulau Pinang</option>
+                  <option value="Selangor">Selangor</option>
+                  <option value="Terengganu">Terengganu</option>
+                  <option value="Sabah">Sabah</option>
+                  <option value="Sarawak">Sarawak</option>
+                  <option value="Kuala Lumpur">Kuala Lumpur</option>
+                  <option value="Labuan">Labuan</option>
+                  <option value="Putrajaya">Putrajaya</option>
+                </select>
+              </div>
+              <div class="form-group-compact">
                 <input
                   type="text"
                   id="city"
@@ -521,12 +550,13 @@
     </div>
 
     <!-- Filter Modal -->
-    <div 
-      class="modal fade" 
-      id="filterModal" 
+    <div
+      class="modal fade"
+      id="filterModal"
       tabindex="-1"
       data-bs-backdrop="static"
-      aria-hidden="true">
+      aria-hidden="true"
+    >
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -641,7 +671,7 @@
       const providerCodeMap = new Map(
         medicalProviders.map((provider) => [
           String(provider.id),
-          provider.code,
+          `${provider.name} (${provider.code})`,
         ]),
       );
 
@@ -749,6 +779,7 @@
         document.getElementById("address").value = patient.address || "";
         document.getElementById("area").value = patient.area || "";
         document.getElementById("postcode").value = patient.postcode || "";
+        document.getElementById("state").value = patient.state || "";
         document.getElementById("city").value = patient.city || "";
         document.getElementById("medicalProviderId").value =
           patient.medicalProviderId || "";
@@ -784,7 +815,9 @@
 
         const id = button.getAttribute("data-id");
         try {
-          const response = await fetchWithSessionHandling(`/patient/${id}`, { method: "DELETE" });
+          const response = await fetchWithSessionHandling(`/patient/${id}`, {
+            method: "DELETE",
+          });
           if (response.ok) {
             loadPatients();
             showToast("Patient deleted successfully!");
@@ -1268,6 +1301,10 @@
             <div class="detail-value">${patient.postcode || "-"}</div>
           </div>
           <div class="detail-item">
+            <div class="detail-label">State</div>
+            <div class="detail-value">${patient.state || "-"}</div>
+          </div>
+          <div class="detail-item">
             <div class="detail-label">City</div>
             <div class="detail-value">${patient.city || "-"}</div>
           </div>
@@ -1289,13 +1326,23 @@
           `
               : ""
           }
-          <div class="detail-item">
-            <div class="detail-label">Created Date</div>
-            <div class="detail-value">${patient.createDt ? new Date(patient.createDt).toLocaleDateString("en-GB") : "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Last Updated</div>
-            <div class="detail-value">${patient.modifyDt ? new Date(patient.modifyDt).toLocaleDateString("en-GB") : "-"}</div>
+          <div class="audit-grid col-span-2">
+            <div class="audit-item">
+              <div class="audit-label">Created Date/Time</div>
+              <div class="audit-value">${patient.createDt ? new Date(patient.createDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+            </div>
+            <div class="audit-item">
+              <div class="audit-label">Created By</div>
+              <div class="audit-value">${patient.createBy || "-"}</div>
+            </div>
+            <div class="audit-item">
+              <div class="audit-label">Last Updated</div>
+              <div class="audit-value">${patient.modifyDt ? new Date(patient.modifyDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+            </div>
+            <div class="audit-item">
+              <div class="audit-label">Modified By</div>
+              <div class="audit-value">${patient.modifyBy || "-"}</div>
+            </div>
           </div>
         `;
       }

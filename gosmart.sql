@@ -303,6 +303,55 @@ INSERT INTO `medical_package` (`id`, `create_dt`, `create_by`, `medical_provider
 UNLOCK TABLES;
 
 --
+-- Table structure for table `medical_package_detail`
+--
+
+DROP TABLE IF EXISTS `medical_package_detail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `medical_package_detail` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `medical_package_id` int NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `create_by` varchar(100),
+  PRIMARY KEY (`id`),
+  KEY `idx_medical_package_id` (`medical_package_id`),
+  CONSTRAINT `fk_medical_package_detail_medical_package` FOREIGN KEY (`medical_package_id`) REFERENCES `medical_package` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `medical_package_detail`
+--
+
+LOCK TABLES `medical_package_detail` WRITE;
+/*!40000 ALTER TABLE `medical_package_detail` DISABLE KEYS */;
+INSERT INTO `medical_package_detail` (`medical_package_id`, `description`) VALUES
+(2, 'Emergency button -> clinic call back within 24 hours'),
+(2, '2 consults per month'),
+(2, 'Medication reminders'),
+(2, 'Caregiver alerts'),
+(3, 'Emergency button -> 4 hours response time'),
+(3, '5 consults per month'),
+(3, 'Chronic monitoring'),
+(3, 'Monthly BP / sugar'),
+(3, 'Priority booking'),
+(3, 'Doctor home visit 5% discount'),
+(3, 'Lab & imaging result review'),
+(3, 'Monthly health report'),
+(3, 'Medication reminders'),
+(3, 'Caregiver alerts'),
+(4, 'Unlimited consults'),
+(4, 'Same-day GP'),
+(4, 'Quarterly review'),
+(4, 'Annual flu vaccine'),
+(4, 'Full health screening'),
+(4, 'Comprehensive blood test');
+/*!40000 ALTER TABLE `medical_package_detail` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `package_subscription`
 --
 
@@ -316,14 +365,16 @@ CREATE TABLE `package_subscription` (
   `modify_dt` datetime DEFAULT NULL,
   `modify_by` varchar(100) DEFAULT NULL,
   `user_id` varchar(100) NOT NULL,
+  `medical_provider_id` int NOT NULL,
   `medical_package_id` int NOT NULL,
   `amount` decimal(8,2) NOT NULL,
   `mode` char(1) NOT NULL,
-  `expration_dt` datetime NOT NULL,
+  `expiration_dt` datetime NOT NULL,
   `remark` varchar(500) DEFAULT NULL,
   `status` char(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_user_id` (`user_id`) /*!80000 INVISIBLE */,
+  KEY `idx_medical_provider_id` (`medical_provider_id`),
   KEY `idx_medical_package_id` (`medical_package_id`),
   KEY `idx_expiration_dt` (`expration_dt`),
   KEY `idx_status` (`status`)
@@ -341,7 +392,7 @@ CREATE TABLE `patient_registration` (
   `name` varchar(100) NOT NULL,
   `age` int DEFAULT NULL,
   `gender` varchar(10) DEFAULT NULL,
-  `race` varchar(50) DEFAULT NULL,
+  `race` varchar(10) DEFAULT NULL,
   `ic_passport_no` varchar(20) NOT NULL,
   `mobile_no` varchar(20) DEFAULT NULL,
   `emergency_contact_name` varchar(100) DEFAULT NULL,
@@ -350,6 +401,7 @@ CREATE TABLE `patient_registration` (
   `address` varchar(255) DEFAULT NULL,
   `area` varchar(100) DEFAULT NULL,
   `postcode` varchar(10) DEFAULT NULL,
+  `state` varchar(50) DEFAULT NULL,
   `city` varchar(100) DEFAULT NULL,
   `has_chronic_disease` char(1) DEFAULT 'N',
   `chronic_disease` varchar(255) DEFAULT NULL,

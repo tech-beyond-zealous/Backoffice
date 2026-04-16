@@ -241,6 +241,10 @@
   gap: 1rem;
 }
 
+.details-grid .col-span-2 {
+  grid-column: span 2 / span 2;
+}
+
 @media (max-width: 768px) {
   .details-grid {
     grid-template-columns: 1fr;
@@ -264,6 +268,38 @@
   font-size: 0.95rem;
   color: #212529;
   margin-top: 0.3rem;
+}
+
+.audit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .audit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.audit-item {
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed #d6dee8;
+}
+
+.audit-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.2rem;
+}
+
+.audit-value {
+  font-size: 0.88rem;
+  color: #495057;
 }
 
 /* Section Divider */

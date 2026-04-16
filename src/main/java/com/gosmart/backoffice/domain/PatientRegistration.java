@@ -35,6 +35,7 @@ public class PatientRegistration {
     private String address;
     private String area;
     private String postcode;
+    private String state;
     private String city;
 
     // Medical
@@ -181,6 +182,14 @@ public class PatientRegistration {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     public String getHasChronicDisease() {
