@@ -414,6 +414,7 @@
                   id="filterActive"
                   value="A"
                   data-filter="status"
+                  checked
                 />
                 <label class="form-check-label" for="filterActive">
                   Active
@@ -499,7 +500,7 @@
       let currentSortBy = "name";
       let currentSortDir = "asc"; // 'asc' or 'desc'
       let filterCriteria = {
-        status: [],
+        status: ["A"],
         medicalProviderId: "",
       };
 
@@ -874,9 +875,9 @@
         // Clear search
         caregiverSearch.value = "";
 
-        // Clear filter checkboxes
+        // Reset filter checkboxes
         document.querySelectorAll(".filter-checkbox").forEach((checkbox) => {
-          checkbox.checked = false;
+          checkbox.checked = checkbox.value === "A";
         });
 
         // Clear provider filter
@@ -886,7 +887,7 @@
         }
 
         // Reset filter criteria
-        filterCriteria.status = [];
+        filterCriteria.status = ["A"];
         filterCriteria.medicalProviderId = "";
 
         // Reset sort
