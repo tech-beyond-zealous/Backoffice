@@ -31,6 +31,7 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="text-body-secondary small">Signed in as <span class="fw-semibold" th:text="${userId}">user</span></div>
                 <form id="logoutForm" method="post" th:action="@{/logout}">
+                    <input type="hidden" name="_csrf" th:value="${csrfToken}">
                     <button id="logoutBtn" class="btn btn-outline-secondary btn-sm" type="submit">Logout</button>
                 </form>
             </div>

@@ -14,6 +14,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class CsrfInterceptor implements HandlerInterceptor {
+    public static final String REQ_ATTR_CSRF_TOKEN = "csrfToken";
+
     private final CsrfProperties csrfProperties;
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -24,12 +26,12 @@ public class CsrfInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String method = request.getMethod();
+        String csrfToken = ensureCookiePresent(request, response);
+        request.setAttribute(REQ_ATTR_CSRF_TOKEN, csrfToken);
         if (isSafeMethod(method)) {
-            ensureCookiePresent(request, response);
             return true;
         }
-        ensureCookiePresent(request, response);
-        String cookieToken = readCookieToken(request);
+        String cookieToken = csrfToken;
         if (cookieToken == null || cookieToken.isEmpty()) {
             sendForbidden(response);
             return false;
@@ -56,10 +58,10 @@ public class CsrfInterceptor implements HandlerInterceptor {
         return "GET".equals(m) || "HEAD".equals(m) || "OPTIONS".equals(m);
     }
 
-    private void ensureCookiePresent(HttpServletRequest request, HttpServletResponse response) {
+    private String ensureCookiePresent(HttpServletRequest request, HttpServletResponse response) {
         String existing = readCookieToken(request);
         if (existing != null && !existing.isEmpty()) {
-            return;
+            return existing;
         }
         String token = generateToken();
         ResponseCookie cookie = ResponseCookie.from(csrfProperties.getCookieName(), token)
@@ -69,6 +71,7 @@ public class CsrfInterceptor implements HandlerInterceptor {
                 .sameSite(csrfProperties.getCookieSameSite())
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return token;
     }
 
     private String readCookieToken(HttpServletRequest request) {

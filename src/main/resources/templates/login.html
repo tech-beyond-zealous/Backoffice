@@ -43,6 +43,7 @@
             </div>
 
             <form id="loginForm" method="post" th:action="@{/login}" th:object="${loginForm}">
+                <input type="hidden" name="_csrf" th:value="${csrfToken}">
                 <div class="mb-3">
                     <label class="form-label" for="userId">User Id</label>
                     <input class="form-control" id="userId" type="text" th:field="*{userId}" autocomplete="username">
