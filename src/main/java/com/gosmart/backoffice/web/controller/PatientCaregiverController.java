@@ -49,7 +49,9 @@ public class PatientCaregiverController {
         model.addAttribute("medicalProviders", medicalProviderService.findAll().stream()
                 .filter(provider -> "A".equalsIgnoreCase(provider.getStatus()))
                 .toList());
-        model.addAttribute("patients", patientRegistrationService.findAll());
+        model.addAttribute("patients", patientRegistrationService.findAll().stream()
+                .filter(patient -> "A".equalsIgnoreCase(patient.getStatus()))
+                .toList());
         model.addAttribute("caregivers", caregiverService.findAll().stream()
                 .filter(caregiver -> "A".equalsIgnoreCase(caregiver.getStatus()))
                 .toList());
