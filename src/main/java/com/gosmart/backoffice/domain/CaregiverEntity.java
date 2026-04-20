@@ -45,7 +45,7 @@ public class CaregiverEntity {
     public void onCreate() {
         this.createDt = LocalDateTime.now();
         this.modifyDt = LocalDateTime.now();
-        if (this.status == null) {
+        if (this.status == null || this.status.isBlank()) {
             this.status = "A";
         }
     }
