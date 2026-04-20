@@ -321,14 +321,14 @@ DROP TABLE IF EXISTS `medical_package_detail`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `medical_package_detail` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `create_by` varchar(100) NOT NULL,
   `medical_package_id` int NOT NULL,
   `description` varchar(255) NOT NULL,
-  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
-  `create_by` varchar(100),
+  `status` char(1) NOT NULL DEFAULT 'A',
   PRIMARY KEY (`id`),
-  KEY `idx_medical_package_id` (`medical_package_id`),
-  CONSTRAINT `fk_medical_package_detail_medical_package` FOREIGN KEY (`medical_package_id`) REFERENCES `medical_package` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `idx_medical_package_id` (`medical_package_id`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -386,7 +386,7 @@ CREATE TABLE `package_subscription` (
   KEY `idx_user_id` (`user_id`) /*!80000 INVISIBLE */,
   KEY `idx_medical_provider_id` (`medical_provider_id`),
   KEY `idx_medical_package_id` (`medical_package_id`),
-  KEY `idx_expiration_dt` (`expration_dt`),
+  KEY `idx_expiration_dt` (`expiration_dt`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -398,6 +398,8 @@ CREATE TABLE `package_subscription` (
 
 CREATE TABLE `patient_registration` (
   `id` bigint NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `create_by` varchar(100) NOT NULL,
   `medical_provider_id` int NOT NULL,
   `name` varchar(100) NOT NULL,
   `age` int DEFAULT NULL,
@@ -416,8 +418,6 @@ CREATE TABLE `patient_registration` (
   `has_chronic_disease` char(1) DEFAULT 'N',
   `chronic_disease` varchar(255) DEFAULT NULL,
   `gosmart_user_id` bigint DEFAULT NULL,
-  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
-  `create_by` varchar(100) NOT NULL,
   `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modify_by` varchar(100) DEFAULT NULL,
   `status` char(1) DEFAULT 'A',
