@@ -91,7 +91,7 @@ VALUES
 (2005,203,'APPT_REG','Registration','/appointment/registration',1,'','A'),
 (2006,204,'PAYMENT','Payment','/billing/payment',1,'','A'),
 (2007,205,'ANALYTICS','Analytics','/dashboard/analytics',1,'','A'),
-(2008,201,'ASSIGN_CAREGIVER','Assign Caregiver','/patient/assign-caregiver',4,NULL,'A');
+(2008,201,'ASSIGN_CAREGIVER','Assign Caregiver','/patient/patient-caregiver',4,NULL,'A');
 /*!40000 ALTER TABLE `function` ENABLE KEYS */;
 UNLOCK TABLES;
 
