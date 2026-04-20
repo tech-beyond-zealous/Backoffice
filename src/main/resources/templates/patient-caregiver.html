@@ -426,6 +426,7 @@
         const assignmentDetailModal = new bootstrap.Modal(
           document.getElementById("assignmentDetailModal"),
         );
+        let editingAssignmentId = null;
         let currentPage = 1;
         const pageSize = 6;
         let currentSortBy = "patientName";
@@ -509,6 +510,51 @@
             return statusLabel(assignment.status).toLowerCase();
           }
           return String(assignment[field] || "").toLowerCase();
+        }
+
+        function hasExistingAssignmentForPatient(patientValue) {
+          return allAssignments.some((assignment) => {
+            if (String(assignment.status || "").toUpperCase() === "D") {
+              return false;
+            }
+            if (String(assignment.patientId) !== String(patientValue)) {
+              return false;
+            }
+            if (!editingAssignmentId) {
+              return true;
+            }
+            return String(assignment.id) !== String(editingAssignmentId);
+          });
+        }
+
+        function setDuplicatePatientValidity() {
+          if (!patientId.value) {
+            patientId.setCustomValidity("");
+            return false;
+          }
+
+          const isDuplicate = hasExistingAssignmentForPatient(patientId.value);
+          patientId.setCustomValidity(
+            isDuplicate
+              ? "Patient record already exists in the patient caregiver list."
+              : "",
+          );
+          return isDuplicate;
+        }
+
+        function alertDuplicatePatientSelection() {
+          const isDuplicate = setDuplicatePatientValidity();
+          if (!isDuplicate) {
+            return false;
+          }
+
+          alert("This patient already has caregiver.");
+          patientId.reportValidity();
+          return true;
+        }
+
+        function handlePatientSelectionChange() {
+          alertDuplicatePatientSelection();
         }
 
         function updateSortArrows() {
@@ -718,6 +764,7 @@
           if (selectedPatientId) {
             patientId.value = String(selectedPatientId);
           }
+          setDuplicatePatientValidity();
         }
 
         function populateCaregivers(providerIdValue, selectedIds = null) {
@@ -770,11 +817,13 @@
         }
 
         function resetForm() {
+          editingAssignmentId = null;
           assignmentForm.reset();
           assignmentFormModalLabel.textContent = "Add Patient Caregiver";
           medicalProviderId.value = "";
           patientId.innerHTML = '<option value="">Select Patient *</option>';
           patientId.disabled = true;
+          patientId.setCustomValidity("");
           caregiverChecklist.innerHTML = "";
           caregiverHelpText.textContent =
             "Select a medical provider to load caregivers.";
@@ -802,6 +851,7 @@
             showToast("Patient caregiver assignment not found.", true);
             return;
           }
+          editingAssignmentId = assignment.id;
           assignmentFormModalLabel.textContent = "Edit Patient Caregiver";
           medicalProviderId.value = String(assignment.medicalProviderId || "");
           populatePatients(assignment.medicalProviderId, assignment.patientId);
@@ -840,6 +890,9 @@
           }
           if (!patientId.value) {
             showToast("Please select a patient.", true);
+            return;
+          }
+          if (alertDuplicatePatientSelection()) {
             return;
           }
 
@@ -894,6 +947,17 @@
             resetForm();
             showToast("Patient caregiver assignment saved successfully.");
           } catch (error) {
+            if (
+              String(error.message || "").includes(
+                "Patient record already exists in the patient caregiver list.",
+              )
+            ) {
+              patientId.setCustomValidity(
+                "Patient record already exists in the patient caregiver list.",
+              );
+              alert("This patient already has caregiver.");
+              patientId.reportValidity();
+            }
             showToast(error.message || "Unable to save assignment.", true);
           } finally {
             saveAssignmentButton.disabled = false;
@@ -903,6 +967,9 @@
         medicalProviderId.addEventListener("change", () => {
           populatePatients(medicalProviderId.value);
           populateCaregivers(medicalProviderId.value);
+        });
+        patientId.addEventListener("change", () => {
+          handlePatientSelectionChange();
         });
 
         saveAssignmentButton.addEventListener("click", saveAssignment);

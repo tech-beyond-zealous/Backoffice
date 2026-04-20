@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface PatientCaregiverRepository extends JpaRepository<PatientCaregiverEntity, Integer> {
     List<PatientCaregiverEntity> findByStatusIn(Collection<String> statuses);
 
+    List<PatientCaregiverEntity> findByPatientId(Integer patientId);
+
     List<PatientCaregiverEntity> findByMedicalProviderIdAndPatientId(Integer medicalProviderId, Integer patientId);
 
     List<PatientCaregiverEntity> findByMedicalProviderIdAndPatientIdAndCaregiverIdIn(

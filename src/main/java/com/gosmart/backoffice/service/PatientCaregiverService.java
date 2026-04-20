@@ -59,6 +59,8 @@ public class PatientCaregiverService {
         List<Integer> caregiverIds = normalizeCaregiverIds(request.getCaregiverIds());
         String status = normalizeStatus(request.getStatus());
 
+        validateDuplicatePatientAssignment(medicalProviderId, patientId);
+
         MedicalProviderEntity provider = medicalProviderRepository.findById(medicalProviderId)
                 .filter(item -> "A".equalsIgnoreCase(item.getStatus()))
                 .orElseThrow(() -> new IllegalArgumentException("Invalid medical provider selected."));
@@ -128,6 +130,21 @@ public class PatientCaregiverService {
             return Optional.empty();
         }
         return findCurrentAssignment(medicalProviderId, patientId);
+    }
+
+    private void validateDuplicatePatientAssignment(Integer medicalProviderId, Integer patientId) {
+        List<PatientCaregiverEntity> existingRecords = patientCaregiverRepository.findByPatientId(patientId).stream()
+                .filter(item -> !"D".equalsIgnoreCase(item.getStatus()))
+                .toList();
+        if (existingRecords.isEmpty()) {
+            return;
+        }
+
+        boolean sameAssignmentGroup = existingRecords.stream()
+                .allMatch(item -> medicalProviderId.equals(item.getMedicalProviderId()));
+        if (!sameAssignmentGroup) {
+            throw new IllegalArgumentException("Patient record already exists in the patient caregiver list.");
+        }
     }
 
     public void deleteAssignmentGroup(Integer id, String currentUserId) {
