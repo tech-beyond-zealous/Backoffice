@@ -432,9 +432,10 @@ CREATE TABLE `patient_registration` (
 DROP TABLE IF EXISTS `patient_caregiver`;
 CREATE TABLE `patient_caregiver` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `create_dt` datetime NOT NULL,
+  `medical_provider_id` int NOT NULL,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
   `create_by` varchar(100) NOT NULL,
-  `modify_dt` datetime DEFAULT NULL,
+  `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modify_by` varchar(100) DEFAULT NULL,
   `patient_id` int NOT NULL,
   `caregiver_id` int NOT NULL,
