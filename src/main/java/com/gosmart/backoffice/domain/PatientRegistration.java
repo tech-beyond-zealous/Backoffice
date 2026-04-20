@@ -50,7 +50,7 @@ public class PatientRegistration {
     // Audit
     private LocalDateTime createDt;
     private LocalDateTime modifyDt;
-    @Column(name = "create_by")
+    @Column(name = "create_by", nullable = false)
     private String createBy;
 
     @Column(name = "modify_by")

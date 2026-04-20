@@ -29,7 +29,7 @@ public class CaregiverEntity {
     @Column(name = "create_dt")
     private LocalDateTime createDt;
 
-    @Column(name = "create_by", length = 100)
+    @Column(name = "create_by", nullable = false, length = 100)
     private String createBy;
 
     @Column(name = "modify_dt")
