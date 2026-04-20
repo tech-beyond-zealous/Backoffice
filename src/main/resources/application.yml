@@ -5,9 +5,9 @@ spring:
   thymeleaf:
     cache: false
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/gosmart?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=SERVER&forceConnectionTimeZoneToSession=true
+    url: jdbc:mysql://dev.beyondzealous.com:3306/gosmart?useSSL=false&allowPublicKeyRetrieval=true&connectionTimeZone=SERVER&forceConnectionTimeZoneToSession=true
     username: gosmartdev
-    password: Just13tm31n!2
+    password: 60Sm4rt!23318d3v
     hikari:
       initialization-fail-timeout: 0
   jpa:
