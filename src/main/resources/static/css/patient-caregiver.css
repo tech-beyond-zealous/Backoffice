@@ -1,0 +1,93 @@
+@import url("base.css");
+
+/* Patient Caregiver Specific Styles */
+
+.patient-caregiver-table {
+  font-size: 0.85rem;
+}
+
+.patient-caregiver-table th {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.6rem;
+  background-color: #f8f9fa;
+}
+
+.patient-caregiver-table td {
+  vertical-align: middle;
+  padding: 0.5rem 0.6rem;
+}
+
+.patient-caregiver-table tbody tr {
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.patient-caregiver-table tbody tr:hover {
+  background-color: var(--primary-light);
+  transform: scale(1.01);
+  border-left: 4px solid var(--primary-color);
+}
+
+.assignment-name-link {
+  cursor: pointer;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.assignment-name-link:hover {
+  text-decoration: underline;
+  color: var(--primary-dark);
+}
+
+.caregiver-checklist {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+@media (min-width: 768px) {
+  .caregiver-checklist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.caregiver-option {
+  border: 1px solid #dee2e6;
+  border-radius: 0.85rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.caregiver-option:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.15rem rgba(31, 106, 199, 0.08);
+}
+
+.caregiver-option .form-check {
+  margin-bottom: 0;
+}
+
+.patient-caregiver-status {
+  max-width: 260px;
+}
+
+.badge-success-soft {
+  background-color: #e6f4ea;
+  color: #198754;
+}
+
+.badge-secondary-soft {
+  background-color: #eef2f7;
+  color: #495057;
+}
+
+.badge-danger-soft {
+  background-color: #fde2e2;
+  color: #b02a37;
+}
