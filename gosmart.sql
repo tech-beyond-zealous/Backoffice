@@ -441,7 +441,7 @@ CREATE TABLE `patient_caregiver` (
   `caregiver_id` int NOT NULL,
   `status` char(1) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_patient_caregiver_id_status` (`patient_id,caregiver_id`,`status`),
+  KEY `idx_patient_caregiver_id_status` (`patient_id`,`caregiver_id`,`status`),
   KEY `idx_caregiver_id` (`caregiver_id`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
