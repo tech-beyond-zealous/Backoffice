@@ -97,6 +97,8 @@
             if (loading) loading.classList.add("d-none");
         };
 
+        let navigating = false;
+
         const validate = () => {
             let ok = true;
             if (userId.value.trim() === "") {
@@ -121,6 +123,7 @@
                 return;
             }
             showLoading();
+            navigating = false;
 
             const gsAuth = window.GSAuth || {};
             const doFetch = gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
@@ -136,7 +139,8 @@
                     body: body
                 });
                 if (response.redirected && response.url) {
-                    window.location.href = response.url;
+                    navigating = true;
+                    window.location.replace(response.url);
                     return;
                 }
                 const html = await response.text();
@@ -149,7 +153,9 @@
             } catch (err) {
                 setError(passwordError, "Login failed");
             } finally {
-                hideLoading();
+                if (!navigating) {
+                    hideLoading();
+                }
             }
         });
 
