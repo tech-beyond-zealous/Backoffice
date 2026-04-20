@@ -81,7 +81,17 @@ CREATE TABLE `function` (
 
 LOCK TABLES `function` WRITE;
 /*!40000 ALTER TABLE `function` DISABLE KEYS */;
-INSERT INTO `function` (`function_id`, `group_id`, `function_code`, `function_name`, `path`, `sort_order`, `remark`, `status`) VALUES (1,1,'BLUECA11','Child Blue A1-1','/testfunction',NULL,NULL,'A'),(2,1,'BLUECA12','Child Blue A1-2','/testfunction',NULL,NULL,'A'),(3,2,'BLUECA21','Child Blue A2-1','/testfunction',NULL,NULL,'A'),(4,6,'REDCA11','Child Red A1-1','/testfunction',NULL,NULL,'A'),(10,7,'YELLOWCA11','Child Yellow A1-1','/testfunction',NULL,NULL,'A'),(11,8,'YELLOWCA21','Child Yellow A2-1','/testfunction',NULL,NULL,'A'),(12,8,'YELLOWCA22','Child Yellow A2-2','/testfunction',NULL,NULL,'A'),(13,8,'YELLOWCA23','Child Yellow A2-3','/testfunction',NULL,NULL,'A'),(14,9,'YELLOWCA31','Child Yellow A3-1','/testfunction',NULL,NULL,'A');
+INSERT INTO `function` 
+(`function_id`,`group_id`,`function_code`,`function_name`,`path`,`sort_order`,`remark`,`status`) 
+VALUES
+(2001,201,'PAT_REG','Registration','/patient/registration',1,'','A'),
+(2002,201,'PAT_SUB','Package Subscription','/patient/subscription',2,'','A'),
+(2003,201,'PAT_MED','Medical Record','/patient/medical-record',3,'','A'),
+(2004,202,'CGV_REG','Registration','/caregiver/registration',1,' ','A'),
+(2005,203,'APPT_REG','Registration','/appointment/registration',1,'','A'),
+(2006,204,'PAYMENT','Payment','/billing/payment',1,'','A'),
+(2007,205,'ANALYTICS','Analytics','/dashboard/analytics',1,'','A'),
+(2008,201,'ASSIGN_CAREGIVER','Assign Caregiver','/patient/assign-caregiver',4,NULL,'A');
 /*!40000 ALTER TABLE `function` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -414,6 +424,27 @@ CREATE TABLE `patient_registration` (
 
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Table structure for table `patient_caregiver`
+--
+
+DROP TABLE IF EXISTS `patient_caregiver`;
+CREATE TABLE `patient_caregiver` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime NOT NULL,
+  `create_by` varchar(100) NOT NULL,
+  `modify_dt` datetime DEFAULT NULL,
+  `modify_by` varchar(100) DEFAULT NULL,
+  `patient_id` int NOT NULL,
+  `caregiver_id` int NOT NULL,
+  `status` char(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_patient_caregiver_id_status` (`patient_id,caregiver_id`,`status`),
+  KEY `idx_caregiver_id` (`caregiver_id`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 --
 -- Dumping events for database 'gosmart'
 --
