@@ -36,6 +36,10 @@
   border-radius: 0.6rem;
 }
 
+.caregiver-status {
+  max-width: 260px;
+}
+
 .caregiver-name-link {
   cursor: pointer;
   color: var(--primary-color);
