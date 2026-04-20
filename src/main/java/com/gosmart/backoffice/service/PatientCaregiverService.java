@@ -201,6 +201,7 @@ public class PatientCaregiverService {
 
         return grouped.entrySet().stream()
                 .map(entry -> toView(entry.getKey(), entry.getValue(), patientsById, caregiversById, providersById))
+                .filter(item -> item != null)
                 .sorted(Comparator.comparing(PatientCaregiverView::getModifiedDateTime, Comparator.nullsLast(String::compareTo)).reversed())
                 .toList();
     }
@@ -214,16 +215,31 @@ public class PatientCaregiverService {
     ) {
         records.sort(Comparator.comparing(PatientCaregiverEntity::getId));
 
-        PatientCaregiverEntity first = records.get(0);
+        List<PatientCaregiverEntity> activeCaregiverRecords = records.stream()
+                .filter(item -> {
+                    CaregiverEntity caregiver = caregiversById.get(item.getCaregiverId());
+                    return caregiver != null && "A".equalsIgnoreCase(caregiver.getStatus());
+                })
+                .sorted(Comparator.comparing(PatientCaregiverEntity::getId))
+                .toList();
+
+        if (activeCaregiverRecords.isEmpty()) {
+            return null;
+        }
+
+        PatientCaregiverEntity first = activeCaregiverRecords.get(0);
         PatientRegistration patient = patientsById.get(key.patientId());
+        if (patient == null || !"A".equalsIgnoreCase(patient.getStatus())) {
+            return null;
+        }
         MedicalProviderEntity provider = providersById.get(key.medicalProviderId());
 
-        List<Integer> caregiverIds = records.stream()
+        List<Integer> caregiverIds = activeCaregiverRecords.stream()
                 .map(PatientCaregiverEntity::getCaregiverId)
                 .sorted()
                 .toList();
 
-        String caregiverNames = records.stream()
+        String caregiverNames = activeCaregiverRecords.stream()
                 .map(item -> caregiversById.get(item.getCaregiverId()))
                 .filter(item -> item != null)
                 .map(CaregiverEntity::getName)
@@ -231,13 +247,13 @@ public class PatientCaregiverService {
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .collect(Collectors.joining(", "));
 
-        LocalDateTime latestModifyDt = records.stream()
+        LocalDateTime latestModifyDt = activeCaregiverRecords.stream()
                 .map(PatientCaregiverEntity::getModifyDt)
                 .filter(item -> item != null)
                 .max(LocalDateTime::compareTo)
                 .orElse(first.getCreateDt());
 
-        String latestModifyBy = records.stream()
+        String latestModifyBy = activeCaregiverRecords.stream()
                 .sorted(Comparator.comparing(PatientCaregiverEntity::getModifyDt, Comparator.nullsFirst(LocalDateTime::compareTo)).reversed())
                 .map(PatientCaregiverEntity::getModifyBy)
                 .filter(item -> item != null && !item.isBlank())
@@ -249,7 +265,7 @@ public class PatientCaregiverService {
                 key.medicalProviderId(),
                 key.patientId(),
                 formatMedicalProvider(provider),
-                patient != null && patient.getName() != null ? patient.getName() : "-",
+                patient.getName() != null ? patient.getName() : "-",
                 caregiverIds,
                 caregiverNames.isBlank() ? "-" : caregiverNames,
                 safeStatus(first.getStatus()),
