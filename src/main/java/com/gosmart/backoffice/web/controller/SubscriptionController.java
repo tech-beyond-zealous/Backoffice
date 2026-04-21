@@ -2,6 +2,7 @@ package com.gosmart.backoffice.web.controller;
 
 import com.gosmart.backoffice.dto.SubscriptionSaveRequest;
 import com.gosmart.backoffice.dto.SubscriptionView;
+import com.gosmart.backoffice.dto.UserFunctionPermission;
 import com.gosmart.backoffice.service.MedicalPackageService;
 import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PackageSubscriptionService;
@@ -46,10 +47,15 @@ public class SubscriptionController {
     @GetMapping("/patient/subscription")
     public String subscriptionPage(HttpServletRequest request, Model model) {
         protectedPageModelService.apply(model, request, null);
+        UserFunctionPermission permission =
+                (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
         model.addAttribute("medicalProviders", medicalProviderService.findAll());
         model.addAttribute("patients", patientRegistrationService.findAll());
         model.addAttribute("subscriptions", packageSubscriptionService.findAllActiveSubscriptions());
         model.addAttribute("subscriptionPackages", medicalPackageService.getAllPackages());
+        model.addAttribute("permission", permission);
+        model.addAttribute("requestPath", request.getRequestURI());
+        model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));
         return "patient-subscription";
     }
 

@@ -57,6 +57,7 @@
                   <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </button>
                 <button
+                  th:if="${permission != null and permission.create}"
                   type="button"
                   id="addSubscriptionButton"
                   class="btn btn-primary"
@@ -569,6 +570,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/session-fetch.js"></script>
     <script th:inline="javascript">
+      const permissions = {
+        create: [[${permission != null and permission.create}]],
+        view: [[${permission != null and permission.view}]],
+        edit: [[${permission != null and permission.edit}]],
+        delete: [[${permission != null and permission.delete}]]
+      };
+
       const medicalProviders = /*[[${medicalProviders}]]*/ [];
       const allPatients = /*[[${patients}]]*/ [];
       const subscriptionPackages = /*[[${subscriptionPackages}]]*/ [];
@@ -582,6 +590,9 @@
         "subscriptionPagination",
       );
       const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+      const addSubscriptionButton = document.getElementById(
+        "addSubscriptionButton",
+      );
       const filterMedicalProvider = document.getElementById(
         "filterMedicalProvider",
       );
@@ -892,14 +903,18 @@
               <tr data-id="${escapeHtml(subscription.id)}">
                 <td>${escapeHtml(subscription.medicalProviderCode || "-")}</td>
                 <td>
-                  <a
-                    href="#"
-                    class="subscription-name-link"
-                    data-action="view"
-                    data-id="${escapeHtml(subscription.id)}"
-                  >
-                    ${escapeHtml(subscription.patientName || "-")}
-                  </a>
+                  ${
+                    permissions.view
+                      ? `<a
+                          href="#"
+                          class="subscription-name-link"
+                          data-action="view"
+                          data-id="${escapeHtml(subscription.id)}"
+                        >
+                          ${escapeHtml(subscription.patientName || "-")}
+                        </a>`
+                      : `<span>${escapeHtml(subscription.patientName || "-")}</span>`
+                  }
                 </td>
                 <td>${escapeHtml(subscription.packageName || "-")}</td>
                 <td>${escapeHtml(subscription.mode || "-")}</td>
@@ -910,33 +925,45 @@
                   </span>
                 </td>
                 <td class="text-nowrap">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
-                    data-action="view"
-                    data-id="${escapeHtml(subscription.id)}"
-                    title="View"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
-                    data-action="edit"
-                    data-id="${escapeHtml(subscription.id)}"
-                    title="Edit"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
-                    data-action="delete"
-                    data-id="${escapeHtml(subscription.id)}"
-                    title="Delete"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  ${
+                    permissions.view
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
+                          data-action="view"
+                          data-id="${escapeHtml(subscription.id)}"
+                          title="View"
+                        >
+                          <i class="bi bi-eye"></i>
+                        </button>`
+                      : ""
+                  }
+                  ${
+                    permissions.edit
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
+                          data-action="edit"
+                          data-id="${escapeHtml(subscription.id)}"
+                          title="Edit"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>`
+                      : ""
+                  }
+                  ${
+                    permissions.delete
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
+                          data-action="delete"
+                          data-id="${escapeHtml(subscription.id)}"
+                          title="Delete"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>`
+                      : ""
+                  }
                 </td>
               </tr>
             `;
@@ -1128,6 +1155,10 @@
       }
 
       function startEditSubscription(subscription) {
+        if (!permissions.edit) {
+          showToast("You do not have permission to edit subscriptions.", true);
+          return;
+        }
         editingSubscriptionId = subscription.id;
         document.getElementById("subscriptionId").value = subscription.id;
         subscriptionFormModalLabel.textContent = "Edit Subscription";
@@ -1161,6 +1192,10 @@
       }
 
       async function deleteSubscription(id) {
+        if (!permissions.delete) {
+          showToast("You do not have permission to delete subscriptions.", true);
+          return;
+        }
         if (!confirm("Delete this subscription?")) {
           return;
         }
@@ -1194,6 +1229,14 @@
 
       subscriptionForm.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (editingSubscriptionId && !permissions.edit) {
+          showToast("You do not have permission to edit subscriptions.", true);
+          return;
+        }
+        if (!editingSubscriptionId && !permissions.create) {
+          showToast("You do not have permission to create subscriptions.", true);
+          return;
+        }
         setDuplicatePatientValidity();
         if (!subscriptionForm.checkValidity()) {
           subscriptionForm.reportValidity();
@@ -1262,11 +1305,11 @@
         }
       });
 
-      document
-        .getElementById("addSubscriptionButton")
-        .addEventListener("click", () => {
+      if (addSubscriptionButton) {
+        addSubscriptionButton.addEventListener("click", () => {
           resetSubscriptionForm();
         });
+      }
 
       document
         .getElementById("applySubscriptionFilters")
@@ -1385,6 +1428,10 @@
         }
 
         if (actionTarget.dataset.action === "view") {
+          if (!permissions.view) {
+            showToast("You do not have permission to view subscriptions.", true);
+            return;
+          }
           showSubscriptionDetails(subscription);
           return;
         }

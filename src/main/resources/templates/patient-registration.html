@@ -58,7 +58,9 @@
                   <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </button>
                 <button
+                  th:if="${permission != null and permission.create}"
                   type="button"
+                  id="addPatientButton"
                   class="btn btn-primary"
                   data-bs-toggle="modal"
                   data-bs-target="#patientFormModal"
@@ -124,11 +126,17 @@
                     </td>
                     <td>
                       <a
+                        th:if="${permission != null and permission.view}"
                         class="patient-name-link"
                         onclick="viewPatientDetails(this)"
                         data-id="${patient.id}"
                         th:text="${patient.name}"
                         >-</a
+                      >
+                      <span
+                        th:if="${permission == null or !permission.view}"
+                        th:text="${patient.name}"
+                        >-</span
                       >
                     </td>
                     <td th:text="${patient.age}">-</td>
@@ -145,6 +153,7 @@
                     </td>
                     <td class="text-nowrap">
                       <button
+                        th:if="${permission != null and permission.view}"
                         type="button"
                         class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
                         onclick="viewPatientDetails(this)"
@@ -154,6 +163,7 @@
                         <i class="bi bi-eye"></i>
                       </button>
                       <button
+                        th:if="${permission != null and permission.edit}"
                         type="button"
                         class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
                         onclick="editPatient(this)"
@@ -163,6 +173,7 @@
                         <i class="bi bi-pencil"></i>
                       </button>
                       <button
+                        th:if="${permission != null and permission.delete}"
                         type="button"
                         class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
                         onclick="deletePatient(this)"
@@ -658,15 +669,21 @@
     <script th:src="@{/js/session-fetch.js}"></script>
     <script th:inline="javascript">
       const { fetchWithSessionHandling } = window.GSAuth;
+      const permissions = {
+        create: [[${permission != null and permission.create}]],
+        view: [[${permission != null and permission.view}]],
+        edit: [[${permission != null and permission.edit}]],
+        delete: [[${permission != null and permission.delete}]]
+      };
       const medicalProviders = /*[[${medicalProviders}]]*/ [];
       const form = document.getElementById("patientForm");
       const patientId = document.getElementById("patientId");
       const submitBtn = document.getElementById("submitBtn");
-      const resetBtn = document.getElementById("resetBtn");
       const patientsList = document.getElementById("patientsList");
       const patientSearch = document.getElementById("patientSearch");
       const patientsPagination = document.getElementById("patientsPagination");
       const patientsInfo = document.getElementById("patientsInfo");
+      const addPatientButton = document.getElementById("addPatientButton");
 
       const providerCodeMap = new Map(
         medicalProviders.map((provider) => [
@@ -726,6 +743,14 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (patientId.value && !permissions.edit) {
+          showToast("You do not have permission to edit patients");
+          return;
+        }
+        if (!patientId.value && !permissions.create) {
+          showToast("You do not have permission to create patients");
+          return;
+        }
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
@@ -795,6 +820,10 @@
       }
 
       async function editPatient(button) {
+        if (!permissions.edit) {
+          showToast("You do not have permission to edit patients");
+          return;
+        }
         const id = button.getAttribute("data-id");
         try {
           const response = await fetchWithSessionHandling(`/patient/${id}`);
@@ -811,6 +840,10 @@
       }
 
       async function deletePatient(button) {
+        if (!permissions.delete) {
+          showToast("You do not have permission to delete patients");
+          return;
+        }
         if (!confirm("Are you sure you want to delete this patient?")) return;
 
         const id = button.getAttribute("data-id");
@@ -943,12 +976,16 @@
               >
                 <td>${escapeHtml(getMedicalProviderCode(patient.medicalProviderId))}</td>
                 <td>
-                  <a
-                    class="patient-name-link"
-                    onclick="viewPatientDetails(this)"
-                    data-id="${escapeHtml(patient.id)}"
-                    >${escapeHtml(patient.name)}</a
-                  >
+                  ${
+                    permissions.view
+                      ? `<a
+                          class="patient-name-link"
+                          onclick="viewPatientDetails(this)"
+                          data-id="${escapeHtml(patient.id)}"
+                          >${escapeHtml(patient.name)}</a
+                        >`
+                      : `<span>${escapeHtml(patient.name)}</span>`
+                  }
                 </td>
                 <td>${escapeHtml(patient.age)}</td>
                 <td>${escapeHtml(patient.gender)}</td>
@@ -961,33 +998,45 @@
                   </span>
                 </td>
                 <td class="text-nowrap">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
-                    onclick="viewPatientDetails(this)"
-                    data-id="${escapeHtml(patient.id)}"
-                    title="View"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
-                    onclick="editPatient(this)"
-                    data-id="${escapeHtml(patient.id)}"
-                    title="Edit"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
-                    onclick="deletePatient(this)"
-                    data-id="${escapeHtml(patient.id)}"
-                    title="Delete"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  ${
+                    permissions.view
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
+                          onclick="viewPatientDetails(this)"
+                          data-id="${escapeHtml(patient.id)}"
+                          title="View"
+                        >
+                          <i class="bi bi-eye"></i>
+                        </button>`
+                      : ""
+                  }
+                  ${
+                    permissions.edit
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
+                          onclick="editPatient(this)"
+                          data-id="${escapeHtml(patient.id)}"
+                          title="Edit"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>`
+                      : ""
+                  }
+                  ${
+                    permissions.delete
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
+                          onclick="deletePatient(this)"
+                          data-id="${escapeHtml(patient.id)}"
+                          title="Delete"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>`
+                      : ""
+                  }
                 </td>
               </tr>
             `;
@@ -1232,6 +1281,10 @@
 
       // View patient details
       async function viewPatientDetails(link) {
+        if (!permissions.view) {
+          showToast("You do not have permission to view patients");
+          return;
+        }
         const id = link.getAttribute("data-id");
         try {
           const response = await fetchWithSessionHandling(`/patient/${id}`);
