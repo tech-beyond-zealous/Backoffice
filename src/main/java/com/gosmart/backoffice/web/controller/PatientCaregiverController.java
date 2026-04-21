@@ -2,6 +2,7 @@ package com.gosmart.backoffice.web.controller;
 
 import com.gosmart.backoffice.dto.PatientCaregiverSaveRequest;
 import com.gosmart.backoffice.dto.PatientCaregiverView;
+import com.gosmart.backoffice.dto.UserFunctionPermission;
 import com.gosmart.backoffice.service.CaregiverService;
 import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PatientCaregiverService;
@@ -46,6 +47,8 @@ public class PatientCaregiverController {
     @GetMapping("/patient/patient-caregiver")
     public String patientCaregiverPage(HttpServletRequest request, Model model) {
         protectedPageModelService.apply(model, request, null);
+        UserFunctionPermission permission =
+                (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
         model.addAttribute("medicalProviders", medicalProviderService.findAll().stream()
                 .filter(provider -> "A".equalsIgnoreCase(provider.getStatus()))
                 .toList());
@@ -56,6 +59,9 @@ public class PatientCaregiverController {
                 .filter(caregiver -> "A".equalsIgnoreCase(caregiver.getStatus()))
                 .toList());
         model.addAttribute("patientCaregivers", patientCaregiverService.findAllCurrentAssignments());
+        model.addAttribute("permission", permission);
+        model.addAttribute("requestPath", request.getRequestURI());
+        model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));
         return "patient-caregiver";
     }
 

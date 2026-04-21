@@ -58,6 +58,7 @@
                   <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </button>
                 <button
+                  th:if="${permission != null and permission.create}"
                   type="button"
                   id="addAssignmentButton"
                   class="btn btn-primary"
@@ -388,6 +389,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/session-fetch.js}"></script>
     <script th:inline="javascript">
+      const permissions = {
+        create: [[${permission != null and permission.create}]],
+        view: [[${permission != null and permission.view}]],
+        edit: [[${permission != null and permission.edit}]],
+        delete: [[${permission != null and permission.delete}]]
+      };
+
       let allMedicalProviders = /*[[${medicalProviders}]]*/ [];
       let allPatients = /*[[${patients}]]*/ [];
       let allCaregivers = /*[[${caregivers}]]*/ [];
@@ -403,6 +411,7 @@
         const filterMedicalProvider = document.getElementById("filterMedicalProvider");
         const resetFiltersBtn = document.getElementById("resetFiltersBtn");
         const applyFiltersButton = document.getElementById("applyFiltersButton");
+        const addAssignmentButton = document.getElementById("addAssignmentButton");
         const assignmentFormModalEl = document.getElementById("assignmentFormModal");
         const assignmentFormModalLabel = document.getElementById("assignmentFormModalLabel");
         const assignmentForm = document.getElementById("assignmentForm");
@@ -693,14 +702,18 @@
             row.innerHTML = `
               <td>${escapeHtml(assignment.medicalProviderCode || "-")}</td>
               <td>
-                <a
-                  href="#"
-                  class="assignment-name-link"
-                  data-action="view"
-                  data-id="${escapeHtml(assignment.id)}"
-                >
-                  ${escapeHtml(assignment.patientName || "-")}
-                </a>
+                ${
+                  permissions.view
+                    ? `<a
+                        href="#"
+                        class="assignment-name-link"
+                        data-action="view"
+                        data-id="${escapeHtml(assignment.id)}"
+                      >
+                        ${escapeHtml(assignment.patientName || "-")}
+                      </a>`
+                    : `<span>${escapeHtml(assignment.patientName || "-")}</span>`
+                }
               </td>
               <td>${escapeHtml(assignment.caregiverNames || "-")}</td>
               <td>
@@ -710,33 +723,45 @@
               </td>
               <td>
                 <div class="d-flex gap-2">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
-                    data-action="view"
-                    data-id="${escapeHtml(assignment.id)}"
-                    title="View"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
-                    data-action="edit"
-                    data-id="${escapeHtml(assignment.id)}"
-                    title="Edit"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
-                    data-action="delete"
-                    data-id="${escapeHtml(assignment.id)}"
-                    title="Delete"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  ${
+                    permissions.view
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
+                          data-action="view"
+                          data-id="${escapeHtml(assignment.id)}"
+                          title="View"
+                        >
+                          <i class="bi bi-eye"></i>
+                        </button>`
+                      : ""
+                  }
+                  ${
+                    permissions.edit
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1 action-icon"
+                          data-action="edit"
+                          data-id="${escapeHtml(assignment.id)}"
+                          title="Edit"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>`
+                      : ""
+                  }
+                  ${
+                    permissions.delete
+                      ? `<button
+                          type="button"
+                          class="btn btn-sm btn-danger btn-sm-custom shadow-sm action-icon"
+                          data-action="delete"
+                          data-id="${escapeHtml(assignment.id)}"
+                          title="Delete"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>`
+                      : ""
+                  }
                 </div>
               </td>
             `;
@@ -847,6 +872,10 @@
         }
 
         function startEditAssignment(id) {
+          if (!permissions.edit) {
+            showToast("You do not have permission to edit patient caregiver assignments.", true);
+            return;
+          }
           const assignment = allAssignments.find((item) => String(item.id) === String(id));
           if (!assignment) {
             showToast("Patient caregiver assignment not found.", true);
@@ -862,6 +891,10 @@
         }
 
         async function deleteAssignment(id) {
+          if (!permissions.delete) {
+            showToast("You do not have permission to delete patient caregiver assignments.", true);
+            return;
+          }
           if (!window.confirm("Delete this patient caregiver assignment?")) return;
 
           const gsAuth = window.GSAuth || {};
@@ -885,6 +918,14 @@
         }
 
         async function saveAssignment() {
+          if (editingAssignmentId && !permissions.edit) {
+            showToast("You do not have permission to edit patient caregiver assignments.", true);
+            return;
+          }
+          if (!editingAssignmentId && !permissions.create) {
+            showToast("You do not have permission to create patient caregiver assignments.", true);
+            return;
+          }
           if (!medicalProviderId.value) {
             showToast("Please select a medical provider.", true);
             return;
@@ -985,7 +1026,9 @@
         });
         resetFiltersBtn.addEventListener("click", resetAssignmentFilters);
 
-        document.getElementById("addAssignmentButton").addEventListener("click", resetForm);
+        if (addAssignmentButton) {
+          addAssignmentButton.addEventListener("click", resetForm);
+        }
 
         document.querySelectorAll("th.sortable").forEach((header) => {
           header.addEventListener("click", () => {
@@ -1021,6 +1064,10 @@
 
           const action = actionTarget.dataset.action;
           if (action === "view") {
+            if (!permissions.view) {
+              showToast("You do not have permission to view patient caregiver assignments.", true);
+              return;
+            }
             showAssignmentDetails(assignment);
             return;
           }
