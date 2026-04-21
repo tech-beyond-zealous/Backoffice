@@ -24,8 +24,8 @@ public class PackageSubscription {
     @Column(name = "modify_by")
     private String modifyBy;
 
-    @Column(name = "user_id")
-    private String userId;
+    @Column(name = "patient_id")
+    private Integer patientId;
 
     @Column(name = "medical_provider_id")
     private Integer medicalProviderId;
@@ -93,12 +93,12 @@ public class PackageSubscription {
         this.modifyBy = modifyBy;
     }
 
-    public String getUserId() {
-        return userId;
+    public Integer getPatientId() {
+        return patientId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setPatientId(Integer patientId) {
+        this.patientId = patientId;
     }
 
     public Integer getMedicalProviderId() {

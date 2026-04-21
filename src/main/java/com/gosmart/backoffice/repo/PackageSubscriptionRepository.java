@@ -10,7 +10,7 @@ import java.util.List;
 public interface PackageSubscriptionRepository extends JpaRepository<PackageSubscription, Integer> {
     List<PackageSubscription> findByStatus(String status);
 
-    boolean existsByUserIdAndStatusAndIdNot(String userId, String status, Integer id);
+    boolean existsByPatientIdAndStatusAndIdNot(Integer patientId, String status, Integer id);
 
-    boolean existsByUserIdAndStatus(String userId, String status);
+    boolean existsByPatientIdAndStatus(Integer patientId, String status);
 }

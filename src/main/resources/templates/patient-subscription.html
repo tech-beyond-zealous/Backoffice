@@ -70,6 +70,14 @@
               </div>
             </div>
 
+            <div
+              th:if="${subscriptionLoadError != null}"
+              class="alert alert-warning"
+              th:text="${subscriptionLoadError}"
+            >
+              Subscription data could not be loaded.
+            </div>
+
             <div class="table-responsive">
               <table class="table table-hover align-middle subscriptions-table">
                 <thead class="table-header-custom">
@@ -106,12 +114,16 @@
                         data-field="subscriptionStatus"
                       ></span>
                     </th>
+                    <th class="sortable" data-sort="remark">
+                      Remark
+                      <span class="sort-arrow" data-field="remark"></span>
+                    </th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="subscriptionList">
                   <tr id="noSubscriptionsRow" class="d-none">
-                    <td colspan="7" class="text-center text-muted py-4">
+                    <td colspan="8" class="text-center text-muted py-4">
                       No subscriptions found.
                     </td>
                   </tr>
@@ -138,6 +150,8 @@
     >
       <div class="toast-body bg-success text-white rounded"></div>
     </div>
+
+    <div id="remarkTooltip" class="remark-tooltip"></div>
 
     <div
       class="modal fade"
@@ -196,22 +210,36 @@
                 <i class="bi bi-person"></i> Subscription Details
               </h3>
               <div class="form-group-compact">
-                <label for="patientId" class="form-label visually-hidden">
+                <label for="patientSearchInput" class="form-label visually-hidden">
                   Patient
                 </label>
-                <select
-                  id="patientId"
-                  name="patientId"
-                  class="input-field"
-                  required
-                  disabled
-                  oninvalid="
-                    this.setCustomValidity('Please select a patient name')
-                  "
-                  oninput="this.setCustomValidity('')"
-                >
-                  <option value="">Select Patient *</option>
-                </select>
+                <div class="search-select has-clear">
+                  <input type="hidden" id="patientId" name="patientId" />
+                  <div class="search-select-input-wrap">
+                    <input
+                      id="patientSearchInput"
+                      type="text"
+                      class="input-field"
+                      placeholder="Select Medical Provider first"
+                      autocomplete="off"
+                      disabled
+                      required
+                    />
+                    <button
+                      type="button"
+                      id="clearPatientSearchButton"
+                      class="search-select-clear d-none"
+                      aria-label="Clear selected patient"
+                      title="Clear selected patient"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                  <div
+                    id="patientSearchMenu"
+                    class="search-select-menu d-none"
+                  ></div>
+                </div>
               </div>
               <div class="form-group-compact">
                 <label
@@ -344,10 +372,10 @@
                 <div id="amountDisplay" class="subscription-amount">-</div>
               </div>
 
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-chat-left-text"></i> Remarks
+              </h3>
               <div class="form-group-compact col-span-2">
-                <label for="remark" class="form-label subscription-field-label"
-                  >Remarks</label
-                >
                 <textarea
                   id="remark"
                   name="remark"
@@ -609,6 +637,11 @@
       );
       const medicalProviderId = document.getElementById("medicalProviderId");
       const patientId = document.getElementById("patientId");
+      const patientSearchInput = document.getElementById("patientSearchInput");
+      const patientSearchMenu = document.getElementById("patientSearchMenu");
+      const clearPatientSearchButton = document.getElementById(
+        "clearPatientSearchButton",
+      );
       const medicalPackageId = document.getElementById("medicalPackageId");
       const modeMonthly = document.getElementById("modeMonthly");
       const modeYearly = document.getElementById("modeYearly");
@@ -705,12 +738,12 @@
 
       function setDuplicatePatientValidity() {
         if (!patientId.value) {
-          patientId.setCustomValidity("");
+          patientSearchInput.setCustomValidity("");
           return false;
         }
 
         const isDuplicate = hasExistingSubscriptionForPatient(patientId.value);
-        patientId.setCustomValidity(
+        patientSearchInput.setCustomValidity(
           isDuplicate
             ? "Patient record already exists in the subscription list."
             : "",
@@ -725,7 +758,7 @@
         }
 
         alert("This patient already has a subscription.");
-        patientId.reportValidity();
+        patientSearchInput.reportValidity();
         return true;
       }
 
@@ -924,6 +957,11 @@
                     ${escapeHtml(subscription.subscriptionStatus || "Active")}
                   </span>
                 </td>
+                <td>
+                  <span class="remark-preview" data-full-remark="${escapeHtml(subscription.remark || "")}">
+                    ${escapeHtml(truncateText(subscription.remark))}
+                  </span>
+                </td>
                 <td class="text-nowrap">
                   ${
                     permissions.view
@@ -987,6 +1025,12 @@
         updateSortArrows();
       }
 
+      function getPatientLabel(patient) {
+        return patient.icPassportNo
+          ? `${patient.name} (${patient.icPassportNo})`
+          : patient.name;
+      }
+
       function populatePatientOptions(selectedPatientId = "") {
         const selectedProviderId = medicalProviderId.value;
         const patients = allPatients
@@ -998,20 +1042,94 @@
             normalize(left.name).localeCompare(normalize(right.name)),
           );
 
-        patientId.innerHTML = '<option value="">Select Patient *</option>';
-        patientId.disabled = !selectedProviderId;
+        patientId.value = "";
+        patientSearchInput.value = "";
+        patientSearchInput.disabled = !selectedProviderId;
+        patientSearchInput.placeholder = selectedProviderId
+          ? "Search and select patient"
+          : "Select Medical Provider first";
+        patientSearchInput.setCustomValidity("");
+        clearPatientSearchButton.classList.add("d-none");
 
-        patients.forEach((patient) => {
-          const option = document.createElement("option");
-          option.value = patient.id;
-          option.textContent = patient.icPassportNo
-            ? `${patient.name} (${patient.icPassportNo})`
-            : patient.name;
-          if (String(patient.id) === String(selectedPatientId)) {
-            option.selected = true;
+        patientSearchMenu.innerHTML = "";
+        patientSearchMenu.classList.add("d-none");
+
+        const scopedPatients = patients;
+
+        function renderPatientMenu(query = "") {
+          if (patientSearchInput.disabled) {
+            patientSearchMenu.classList.add("d-none");
+            return;
           }
-          patientId.appendChild(option);
-        });
+
+          const keyword = normalize(query);
+          const matchingPatients = scopedPatients.filter((patient) =>
+            normalize(getPatientLabel(patient)).includes(keyword),
+          );
+
+          if (matchingPatients.length === 0) {
+            patientSearchMenu.innerHTML =
+              '<div class="search-select-empty">No matching patient found.</div>';
+          } else {
+            patientSearchMenu.innerHTML = matchingPatients
+              .map(
+                (patient) => `
+                  <button
+                    type="button"
+                    class="search-select-option"
+                    data-patient-id="${escapeHtml(patient.id)}"
+                  >
+                    ${escapeHtml(getPatientLabel(patient))}
+                  </button>
+                `,
+              )
+              .join("");
+
+            patientSearchMenu
+              .querySelectorAll(".search-select-option")
+              .forEach((button) => {
+                button.addEventListener("click", () => {
+                  const selectedPatient = scopedPatients.find(
+                    (patient) =>
+                      String(patient.id) === String(button.dataset.patientId),
+                  );
+                  if (!selectedPatient) return;
+                  patientId.value = selectedPatient.id;
+                  patientSearchInput.value = getPatientLabel(selectedPatient);
+                  patientSearchInput.setCustomValidity("");
+                  clearPatientSearchButton.classList.remove("d-none");
+                  patientSearchMenu.classList.add("d-none");
+                  alertDuplicatePatientSelection();
+                  updateSaveButtonState();
+                });
+              });
+          }
+
+          patientSearchMenu.classList.remove("d-none");
+        }
+
+        patientSearchInput.onfocus = () => renderPatientMenu(patientSearchInput.value);
+        patientSearchInput.oninput = () => {
+          patientId.value = "";
+          patientSearchInput.setCustomValidity("");
+          clearPatientSearchButton.classList.toggle(
+            "d-none",
+            patientSearchInput.value.length === 0,
+          );
+          renderPatientMenu(patientSearchInput.value);
+          updateSaveButtonState();
+        };
+
+        if (selectedPatientId) {
+          const selectedPatient = scopedPatients.find(
+            (patient) => String(patient.id) === String(selectedPatientId),
+          );
+          if (selectedPatient) {
+            patientId.value = selectedPatient.id;
+            patientSearchInput.value = getPatientLabel(selectedPatient);
+            clearPatientSearchButton.classList.remove("d-none");
+          }
+        }
       }
 
       function updatePackageSummary() {
@@ -1099,6 +1217,13 @@
         remarkCount.textContent = `${remark.value.length}/500`;
       }
 
+      function truncateText(value, maxLength = 30) {
+        if (!value) return "-";
+        return value.length > maxLength
+          ? `${value.slice(0, maxLength)}...`
+          : value;
+      }
+
       function updateSaveButtonState() {
         setDuplicatePatientValidity();
         saveSubscriptionButton.disabled = false;
@@ -1109,8 +1234,13 @@
         subscriptionForm.reset();
         document.getElementById("subscriptionId").value = "";
         subscriptionFormModalLabel.textContent = "Add Subscription";
-        patientId.innerHTML = '<option value="">Select Patient *</option>';
-        patientId.disabled = true;
+        patientId.value = "";
+        patientSearchInput.value = "";
+        patientSearchInput.disabled = true;
+        patientSearchInput.placeholder = "Select Medical Provider first";
+        clearPatientSearchButton.classList.add("d-none");
+        patientSearchMenu.innerHTML = "";
+        patientSearchMenu.classList.add("d-none");
         monthlyModeLabel.textContent = "Select a package first";
         yearlyModeLabel.textContent = "Select a package first";
         amountDisplay.textContent = "-";
@@ -1125,7 +1255,7 @@
           <span class="package-price-unit">/ year</span>
         `;
         packageSummaryDetails.innerHTML = "";
-        patientId.setCustomValidity("");
+        patientSearchInput.setCustomValidity("");
         modeMonthly.setCustomValidity("");
         modeYearly.setCustomValidity("");
         togglePackageSummaryVisibility(false);
@@ -1152,6 +1282,31 @@
         detailModifiedBy.textContent = subscription.modifiedBy || "-";
         detailRemark.textContent = subscription.remark || "-";
         subscriptionDetailModal.show();
+      }
+
+      const remarkTooltip = document.getElementById("remarkTooltip");
+
+      function moveRemarkTooltip(event) {
+        const offset = 14;
+        remarkTooltip.style.left = `${event.clientX + offset}px`;
+        remarkTooltip.style.top = `${event.clientY + offset}px`;
+      }
+
+      function hideRemarkTooltip() {
+        remarkTooltip.classList.remove("show");
+        remarkTooltip.textContent = "";
+      }
+
+      function showRemarkTooltip(target, event) {
+        const fullRemark = target.getAttribute("data-full-remark");
+        if (!fullRemark || fullRemark === "-" || fullRemark.length <= 30) {
+          hideRemarkTooltip();
+          return;
+        }
+
+        remarkTooltip.textContent = fullRemark;
+        moveRemarkTooltip(event);
+        remarkTooltip.classList.add("show");
       }
 
       function startEditSubscription(subscription) {
@@ -1242,6 +1397,11 @@
           subscriptionForm.reportValidity();
           return;
         }
+        if (!patientId.value) {
+          patientSearchInput.setCustomValidity("Please select a patient name");
+          patientSearchInput.reportValidity();
+          return;
+        }
         const selectedMode = getSelectedMode();
 
         const payload = {
@@ -1273,9 +1433,9 @@
                 "Patient record already exists in the subscription list.",
               )
             ) {
-              patientId.setCustomValidity(errorMessage);
+              patientSearchInput.setCustomValidity(errorMessage);
               alert("This patient already has a subscription.");
-              patientId.reportValidity();
+              patientSearchInput.reportValidity();
               updateSaveButtonState();
               return;
             }
@@ -1324,13 +1484,15 @@
         updateSaveButtonState();
       });
 
-      patientId.addEventListener("change", () => {
-        alertDuplicatePatientSelection();
-        updateSaveButtonState();
-      });
-
-      patientId.addEventListener("input", () => {
-        patientId.setCustomValidity("");
+      clearPatientSearchButton.addEventListener("click", () => {
+        patientId.value = "";
+        patientSearchInput.value = "";
+        patientSearchInput.setCustomValidity("");
+        clearPatientSearchButton.classList.add("d-none");
+        patientSearchInput.focus();
+        if (!patientSearchInput.disabled) {
+          patientSearchInput.onfocus?.();
+        }
         updateSaveButtonState();
       });
 
@@ -1348,6 +1510,17 @@
       medicalPackageId.addEventListener("input", () => {
         medicalPackageId.setCustomValidity("");
         updateSaveButtonState();
+      });
+
+      document.addEventListener("click", (event) => {
+        if (
+          event.target !== patientSearchInput &&
+          !patientSearchMenu.contains(event.target) &&
+          event.target !== clearPatientSearchButton &&
+          !clearPatientSearchButton.contains(event.target)
+        ) {
+          patientSearchMenu.classList.add("d-none");
+        }
       });
 
       togglePackageInfoButton.addEventListener("click", () => {
@@ -1445,6 +1618,18 @@
           deleteSubscription(subscription.id);
         }
       });
+
+      document.addEventListener("mousemove", (event) => {
+        const remarkPreview = event.target.closest(".remark-preview");
+        if (remarkPreview) {
+          showRemarkTooltip(remarkPreview, event);
+        } else {
+          hideRemarkTooltip();
+        }
+      });
+
+      document.addEventListener("mouseleave", hideRemarkTooltip);
+      document.addEventListener("scroll", hideRemarkTooltip, true);
 
       subscriptionFormModalElement.addEventListener("hidden.bs.modal", () => {
         resetSubscriptionForm();

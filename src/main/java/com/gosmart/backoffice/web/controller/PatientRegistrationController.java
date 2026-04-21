@@ -85,6 +85,7 @@ public class PatientRegistrationController {
             toUpdate.setCity(patient.getCity());
             toUpdate.setHasChronicDisease(patient.getHasChronicDisease());
             toUpdate.setChronicDisease(patient.getChronicDisease());
+            toUpdate.setRemark(patient.getRemark());
             toUpdate.setMedicalProviderId(patient.getMedicalProviderId());
 
             // Set modify_by automatically

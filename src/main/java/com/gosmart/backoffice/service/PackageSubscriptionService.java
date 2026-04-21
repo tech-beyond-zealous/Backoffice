@@ -66,7 +66,7 @@ public class PackageSubscriptionService {
 
         subscription.setMedicalProviderId(request.getMedicalProviderId());
         subscription.setMedicalPackageId(request.getMedicalPackageId());
-        subscription.setUserId(String.valueOf(request.getPatientId()));
+        subscription.setPatientId(Math.toIntExact(request.getPatientId()));
         subscription.setMode(mapMode(request.getMode()));
         subscription.setAmount(getAmountForMode(medicalPackage, request.getMode()));
         subscription.setRemark(request.getRemark());
@@ -83,10 +83,10 @@ public class PackageSubscriptionService {
     }
 
     private void validateDuplicatePatientSubscription(SubscriptionSaveRequest request) {
-        String patientUserId = String.valueOf(request.getPatientId());
+        Integer patientId = Math.toIntExact(request.getPatientId());
         boolean exists = request.getId() != null
-                ? packageSubscriptionRepository.existsByUserIdAndStatusAndIdNot(patientUserId, "A", request.getId())
-                : packageSubscriptionRepository.existsByUserIdAndStatus(patientUserId, "A");
+                ? packageSubscriptionRepository.existsByPatientIdAndStatusAndIdNot(patientId, "A", request.getId())
+                : packageSubscriptionRepository.existsByPatientIdAndStatus(patientId, "A");
 
         if (exists) {
             throw new IllegalArgumentException("Patient record already exists in the subscription list.");
@@ -117,10 +117,9 @@ public class PackageSubscriptionService {
         }
 
         PatientRegistration patient = null;
-        try {
-            patient = patientRegistrationService.findById(Long.valueOf(subscription.getUserId())).orElse(null);
-            patientId = Long.valueOf(subscription.getUserId());
-        } catch (NumberFormatException ignored) {
+        if (subscription.getPatientId() != null) {
+            patientId = subscription.getPatientId().longValue();
+            patient = patientRegistrationService.findById(patientId).orElse(null);
         }
         if (patient != null) {
             patientName = patient.getName() != null ? patient.getName() : "-";

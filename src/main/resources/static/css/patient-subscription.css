@@ -43,6 +43,117 @@
   color: var(--primary-dark);
 }
 
+.search-select {
+  position: relative;
+}
+
+.search-select-input-wrap {
+  position: relative;
+}
+
+.search-select.has-clear .input-field {
+  padding-right: 2.5rem;
+}
+
+.search-select-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: #e9ecef;
+  color: #495057;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-select-clear:hover {
+  background: #d9dee3;
+}
+
+.search-select-clear.d-none {
+  display: none;
+}
+
+.search-select-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  z-index: 1056;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.35rem;
+  border: 1px solid #d9e3f0;
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: 0 0.8rem 1.5rem rgba(15, 23, 42, 0.12);
+}
+
+.search-select-option,
+.search-select-empty {
+  display: block;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 0;
+  border-radius: 0.55rem;
+  text-align: left;
+}
+
+.search-select-option {
+  background: transparent;
+  color: #212529;
+}
+
+.search-select-option:hover {
+  background: var(--primary-light);
+}
+
+.search-select-empty {
+  color: #6c757d;
+  background: #f8f9fa;
+}
+
+.remark-preview {
+  display: inline-block;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  cursor: default;
+}
+
+.remark-tooltip {
+  position: fixed;
+  z-index: 1080;
+  max-width: 320px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(33, 37, 41, 0.96);
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.remark-tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .mode-selector {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));

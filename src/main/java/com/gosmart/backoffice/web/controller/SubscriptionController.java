@@ -10,6 +10,9 @@ import com.gosmart.backoffice.service.PatientRegistrationService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class SubscriptionController {
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionController.class);
 
     private final ProtectedPageModelService protectedPageModelService;
     private final MedicalProviderService medicalProviderService;
@@ -51,8 +55,17 @@ public class SubscriptionController {
                 (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
         model.addAttribute("medicalProviders", medicalProviderService.findAll());
         model.addAttribute("patients", patientRegistrationService.findAll());
-        model.addAttribute("subscriptions", packageSubscriptionService.findAllActiveSubscriptions());
         model.addAttribute("subscriptionPackages", medicalPackageService.getAllPackages());
+        try {
+            model.addAttribute("subscriptions", packageSubscriptionService.findAllActiveSubscriptions());
+        } catch (RuntimeException ex) {
+            log.error("Unable to load patient subscription page data", ex);
+            model.addAttribute("subscriptions", Collections.emptyList());
+            model.addAttribute(
+                    "subscriptionLoadError",
+                    "Subscription data could not be loaded. Please verify the database changes for package subscriptions are applied."
+            );
+        }
         model.addAttribute("permission", permission);
         model.addAttribute("requestPath", request.getRequestURI());
         model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));

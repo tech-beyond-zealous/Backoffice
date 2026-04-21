@@ -48,3 +48,37 @@
   text-decoration: underline;
   color: var(--primary-dark);
 }
+
+.remark-preview {
+  display: inline-block;
+  max-width: 240px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  cursor: default;
+}
+
+.remark-tooltip {
+  position: fixed;
+  z-index: 1080;
+  max-width: 320px;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(33, 37, 41, 0.96);
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.remark-tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}

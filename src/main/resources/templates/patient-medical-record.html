@@ -1,0 +1,1165 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Medical Record</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link th:href="@{/css/patient-medical-record.css}" rel="stylesheet" />
+  </head>
+  <body>
+    <div
+      th:replace="~{fragments/nav :: topNav(${appVersion}, ${menuGroups}, ${userId}, ${selectedApplicationSystemId})}"
+    ></div>
+
+    <main class="container-fluid py-4">
+      <div class="gs-main mx-auto">
+        <div class="card shadow-sm rounded-4">
+          <div class="card-body p-5">
+            <h2 class="card-title mb-4">
+              <i class="bi bi-heart-pulse"></i> Medical Record List
+            </h2>
+
+            <div class="toolbar-grid">
+              <div class="toolbar-field">
+                <label for="filterMedicalProviderId">Medical Provider</label>
+                <select id="filterMedicalProviderId" class="input-field">
+                  <option value="">Select Medical Provider</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.code + ' - ' + provider.name}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="toolbar-field">
+                <label for="filterPatientSearchInput">Patient</label>
+                <div class="search-select">
+                  <input type="hidden" id="filterPatientId" />
+                  <input
+                    id="filterPatientSearchInput"
+                    type="text"
+                    class="input-field"
+                    placeholder="Select Medical Provider first"
+                    autocomplete="off"
+                    disabled
+                  />
+                  <div
+                    id="filterPatientSearchMenu"
+                    class="search-select-menu d-none"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="toolbar-actions d-flex gap-2 align-items-end">
+                <button
+                  type="button"
+                  id="resetFiltersBtn"
+                  class="btn btn-outline-secondary"
+                  title="Reset"
+                >
+                  <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+                <button
+                  th:if="${permission != null and permission.create}"
+                  type="button"
+                  id="addMedicalRecordButton"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#medicalRecordFormModal"
+                  title="Add Medical Record"
+                >
+                  <i class="bi bi-plus"></i> Add Medical Record
+                </button>
+              </div>
+            </div>
+
+            <div id="selectionHint" class="selection-hint">
+              Select a Medical Provider and Patient to view medical records.
+            </div>
+
+            <div
+              th:if="${medicalRecordLoadError != null}"
+              class="alert alert-warning"
+              th:text="${medicalRecordLoadError}"
+            >
+              Medical record data could not be loaded.
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover align-middle medical-record-table">
+                <thead class="table-header-custom">
+                  <tr>
+                    <th>Medical Provider</th>
+                    <th>Patient Name</th>
+                    <th>Blood Pressure</th>
+                    <th>Pulse</th>
+                    <th>Sugar Level</th>
+                    <th>Remark</th>
+                    <th>Recorded At</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="medicalRecordList">
+                  <tr id="noMedicalRecordsRow" class="d-none">
+                    <td colspan="8" class="text-center text-muted py-4">
+                      No medical records found.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="pagination-wrapper">
+                <div id="medicalRecordInfo" class="text-muted"></div>
+                <nav>
+                  <ul id="medicalRecordPagination" class="pagination mb-0"></ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div
+      class="toast position-fixed bottom-0 end-0 p-3"
+      id="liveToast"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="toast-body bg-success text-white rounded"></div>
+    </div>
+
+    <div id="remarkTooltip" class="remark-tooltip"></div>
+
+    <div
+      class="modal fade"
+      id="medicalRecordDetailModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Medical Record Details</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card bg-light border-0 p-3">
+              <div class="details-grid">
+                <div class="detail-item">
+                  <div class="detail-label">Medical Provider</div>
+                  <div class="detail-value" id="detailProvider">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Patient Name</div>
+                  <div class="detail-value" id="detailPatient">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Blood Pressure</div>
+                  <div class="detail-value" id="detailBloodPressure">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Pulse</div>
+                  <div class="detail-value" id="detailPulse">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Sugar Level</div>
+                  <div class="detail-value" id="detailSugarLevel">-</div>
+                </div>
+                <div class="detail-item">
+                  <div class="detail-label">Remark</div>
+                  <div class="detail-value" id="detailRemark">-</div>
+                </div>
+              </div>
+
+              <div class="audit-grid col-span-2">
+                <div class="audit-item">
+                  <div class="audit-label">Created By</div>
+                  <div class="audit-value" id="detailCreatedBy">-</div>
+                </div>
+                <div class="audit-item">
+                  <div class="audit-label">Created Date/Time</div>
+                  <div class="audit-value" id="detailCreatedDateTime">-</div>
+                </div>
+                <div class="audit-item">
+                  <div class="audit-label">Last Updated</div>
+                  <div class="audit-value" id="detailModifiedDateTime">-</div>
+                </div>
+                <div class="audit-item">
+                  <div class="audit-label">Modified By</div>
+                  <div class="audit-value" id="detailModifiedBy">-</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="medicalRecordFormModal"
+      tabindex="-1"
+      data-bs-backdrop="static"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="medicalRecordFormModalLabel">
+              Add Medical Record
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="medicalRecordForm" class="form-grid" novalidate>
+              <input type="hidden" id="medicalRecordId" />
+
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person-badge"></i> Patient Selection
+              </h3>
+              <div class="form-group-compact">
+                <label for="medicalProviderId" class="medical-record-label">
+                  Medical Provider
+                </label>
+                <select id="medicalProviderId" class="input-field" required>
+                  <option value="">Select Medical Provider *</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.code + ' - ' + provider.name}"
+                  ></option>
+                </select>
+              </div>
+              <div class="form-group-compact">
+                <label for="patientSearchInput" class="medical-record-label">
+                  Patient
+                </label>
+                <div class="search-select has-clear">
+                  <input type="hidden" id="patientId" />
+                  <div class="search-select-input-wrap">
+                    <input
+                      id="patientSearchInput"
+                      type="text"
+                      class="input-field"
+                      placeholder="Select Medical Provider first"
+                      autocomplete="off"
+                      disabled
+                      required
+                    />
+                    <button
+                      type="button"
+                      id="clearPatientSearchButton"
+                      class="search-select-clear d-none"
+                      aria-label="Clear selected patient"
+                      title="Clear selected patient"
+                    >
+                      <i class="bi bi-x"></i>
+                    </button>
+                  </div>
+                  <div
+                    id="patientSearchMenu"
+                    class="search-select-menu d-none"
+                  ></div>
+                </div>
+              </div>
+
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-heart"></i> Blood Pressure
+              </h3>
+              <div class="col-span-2 bp-grid">
+                <div class="bp-card">
+                  <div class="bp-card-title">Systolic</div>
+                  <input
+                    type="number"
+                    id="systolic"
+                    class="input-field"
+                    min="0"
+                    placeholder="Enter systolic"
+                    required
+                  />
+                </div>
+                <div class="bp-card">
+                  <div class="bp-card-title">Diastolic</div>
+                  <input
+                    type="number"
+                    id="diastolic"
+                    class="input-field"
+                    min="0"
+                    placeholder="Enter diastolic"
+                    required
+                  />
+                </div>
+                <div class="bp-card">
+                  <div class="bp-card-title">Pulse</div>
+                  <input
+                    type="number"
+                    id="pulse"
+                    class="input-field"
+                    min="0"
+                    placeholder="Enter pulse"
+                    required
+                  />
+                </div>
+              </div>
+
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-droplet-half"></i> Sugar Level
+              </h3>
+              <div class="form-group-compact col-span-2">
+                <input
+                  type="number"
+                  id="sugarLevel"
+                  class="input-field"
+                  min="0"
+                  step="0.1"
+                  placeholder="Enter sugar level"
+                  required
+                />
+              </div>
+
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-chat-left-text"></i> Remark
+              </h3>
+              <div class="form-group-compact col-span-2">
+                <textarea
+                  id="remark"
+                  class="input-field"
+                  rows="4"
+                  maxlength="500"
+                  placeholder="Enter remarks"
+                ></textarea>
+                <div class="text-end mt-2 text-muted">
+                  <small id="remarkCount">0/500</small>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="medicalRecordForm"
+              id="saveMedicalRecordButton"
+              class="btn btn-primary"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/session-fetch.js}"></script>
+    <script th:inline="javascript">
+      const { fetchWithSessionHandling } = window.GSAuth;
+      const medicalProviders = /*[[${medicalProviders}]]*/ [];
+      const allPatients = /*[[${patients}]]*/ [];
+      let allMedicalRecords = /*[[${medicalRecords}]]*/ [];
+      const permissions = {
+        create: [[${permission != null and permission.create}]],
+        view: [[${permission != null and permission.view}]],
+        edit: [[${permission != null and permission.edit}]],
+        delete: [[${permission != null and permission.delete}]],
+      };
+
+      const medicalRecordList = document.getElementById("medicalRecordList");
+      const noMedicalRecordsRow = document.getElementById("noMedicalRecordsRow");
+      const medicalRecordInfo = document.getElementById("medicalRecordInfo");
+      const medicalRecordPagination = document.getElementById(
+        "medicalRecordPagination",
+      );
+      const selectionHint = document.getElementById("selectionHint");
+      const filterMedicalProviderId = document.getElementById(
+        "filterMedicalProviderId",
+      );
+      const filterPatientId = document.getElementById("filterPatientId");
+      const medicalRecordForm = document.getElementById("medicalRecordForm");
+      const medicalRecordId = document.getElementById("medicalRecordId");
+      const medicalProviderId = document.getElementById("medicalProviderId");
+      const patientId = document.getElementById("patientId");
+      const patientSearchInput = document.getElementById("patientSearchInput");
+      const patientSearchMenu = document.getElementById("patientSearchMenu");
+      const clearPatientSearchButton = document.getElementById(
+        "clearPatientSearchButton",
+      );
+      const systolic = document.getElementById("systolic");
+      const diastolic = document.getElementById("diastolic");
+      const pulse = document.getElementById("pulse");
+      const sugarLevel = document.getElementById("sugarLevel");
+      const remark = document.getElementById("remark");
+      const remarkCount = document.getElementById("remarkCount");
+      const remarkTooltip = document.getElementById("remarkTooltip");
+
+      const detailProvider = document.getElementById("detailProvider");
+      const detailPatient = document.getElementById("detailPatient");
+      const detailBloodPressure = document.getElementById("detailBloodPressure");
+      const detailPulse = document.getElementById("detailPulse");
+      const detailSugarLevel = document.getElementById("detailSugarLevel");
+      const detailRemark = document.getElementById("detailRemark");
+      const detailCreatedBy = document.getElementById("detailCreatedBy");
+      const detailCreatedDateTime = document.getElementById(
+        "detailCreatedDateTime",
+      );
+      const detailModifiedDateTime = document.getElementById(
+        "detailModifiedDateTime",
+      );
+      const detailModifiedBy = document.getElementById("detailModifiedBy");
+
+      const pageSize = 6;
+      let currentPage = 1;
+      const detailModalElement = document.getElementById(
+        "medicalRecordDetailModal",
+      );
+      const formModalElement = document.getElementById("medicalRecordFormModal");
+
+      function getDetailModal() {
+        return bootstrap.Modal.getOrCreateInstance(detailModalElement, {
+          backdrop: "static",
+          keyboard: false,
+        });
+      }
+
+      function getFormModal() {
+        return bootstrap.Modal.getOrCreateInstance(formModalElement, {
+          backdrop: "static",
+          keyboard: false,
+        });
+      }
+
+      function normalize(value) {
+        return (value || "").toString().trim().toLowerCase();
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function truncateText(value, maxLength = 30) {
+        if (!value) return "-";
+        return value.length > maxLength
+          ? `${value.slice(0, maxLength)}...`
+          : value;
+      }
+
+      function formatSugarLevel(value) {
+        return value == null || value === "" ? "-" : value;
+      }
+
+      function getBloodPressureValue(record) {
+        const hasValues =
+          record.systolic != null ||
+          record.diastolic != null ||
+          record.pulse != null;
+        if (!hasValues) {
+          return "-";
+        }
+        return `${record.systolic ?? "-"} / ${record.diastolic ?? "-"}`;
+      }
+
+      function getPatientLabel(patient) {
+        return patient.icPassportNo
+          ? `${patient.name} (${patient.icPassportNo})`
+          : patient.name || "-";
+      }
+
+      function showToast(message, isError = false) {
+        const toastEl = document.getElementById("liveToast");
+        const toastBody = toastEl.querySelector(".toast-body");
+        toastBody.textContent = message;
+        toastBody.classList.toggle("bg-success", !isError);
+        toastBody.classList.toggle("bg-danger", isError);
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+      }
+
+      function moveRemarkTooltip(event) {
+        const offset = 14;
+        remarkTooltip.style.left = `${event.clientX + offset}px`;
+        remarkTooltip.style.top = `${event.clientY + offset}px`;
+      }
+
+      function hideRemarkTooltip() {
+        remarkTooltip.classList.remove("show");
+        remarkTooltip.textContent = "";
+      }
+
+      function showRemarkTooltip(target, event) {
+        const fullRemark = target.getAttribute("data-full-remark");
+        if (!fullRemark || fullRemark === "-" || fullRemark.length <= 30) {
+          hideRemarkTooltip();
+          return;
+        }
+
+        remarkTooltip.textContent = fullRemark;
+        moveRemarkTooltip(event);
+        remarkTooltip.classList.add("show");
+      }
+
+      function createPatientPicker({
+        providerSelect,
+        hiddenInput,
+        textInput,
+        menu,
+        clearButton = null,
+        requiredMessage = "",
+      }) {
+        let scopedPatients = [];
+
+        function closeMenu() {
+          menu.classList.add("d-none");
+        }
+
+        function updateClearButtonVisibility() {
+          if (!clearButton) {
+            return;
+          }
+          clearButton.classList.toggle(
+            "d-none",
+            textInput.disabled || !hiddenInput.value,
+          );
+        }
+
+        function setSelection(selectedPatient) {
+          if (!selectedPatient) {
+            hiddenInput.value = "";
+            textInput.value = "";
+            if (requiredMessage) {
+              textInput.setCustomValidity(requiredMessage);
+            }
+            updateClearButtonVisibility();
+            return;
+          }
+          hiddenInput.value = selectedPatient.id;
+          textInput.value = getPatientLabel(selectedPatient);
+          textInput.setCustomValidity("");
+          closeMenu();
+          updateClearButtonVisibility();
+          currentPage = 1;
+          renderMedicalRecordTable();
+        }
+
+        function renderMenu(query = "") {
+          if (textInput.disabled) {
+            closeMenu();
+            return;
+          }
+
+          const keyword = normalize(query);
+          const matchingPatients = scopedPatients.filter((patient) => {
+            const label = getPatientLabel(patient);
+            return normalize(label).includes(keyword);
+          });
+
+          if (matchingPatients.length === 0) {
+            menu.innerHTML =
+              '<div class="search-select-empty">No matching patient found.</div>';
+          } else {
+            menu.innerHTML = matchingPatients
+              .map(
+                (patient) => `
+                  <button
+                    type="button"
+                    class="search-select-option"
+                    data-patient-id="${escapeHtml(patient.id)}"
+                  >
+                    ${escapeHtml(getPatientLabel(patient))}
+                  </button>
+                `,
+              )
+              .join("");
+
+            menu
+              .querySelectorAll(".search-select-option")
+              .forEach((button) => {
+                button.addEventListener("click", () => {
+                  const selectedPatient = scopedPatients.find(
+                    (patient) =>
+                      String(patient.id) === String(button.dataset.patientId),
+                  );
+                  setSelection(selectedPatient);
+                });
+              });
+          }
+
+          menu.classList.remove("d-none");
+        }
+
+        function setProvider(providerId, selectedPatientId = "") {
+          const normalizedProviderId = String(providerId || "");
+          scopedPatients = allPatients
+            .filter(
+              (patient) =>
+                String(patient.medicalProviderId || "") === normalizedProviderId,
+            )
+            .sort((left, right) =>
+              normalize(left.name).localeCompare(normalize(right.name)),
+            );
+
+          hiddenInput.value = "";
+          textInput.value = "";
+          textInput.disabled = !providerId;
+          textInput.placeholder = providerId
+            ? "Search and select patient"
+            : "Select Medical Provider first";
+          textInput.setCustomValidity(requiredMessage ? requiredMessage : "");
+          updateClearButtonVisibility();
+
+          if (selectedPatientId) {
+            const selectedPatient = scopedPatients.find(
+              (patient) => String(patient.id) === String(selectedPatientId),
+            );
+            if (selectedPatient) {
+              setSelection(selectedPatient);
+            }
+          }
+
+          closeMenu();
+        }
+
+        textInput.addEventListener("focus", () => renderMenu(textInput.value));
+        textInput.addEventListener("input", () => {
+          hiddenInput.value = "";
+          if (requiredMessage) {
+            textInput.setCustomValidity(requiredMessage);
+          }
+          updateClearButtonVisibility();
+          renderMenu(textInput.value);
+        });
+        textInput.addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            closeMenu();
+          }
+        });
+        document.addEventListener("click", (event) => {
+          if (
+            event.target !== textInput &&
+            !menu.contains(event.target) &&
+            event.target !== providerSelect &&
+            event.target !== clearButton &&
+            !clearButton?.contains(event.target)
+          ) {
+            closeMenu();
+          }
+        });
+
+        if (clearButton) {
+          clearButton.addEventListener("click", () => {
+            hiddenInput.value = "";
+            textInput.value = "";
+            if (requiredMessage) {
+              textInput.setCustomValidity(requiredMessage);
+            }
+            updateClearButtonVisibility();
+            textInput.focus();
+            renderMenu("");
+          });
+        }
+
+        return {
+          setProvider,
+          getValue: () => hiddenInput.value,
+          clear: () => setProvider(""),
+          ensureValid: () => {
+            if (!requiredMessage) {
+              return true;
+            }
+            if (!providerSelect.value) {
+              providerSelect.reportValidity();
+              return false;
+            }
+            if (!hiddenInput.value) {
+              textInput.setCustomValidity(requiredMessage);
+              textInput.reportValidity();
+              return false;
+            }
+            textInput.setCustomValidity("");
+            return true;
+          },
+        };
+      }
+
+      const filterPatientPicker = createPatientPicker({
+        providerSelect: filterMedicalProviderId,
+        hiddenInput: filterPatientId,
+        textInput: document.getElementById("filterPatientSearchInput"),
+        menu: document.getElementById("filterPatientSearchMenu"),
+      });
+
+      const formPatientPicker = createPatientPicker({
+        providerSelect: medicalProviderId,
+        hiddenInput: patientId,
+        textInput: patientSearchInput,
+        menu: patientSearchMenu,
+        clearButton: clearPatientSearchButton,
+        requiredMessage: "Please select a patient",
+      });
+
+      function updateRemarkCount() {
+        remarkCount.textContent = `${remark.value.length}/500`;
+      }
+
+      function getSelectedPatientRecords() {
+        const selectedProvider = filterMedicalProviderId.value;
+        const selectedPatient = filterPatientPicker.getValue();
+
+        if (!selectedProvider || !selectedPatient) {
+          return [];
+        }
+
+        return allMedicalRecords
+          .filter(
+            (record) =>
+              String(record.medicalProviderId) === String(selectedProvider) &&
+              String(record.patientId) === String(selectedPatient),
+          )
+          .sort((left, right) =>
+            normalize(right.createdDateTime).localeCompare(
+              normalize(left.createdDateTime),
+            ),
+          );
+      }
+
+      function renderPagination(totalPages) {
+        medicalRecordPagination.innerHTML = "";
+        if (totalPages <= 1) {
+          return;
+        }
+
+        const createButton = (page, label, disabled = false, active = false) =>
+          `
+            <li class="page-item ${disabled ? "disabled" : ""} ${active ? "active" : ""}">
+              <button class="page-link" type="button" data-page="${page}">${label}</button>
+            </li>
+          `;
+
+        let html = createButton(currentPage - 1, "&laquo;", currentPage === 1);
+        for (let page = 1; page <= totalPages; page += 1) {
+          html += createButton(page, page, false, currentPage === page);
+        }
+        html += createButton(
+          currentPage + 1,
+          "&raquo;",
+          currentPage === totalPages,
+        );
+
+        medicalRecordPagination.innerHTML = html;
+        medicalRecordPagination
+          .querySelectorAll("button[data-page]")
+          .forEach((button) => {
+            button.addEventListener("click", () => {
+              const page = Number(button.dataset.page);
+              if (!Number.isNaN(page) && page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderMedicalRecordTable();
+              }
+            });
+          });
+      }
+
+      function renderMedicalRecordTable() {
+        const hasSelection =
+          !!filterMedicalProviderId.value && !!filterPatientPicker.getValue();
+
+        selectionHint.style.display = hasSelection ? "none" : "block";
+
+        if (!hasSelection) {
+          medicalRecordList.innerHTML = "";
+          noMedicalRecordsRow.classList.remove("d-none");
+          noMedicalRecordsRow.querySelector("td").textContent =
+            "Select Medical Provider and Patient to view medical records.";
+          medicalRecordList.appendChild(noMedicalRecordsRow);
+          medicalRecordInfo.textContent = "Showing 0 of 0 medical records";
+          medicalRecordPagination.innerHTML = "";
+          return;
+        }
+
+        const filteredRecords = getSelectedPatientRecords();
+        const totalItems = filteredRecords.length;
+        const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const pageItems = filteredRecords.slice(startIndex, startIndex + pageSize);
+
+        medicalRecordList.innerHTML = pageItems
+          .map(
+            (record) => `
+              <tr>
+                <td>${escapeHtml(record.medicalProviderCode || "-")}</td>
+                <td>
+                  ${
+                    permissions.view
+                      ? `
+                        <a
+                          class="record-name-link"
+                          href="#"
+                          data-action="view"
+                          data-id="${escapeHtml(record.id)}"
+                        >
+                          ${escapeHtml(record.patientName || "-")}
+                        </a>
+                      `
+                      : escapeHtml(record.patientName || "-")
+                  }
+                </td>
+                <td>${escapeHtml(getBloodPressureValue(record))}</td>
+                <td>${escapeHtml(record.pulse ?? "-")}</td>
+                <td>${escapeHtml(formatSugarLevel(record.sugarLevel))}</td>
+                <td>
+                  <span class="remark-preview" data-full-remark="${escapeHtml(record.remark || "")}">
+                    ${escapeHtml(truncateText(record.remark))}
+                  </span>
+                </td>
+                <td>${escapeHtml(record.createdDateTime || "-")}</td>
+                <td class="text-nowrap">
+                  ${
+                    permissions.view
+                      ? `
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1"
+                          data-action="view"
+                          data-id="${escapeHtml(record.id)}"
+                          title="View"
+                        >
+                          <i class="bi bi-eye"></i>
+                        </button>
+                      `
+                      : ""
+                  }
+                  ${
+                    permissions.edit
+                      ? `
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-warning btn-sm-custom shadow-sm me-1"
+                          data-action="edit"
+                          data-id="${escapeHtml(record.id)}"
+                          title="Edit"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                      `
+                      : ""
+                  }
+                  ${
+                    permissions.delete
+                      ? `
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-danger btn-sm-custom shadow-sm"
+                          data-action="delete"
+                          data-id="${escapeHtml(record.id)}"
+                          title="Delete"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      `
+                      : ""
+                  }
+                </td>
+              </tr>
+            `,
+          )
+          .join("");
+
+        if (pageItems.length === 0) {
+          noMedicalRecordsRow.classList.remove("d-none");
+          noMedicalRecordsRow.querySelector("td").textContent =
+            "No medical records found.";
+          medicalRecordList.appendChild(noMedicalRecordsRow);
+        } else {
+          noMedicalRecordsRow.classList.add("d-none");
+          medicalRecordList.appendChild(noMedicalRecordsRow);
+        }
+
+        medicalRecordInfo.textContent = `Showing ${pageItems.length === 0 ? 0 : startIndex + 1} to ${Math.min(
+          startIndex + pageSize,
+          totalItems,
+        )} of ${totalItems} medical records`;
+
+        renderPagination(totalPages);
+      }
+
+      function showRecordDetails(record) {
+        detailProvider.textContent = record.medicalProviderCode || "-";
+        detailPatient.textContent = record.patientName || "-";
+        detailBloodPressure.textContent = getBloodPressureValue(record);
+        detailPulse.textContent = record.pulse ?? "-";
+        detailSugarLevel.textContent = formatSugarLevel(record.sugarLevel);
+        detailRemark.textContent = record.remark || "-";
+        detailCreatedBy.textContent = record.createdBy || "-";
+        detailCreatedDateTime.textContent = record.createdDateTime || "-";
+        detailModifiedDateTime.textContent = record.modifiedDateTime || "-";
+        detailModifiedBy.textContent = record.modifiedBy || "-";
+        getDetailModal().show();
+      }
+
+      function resetMedicalRecordForm() {
+        medicalRecordForm.reset();
+        medicalRecordId.value = "";
+        medicalProviderId.value = "";
+        formPatientPicker.clear();
+        patientSearchInput.setCustomValidity("");
+        document.getElementById("medicalRecordFormModalLabel").textContent =
+          "Add Medical Record";
+        updateRemarkCount();
+      }
+
+      function populateMedicalRecordFormFromFilters() {
+        const selectedProviderId = filterMedicalProviderId.value;
+        const selectedPatientId = filterPatientPicker.getValue();
+
+        if (!selectedProviderId) {
+          return;
+        }
+
+        medicalProviderId.value = selectedProviderId;
+        formPatientPicker.setProvider(selectedProviderId, selectedPatientId);
+      }
+
+      function startEditRecord(record) {
+        medicalRecordId.value = record.id || "";
+        medicalProviderId.value = record.medicalProviderId || "";
+        formPatientPicker.setProvider(record.medicalProviderId, record.patientId);
+        systolic.value = record.systolic ?? "";
+        diastolic.value = record.diastolic ?? "";
+        pulse.value = record.pulse ?? "";
+        sugarLevel.value = record.sugarLevel ?? "";
+        remark.value = record.remark || "";
+        document.getElementById("medicalRecordFormModalLabel").textContent =
+          "Edit Medical Record";
+        updateRemarkCount();
+        getFormModal().show();
+      }
+
+      async function deleteMedicalRecord(id) {
+        if (!confirm("Delete this medical record?")) {
+          return;
+        }
+
+        try {
+          const response = await fetchWithSessionHandling(
+            `/patient/medical-record/${id}`,
+            {
+              method: "DELETE",
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              response.status === 403
+                ? "You do not have permission to delete medical records."
+                : "Failed to delete medical record.",
+            );
+          }
+
+          allMedicalRecords = allMedicalRecords.filter(
+            (record) => String(record.id) !== String(id),
+          );
+          currentPage = 1;
+          renderMedicalRecordTable();
+          showToast("Medical record deleted successfully.");
+        } catch (error) {
+          console.error(error);
+          showToast("Unable to delete medical record.", true);
+        }
+      }
+
+      medicalRecordList.addEventListener("click", (event) => {
+        const trigger = event.target.closest("[data-action]");
+        if (!trigger) {
+          return;
+        }
+        event.preventDefault();
+
+        const record = allMedicalRecords.find(
+          (item) => String(item.id) === String(trigger.dataset.id),
+        );
+        if (!record) {
+          return;
+        }
+
+        switch (trigger.dataset.action) {
+          case "view":
+            showRecordDetails(record);
+            break;
+          case "edit":
+            startEditRecord(record);
+            break;
+          case "delete":
+            deleteMedicalRecord(record.id);
+            break;
+          default:
+            break;
+        }
+      });
+
+      medicalRecordForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        if (!medicalRecordForm.checkValidity()) {
+          medicalRecordForm.reportValidity();
+          return;
+        }
+
+        if (!formPatientPicker.ensureValid()) {
+          return;
+        }
+
+        const payload = {
+          id: medicalRecordId.value ? Number(medicalRecordId.value) : null,
+          medicalProviderId: Number(medicalProviderId.value),
+          patientId: Number(patientId.value),
+          systolic: Number(systolic.value),
+          diastolic: Number(diastolic.value),
+          pulse: Number(pulse.value),
+          sugarLevel: Number(sugarLevel.value),
+          remark: remark.value.trim(),
+        };
+
+        try {
+          const response = await fetchWithSessionHandling(
+            "/patient/medical-record/save",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            },
+          );
+
+          if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(
+              errorMessage ||
+                (response.status === 403
+                  ? "You do not have permission to save medical records."
+                  : "Unable to save medical record."),
+            );
+          }
+
+          const savedRecord = await response.json();
+          const existingIndex = allMedicalRecords.findIndex(
+            (record) => String(record.id) === String(savedRecord.id),
+          );
+
+          if (existingIndex >= 0) {
+            allMedicalRecords.splice(existingIndex, 1, savedRecord);
+          } else {
+            allMedicalRecords.unshift(savedRecord);
+          }
+
+          currentPage = 1;
+          renderMedicalRecordTable();
+          getFormModal().hide();
+          resetMedicalRecordForm();
+          showToast("Medical record saved successfully.");
+        } catch (error) {
+          console.error(error);
+          showToast(error.message || "Unable to save medical record.", true);
+        }
+      });
+
+      filterMedicalProviderId.addEventListener("change", () => {
+        filterPatientPicker.setProvider(filterMedicalProviderId.value);
+        currentPage = 1;
+        renderMedicalRecordTable();
+      });
+
+      medicalProviderId.addEventListener("change", () => {
+        formPatientPicker.setProvider(medicalProviderId.value);
+      });
+
+      remark.addEventListener("input", updateRemarkCount);
+      document.addEventListener("mousemove", (event) => {
+        const remarkPreview = event.target.closest(".remark-preview");
+        if (remarkPreview) {
+          showRemarkTooltip(remarkPreview, event);
+        } else {
+          hideRemarkTooltip();
+        }
+      });
+      document.addEventListener("mouseleave", hideRemarkTooltip);
+      document.addEventListener("scroll", hideRemarkTooltip, true);
+
+      document.getElementById("resetFiltersBtn").addEventListener("click", () => {
+        filterMedicalProviderId.value = "";
+        document.getElementById("filterPatientSearchInput").value = "";
+        filterPatientId.value = "";
+        filterPatientPicker.clear();
+        currentPage = 1;
+        renderMedicalRecordTable();
+        showToast("Medical record filters reset.");
+      });
+
+      const addMedicalRecordButton = document.getElementById(
+        "addMedicalRecordButton",
+      );
+      if (addMedicalRecordButton) {
+        addMedicalRecordButton.addEventListener("click", () => {
+          resetMedicalRecordForm();
+          populateMedicalRecordFormFromFilters();
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        resetMedicalRecordForm();
+        renderMedicalRecordTable();
+
+        formModalElement.addEventListener("hidden.bs.modal", () => {
+          document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+            backdrop.remove();
+          });
+          document.body.classList.remove("modal-open");
+          document.body.style.overflow = "";
+          document.body.style.paddingRight = "";
+          resetMedicalRecordForm();
+        });
+      });
+    </script>
+  </body>
+</html>

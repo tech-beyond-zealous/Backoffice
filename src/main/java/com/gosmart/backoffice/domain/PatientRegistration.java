@@ -41,9 +41,11 @@ public class PatientRegistration {
     // Medical
     private String hasChronicDisease; // Y / N
     private String chronicDisease;
+    @Column(name = "remark")
+    private String remark;
 
     // System Link
-    private Long gosmartUserId;
+    private String gosmartUserId;
     @Column(name = "medical_provider_id")
     private Long medicalProviderId;
 
@@ -208,11 +210,19 @@ public class PatientRegistration {
         this.chronicDisease = chronicDisease;
     }
 
-    public Long getGosmartUserId() {
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getGosmartUserId() {
         return gosmartUserId;
     }
 
-    public void setGosmartUserId(Long gosmartUserId) {
+    public void setGosmartUserId(String gosmartUserId) {
         this.gosmartUserId = gosmartUserId;
     }
 

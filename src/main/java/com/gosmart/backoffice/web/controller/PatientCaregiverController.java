@@ -10,7 +10,10 @@ import com.gosmart.backoffice.service.PatientRegistrationService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -24,6 +27,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class PatientCaregiverController {
+    private static final Logger log = LoggerFactory.getLogger(PatientCaregiverController.class);
+
     private final ProtectedPageModelService protectedPageModelService;
     private final MedicalProviderService medicalProviderService;
     private final PatientRegistrationService patientRegistrationService;
@@ -58,7 +63,16 @@ public class PatientCaregiverController {
         model.addAttribute("caregivers", caregiverService.findAll().stream()
                 .filter(caregiver -> "A".equalsIgnoreCase(caregiver.getStatus()))
                 .toList());
-        model.addAttribute("patientCaregivers", patientCaregiverService.findAllCurrentAssignments());
+        try {
+            model.addAttribute("patientCaregivers", patientCaregiverService.findAllCurrentAssignments());
+        } catch (RuntimeException ex) {
+            log.error("Unable to load patient caregiver page data", ex);
+            model.addAttribute("patientCaregivers", Collections.emptyList());
+            model.addAttribute(
+                    "patientCaregiverLoadError",
+                    "Patient caregiver data could not be loaded. Please verify the database changes for patient caregiver are applied."
+            );
+        }
         model.addAttribute("permission", permission);
         model.addAttribute("requestPath", request.getRequestURI());
         model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));

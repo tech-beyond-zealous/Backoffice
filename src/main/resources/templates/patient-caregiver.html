@@ -71,6 +71,14 @@
               </div>
             </div>
 
+            <div
+              th:if="${patientCaregiverLoadError != null}"
+              class="alert alert-warning"
+              th:text="${patientCaregiverLoadError}"
+            >
+              Patient caregiver data could not be loaded.
+            </div>
+
             <div class="table-responsive">
               <table class="table table-hover align-middle patient-caregiver-table">
                 <thead class="table-header-custom">

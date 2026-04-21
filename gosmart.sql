@@ -34,7 +34,7 @@ CREATE TABLE `application_system` (
   `application_system_id` bigint NOT NULL AUTO_INCREMENT,
   `system_code` varchar(50) NOT NULL,
   `system_name` varchar(100) NOT NULL,
-  `remark` varchar(250) DEFAULT NULL,
+  `remark` varchar(500) DEFAULT NULL,
   `status` char(1) NOT NULL DEFAULT 'A',
   PRIMARY KEY (`application_system_id`),
   UNIQUE KEY `uk_function_group_code` (`system_code`),
@@ -267,7 +267,7 @@ CREATE TABLE `caregiver` (
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `mobile_number` varchar(20) NOT NULL,
-  `user_id` varchar(100) NOT NULL,
+  `patient_id` int NOT NULL,
   `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
   `create_by` varchar(100) NOT NULL,
   `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -374,7 +374,7 @@ CREATE TABLE `package_subscription` (
   `create_by` varchar(100) NOT NULL,
   `modify_dt` datetime DEFAULT NULL,
   `modify_by` varchar(100) DEFAULT NULL,
-  `user_id` varchar(100) NOT NULL,
+  `patient_id` int NOT NULL,
   `medical_provider_id` int NOT NULL,
   `medical_package_id` int NOT NULL,
   `amount` decimal(8,2) NOT NULL,
@@ -383,7 +383,7 @@ CREATE TABLE `package_subscription` (
   `remark` varchar(500) DEFAULT NULL,
   `status` char(1) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_user_id` (`user_id`) /*!80000 INVISIBLE */,
+  KEY `idx_patient_id` (`patient_id`) /*!80000 INVISIBLE */,
   KEY `idx_medical_provider_id` (`medical_provider_id`),
   KEY `idx_medical_package_id` (`medical_package_id`),
   KEY `idx_expiration_dt` (`expiration_dt`),
@@ -395,6 +395,25 @@ CREATE TABLE `package_subscription` (
 -- =========================================
 -- PATIENT -> REGISTRATION
 -- =========================================
+
+DROP TABLE IF EXISTS `patient_medical_record`;
+CREATE TABLE `patient_medical_record` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `patient_id` bigint NOT NULL,
+  `bp_systolic` int DEFAULT NULL,
+  `bp_diastolic` int DEFAULT NULL,
+  `pulse` int DEFAULT NULL,
+  `sugar_level` decimal(10,2) DEFAULT NULL,
+  `remark` varchar(500) DEFAULT NULL,
+  `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `create_by` varchar(100) NOT NULL,
+  `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modify_by` varchar(100) DEFAULT NULL,
+  `status` char(1) DEFAULT 'A',
+  PRIMARY KEY (`id`),
+  KEY `idx_patient_medical_record_patient` (`patient_id`),
+  KEY `idx_patient_medical_record_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `patient_registration` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -417,7 +436,8 @@ CREATE TABLE `patient_registration` (
   `city` varchar(100) DEFAULT NULL,
   `has_chronic_disease` char(1) DEFAULT 'N',
   `chronic_disease` varchar(255) DEFAULT NULL,
-  `gosmart_user_id` bigint DEFAULT NULL,
+  `remark` varchar(250) DEFAULT NULL,
+  `gosmart_user_id` varchar(100) DEFAULT NULL,
   `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `modify_by` varchar(100) DEFAULT NULL,
   `status` char(1) DEFAULT 'A',

@@ -98,6 +98,9 @@
                       City <span class="sort-arrow" data-field="city"></span>
                     </th>
                     <th>Chronic Disease</th>
+                    <th class="sortable" data-sort="remark">
+                      Remark <span class="sort-arrow" data-field="remark"></span>
+                    </th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -113,6 +116,7 @@
                     data-mobile="${patient.mobileNo}"
                     data-city="${patient.city}"
                     data-chronic="${patient.hasChronicDisease}"
+                    data-remark="${patient.remark}"
                   >
                     <td>
                       <span
@@ -151,6 +155,15 @@
                       >
                       </span>
                     </td>
+                    <td>
+                      <span
+                        class="remark-preview"
+                        th:attr="data-full-remark=${patient.remark}"
+                        th:text="${patient.remark != null and #strings.length(patient.remark) > 30 ? #strings.substring(patient.remark, 0, 30) + '...' : (patient.remark != null and !#strings.isEmpty(patient.remark) ? patient.remark : '-')}"
+                      >
+                        -
+                      </span>
+                    </td>
                     <td class="text-nowrap">
                       <button
                         th:if="${permission != null and permission.view}"
@@ -185,7 +198,7 @@
                     </td>
                   </tr>
                   <tr id="noPatients" th:if="${#lists.isEmpty(patients)}">
-                    <td colspan="9" class="text-center text-muted py-4">
+                    <td colspan="10" class="text-center text-muted py-4">
                       No patients registered yet
                     </td>
                   </tr>
@@ -213,6 +226,8 @@
     >
       <div class="toast-body bg-success text-white rounded"></div>
     </div>
+
+    <div id="remarkTooltip" class="remark-tooltip"></div>
 
     <!-- Patient Form Modal -->
     <div
@@ -476,6 +491,21 @@
                 />
               </div>
 
+              <!-- GoSmart User Id -->
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-person-vcard"></i> GoSmart User Id
+              </h3>
+
+              <div class="form-group-compact col-span-2">
+                <input
+                  type="text"
+                  id="gosmartUserId"
+                  name="gosmartUserId"
+                  class="input-field"
+                  placeholder="GoSmart User Id"
+                />
+              </div>
+
               <!-- Medical -->
               <h3 class="section-heading col-span-2">
                 <i class="bi bi-heart-pulse"></i> Medical Info
@@ -499,6 +529,22 @@
                   class="input-field"
                   placeholder="If Yes, Specify Disease"
                 />
+              </div>
+              <h3 class="section-heading col-span-2">
+                <i class="bi bi-chat-left-text"></i> Remark
+              </h3>
+              <div class="form-group-compact col-span-2">
+                <textarea
+                  id="remark"
+                  name="remark"
+                  class="input-field"
+                  rows="3"
+                  maxlength="500"
+                  placeholder="Remark"
+                ></textarea>
+                <div class="text-end mt-2 text-muted">
+                  <small id="remarkCount">0/500</small>
+                </div>
               </div>
             </form>
           </div>
@@ -684,6 +730,8 @@
       const patientsPagination = document.getElementById("patientsPagination");
       const patientsInfo = document.getElementById("patientsInfo");
       const addPatientButton = document.getElementById("addPatientButton");
+      const remark = document.getElementById("remark");
+      const remarkCount = document.getElementById("remarkCount");
 
       const providerCodeMap = new Map(
         medicalProviders.map((provider) => [
@@ -722,7 +770,7 @@
 
       function getPatientFormModal() {
         if (!patientFormModal) {
-          patientFormModal = new bootstrap.Modal(
+          patientFormModal = bootstrap.Modal.getOrCreateInstance(
             document.getElementById("patientFormModal"),
             {
               backdrop: "static",
@@ -754,6 +802,7 @@
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
+        const isCreate = !data.id || Number(data.id) === 0;
 
         // Convert age to number and skip id if empty
         if (data.id) data.id = parseInt(data.id);
@@ -771,12 +820,14 @@
           });
 
           if (response.ok) {
-            const savedPatient = await response.json();
-            clearForm();
-            loadPatients();
+            await response.json();
+            await loadPatients();
             showToast("Patient saved successfully!");
             const modal = getPatientFormModal();
             modal.hide();
+            if (isCreate) {
+              clearForm();
+            }
           } else {
             showToast("Error saving patient");
           }
@@ -806,12 +857,16 @@
         document.getElementById("postcode").value = patient.postcode || "";
         document.getElementById("state").value = patient.state || "";
         document.getElementById("city").value = patient.city || "";
+        document.getElementById("gosmartUserId").value =
+          patient.gosmartUserId || "";
         document.getElementById("medicalProviderId").value =
           patient.medicalProviderId || "";
         document.getElementById("hasChronicDisease").value =
           patient.hasChronicDisease || "N";
         document.getElementById("chronicDisease").value =
           patient.chronicDisease || "";
+        document.getElementById("remark").value = patient.remark || "";
+        updateRemarkCount();
 
         document.getElementById("patientFormModalLabel").textContent =
           "Edit Patient";
@@ -866,10 +921,15 @@
       function clearForm() {
         form.reset();
         patientId.value = "";
+        updateRemarkCount();
         document.getElementById("patientFormModalLabel").textContent =
           "Add Patient";
         submitBtn.textContent = "Save";
         form.classList.remove("border", "border-warning", "form-edit-mode");
+      }
+
+      function updateRemarkCount() {
+        remarkCount.textContent = `${remark.value.length}/500`;
       }
 
       async function loadPatients() {
@@ -898,6 +958,13 @@
 
       function getMedicalProviderCode(providerId) {
         return providerCodeMap.get(String(providerId)) || "-";
+      }
+
+      function truncateText(value, maxLength = 30) {
+        if (!value) return "-";
+        return value.length > maxLength
+          ? `${value.slice(0, maxLength)}...`
+          : value;
       }
 
       function filterAndSortPatients() {
@@ -973,6 +1040,7 @@
                 data-mobile="${escapeHtml(patient.mobileNo)}"
                 data-city="${escapeHtml(patient.city)}"
                 data-chronic="${escapeHtml(patient.chronic)}"
+                data-remark="${escapeHtml(patient.remark)}"
               >
                 <td>${escapeHtml(getMedicalProviderCode(patient.medicalProviderId))}</td>
                 <td>
@@ -995,6 +1063,11 @@
                 <td>
                   <span class="badge ${patient.hasChronicDisease === "Y" ? "badge-danger-soft" : "badge-success-soft"}">
                     ${patient.hasChronicDisease === "Y" ? "Yes" : "No"}
+                  </span>
+                </td>
+                <td>
+                  <span class="remark-preview" data-full-remark="${escapeHtml(patient.remark || "")}">
+                    ${escapeHtml(truncateText(patient.remark))}
                   </span>
                 </td>
                 <td class="text-nowrap">
@@ -1046,7 +1119,7 @@
         if (pageItems.length === 0) {
           patientsList.innerHTML = `
             <tr id="noPatients">
-              <td colspan="9" class="text-center text-muted py-4">
+              <td colspan="10" class="text-center text-muted py-4">
                 No patients match your search or filter criteria.
               </td>
             </tr>
@@ -1223,12 +1296,49 @@
         });
       }
 
+      const remarkTooltip = document.getElementById("remarkTooltip");
+
+      function moveRemarkTooltip(event) {
+        const offset = 14;
+        remarkTooltip.style.left = `${event.clientX + offset}px`;
+        remarkTooltip.style.top = `${event.clientY + offset}px`;
+      }
+
+      function hideRemarkTooltip() {
+        remarkTooltip.classList.remove("show");
+        remarkTooltip.textContent = "";
+      }
+
+      function showRemarkTooltip(target, event) {
+        const fullRemark = target.getAttribute("data-full-remark");
+        if (!fullRemark || fullRemark === "-" || fullRemark.length <= 30) {
+          hideRemarkTooltip();
+          return;
+        }
+
+        remarkTooltip.textContent = fullRemark;
+        moveRemarkTooltip(event);
+        remarkTooltip.classList.add("show");
+      }
+
       // Initial load
       document.addEventListener("DOMContentLoaded", () => {
         loadPatients();
         attachPatientsTableEvents();
         attachPatientNameHandlers();
         updateSortArrows();
+        updateRemarkCount();
+        remark.addEventListener("input", updateRemarkCount);
+        document.addEventListener("mousemove", (event) => {
+          const remarkPreview = event.target.closest(".remark-preview");
+          if (remarkPreview) {
+            showRemarkTooltip(remarkPreview, event);
+          } else {
+            hideRemarkTooltip();
+          }
+        });
+        document.addEventListener("mouseleave", hideRemarkTooltip);
+        document.addEventListener("scroll", hideRemarkTooltip, true);
 
         // Handle modal cleanup when hidden
         const modalElement = document.getElementById("patientDetailsModal");
@@ -1360,6 +1470,10 @@
           <div class="detail-item">
             <div class="detail-label">City</div>
             <div class="detail-value">${patient.city || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Remark</div>
+            <div class="detail-value">${patient.remark || "-"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Chronic Disease</div>
