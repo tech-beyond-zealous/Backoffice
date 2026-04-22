@@ -933,15 +933,16 @@
         subscriptionList.innerHTML = pageItems
           .map((subscription) => {
             return `
-              <tr data-id="${escapeHtml(subscription.id)}">
+              <tr
+                class="${permissions.view ? "clickable-row" : ""}"
+                data-id="${escapeHtml(subscription.id)}"
+              >
                 <td>${escapeHtml(subscription.medicalProviderCode || "-")}</td>
                 <td>
                   ${
                     permissions.view
                       ? `<a
-                          href="#"
                           class="subscription-name-link"
-                          data-action="view"
                           data-id="${escapeHtml(subscription.id)}"
                         >
                           ${escapeHtml(subscription.patientName || "-")}
@@ -963,19 +964,6 @@
                   </span>
                 </td>
                 <td class="text-nowrap">
-                  ${
-                    permissions.view
-                      ? `<button
-                          type="button"
-                          class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
-                          data-action="view"
-                          data-id="${escapeHtml(subscription.id)}"
-                          title="View"
-                        >
-                          <i class="bi bi-eye"></i>
-                        </button>`
-                      : ""
-                  }
                   ${
                     permissions.edit
                       ? `<button
@@ -1589,6 +1577,26 @@
       subscriptionList.addEventListener("click", (event) => {
         const actionTarget = event.target.closest("[data-action]");
         if (!actionTarget) {
+          if (!permissions.view) {
+            return;
+          }
+          if (
+            event.target.closest(
+              "button, input, select, textarea, .dropdown, .dropdown-menu",
+            )
+          ) {
+            return;
+          }
+
+          const row = event.target.closest("tr[data-id]");
+          const subscription = row
+            ? allSubscriptions.find(
+                (item) => String(item.id) === String(row.dataset.id),
+              )
+            : null;
+          if (subscription) {
+            showSubscriptionDetails(subscription);
+          }
           return;
         }
 
@@ -1597,15 +1605,6 @@
           (item) => String(item.id) === String(actionTarget.dataset.id),
         );
         if (!subscription) {
-          return;
-        }
-
-        if (actionTarget.dataset.action === "view") {
-          if (!permissions.view) {
-            showToast("You do not have permission to view subscriptions.", true);
-            return;
-          }
-          showSubscriptionDetails(subscription);
           return;
         }
 

@@ -3,10 +3,19 @@ package com.gosmart.backoffice.dto;
 import java.util.List;
 
 public class PatientCaregiverSaveRequest {
+    private Integer id;
     private Integer medicalProviderId;
     private Integer patientId;
     private List<Integer> caregiverIds;
     private String status;
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public Integer getMedicalProviderId() {
         return medicalProviderId;

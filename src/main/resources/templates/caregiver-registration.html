@@ -106,6 +106,7 @@
                   <tr
                     th:each="caregiver : ${caregivers}"
                     :key="${caregiver.id}"
+                    th:classappend="${permission != null and permission.view} ? ' clickable-row' : ''"
                     data-id="${caregiver.id}"
                     data-name="${caregiver.name}"
                     data-email="${caregiver.email}"
@@ -126,7 +127,6 @@
                     <td>
                       <a
                         class="caregiver-name-link"
-                        onclick="viewCaregiverDetails(this)"
                         data-id="${caregiver.id}"
                         th:text="${caregiver.name}"
                         >-</a
@@ -142,16 +142,6 @@
                       ></span>
                     </td>
                     <td class="text-nowrap">
-                      <button
-                        th:if="${permission != null and permission.view}"
-                        type="button"
-                        class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
-                        onclick="viewCaregiverDetails(this)"
-                        data-id="${caregiver.id}"
-                        title="View"
-                      >
-                        <i class="bi bi-eye"></i>
-                      </button>
                       <button
                         th:if="${permission != null and permission.edit}"
                         type="button"
@@ -713,6 +703,7 @@
           .map((caregiver) => {
             return `
               <tr
+                class="${permissions.view ? "clickable-row" : ""}"
                 data-id="${escapeHtml(caregiver.id)}"
                 data-name="${escapeHtml(caregiver.name)}"
                 data-email="${escapeHtml(caregiver.email)}"
@@ -724,7 +715,6 @@
                 <td>
                   <a
                     class="caregiver-name-link"
-                    onclick="viewCaregiverDetails(this)"
                     data-id="${escapeHtml(caregiver.id)}"
                     >${escapeHtml(caregiver.name)}</a
                   >
@@ -738,16 +728,6 @@
                   </span>
                 </td>
                 <td class="text-nowrap">
-                  ${permissions.view ? `
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1 action-icon"
-                    onclick="viewCaregiverDetails(this)"
-                    data-id="${escapeHtml(caregiver.id)}"
-                    title="View"
-                  >
-                    <i class="bi bi-eye"></i>
-                  </button>` : ''}
                   ${permissions.edit ? `
                   <button
                     type="button"
@@ -883,6 +863,22 @@
         document
           .getElementById("resetFiltersBtn")
           .addEventListener("click", resetFiltersAndSort);
+
+        caregiversList.addEventListener("click", (event) => {
+          if (!permissions.view) return;
+          if (
+            event.target.closest(
+              "button, input, select, textarea, .dropdown, .dropdown-menu",
+            )
+          ) {
+            return;
+          }
+
+          const row = event.target.closest("tr[data-id]");
+          if (row) {
+            viewCaregiverDetails(row);
+          }
+        });
       }
 
       function resetFiltersAndSort() {
@@ -937,22 +933,10 @@
         });
       }
 
-      function attachCaregiverNameHandlers() {
-        const caregiverNameLinks =
-          document.querySelectorAll(".caregiver-name-link");
-        caregiverNameLinks.forEach((link) => {
-          link.addEventListener("click", function (e) {
-            e.preventDefault();
-            viewCaregiverDetails(this);
-          });
-        });
-      }
-
       // Initial load
       document.addEventListener("DOMContentLoaded", () => {
         loadCaregivers();
         attachCaregiversTableEvents();
-        attachCaregiverNameHandlers();
         updateSortArrows();
 
         // Handle modal cleanup when hidden

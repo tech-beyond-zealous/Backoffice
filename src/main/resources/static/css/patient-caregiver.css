@@ -30,6 +30,10 @@
   border-left: 4px solid var(--primary-color);
 }
 
+.patient-caregiver-table tbody tr.clickable-row {
+  cursor: pointer;
+}
+
 .assignment-name-link {
   cursor: pointer;
   color: var(--primary-color);

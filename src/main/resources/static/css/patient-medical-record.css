@@ -28,6 +28,10 @@
   border-left: 4px solid var(--primary-color);
 }
 
+.medical-record-table tbody tr.clickable-row {
+  cursor: pointer;
+}
+
 .record-name-link {
   cursor: pointer;
   color: var(--primary-color);

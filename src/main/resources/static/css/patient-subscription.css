@@ -30,6 +30,10 @@
   border-left: 4px solid var(--primary-color);
 }
 
+.subscriptions-table tbody tr.clickable-row {
+  cursor: pointer;
+}
+
 .subscription-name-link {
   cursor: pointer;
   color: var(--primary-color);

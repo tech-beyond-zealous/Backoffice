@@ -4,6 +4,7 @@ import com.gosmart.backoffice.domain.PatientRegistration;
 import com.gosmart.backoffice.dto.UserFunctionPermission;
 import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PatientRegistrationService;
+import com.gosmart.backoffice.service.PermissionService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,18 +21,23 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class PatientRegistrationController {
+    private static final String PATIENT_REGISTRATION_FUNCTION_PATH = "/patient/registration";
+
     private final ProtectedPageModelService protectedPageModelService;
     private final PatientRegistrationService patientRegistrationService;
     private final MedicalProviderService medicalProviderService;
+    private final PermissionService permissionService;
 
     public PatientRegistrationController(
             ProtectedPageModelService protectedPageModelService,
             PatientRegistrationService patientRegistrationService,
-            MedicalProviderService medicalProviderService
+            MedicalProviderService medicalProviderService,
+            PermissionService permissionService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.patientRegistrationService = patientRegistrationService;
         this.medicalProviderService = medicalProviderService;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/patient/registration")
@@ -55,6 +61,12 @@ public class PatientRegistrationController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        permissionService.requireCreate(
+                request,
+                currentUserId,
+                PATIENT_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to create patients."
+        );
 
         // Set create_by and modify_by automatically
         patient.setCreateBy(currentUserId);
@@ -66,6 +78,16 @@ public class PatientRegistrationController {
     @PutMapping("/patient/{id}")
     @ResponseBody
     public PatientRegistration updatePatient(@PathVariable Long id, @RequestBody PatientRegistration patient, HttpServletRequest request) {
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        permissionService.requireEdit(
+                request,
+                currentUserId,
+                PATIENT_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to edit patients."
+        );
         Optional<PatientRegistration> existing = patientRegistrationService.findById(id);
         if (existing.isPresent()) {
             PatientRegistration toUpdate = existing.get();
@@ -89,10 +111,6 @@ public class PatientRegistrationController {
             toUpdate.setMedicalProviderId(patient.getMedicalProviderId());
 
             // Set modify_by automatically
-            String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
-            if (currentUserId == null) {
-                throw new IllegalStateException("Logged-in user id is missing from request attributes");
-            }
             toUpdate.setModifyBy(currentUserId);
 
             return patientRegistrationService.save(toUpdate);
@@ -108,19 +126,35 @@ public class PatientRegistrationController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        permissionService.requireDelete(
+                request,
+                currentUserId,
+                PATIENT_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to delete patients."
+        );
 
         patientRegistrationService.deleteById(id, currentUserId);
     }
 
     @GetMapping("/patient/{id}")
     @ResponseBody
-    public Optional<PatientRegistration> getPatient(@PathVariable Long id) {
+    public Optional<PatientRegistration> getPatient(@PathVariable Long id, HttpServletRequest request) {
+        requireView(request, "You do not have permission to view patients.");
         return patientRegistrationService.findById(id);
     }
 
     @GetMapping("/patient/all")
     @ResponseBody
-    public java.util.List<PatientRegistration> getAllPatients() {
+    public java.util.List<PatientRegistration> getAllPatients(HttpServletRequest request) {
+        requireView(request, "You do not have permission to view patients.");
         return patientRegistrationService.findAll();
+    }
+
+    private void requireView(HttpServletRequest request, String message) {
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        permissionService.requireView(request, currentUserId, PATIENT_REGISTRATION_FUNCTION_PATH, message);
     }
 }

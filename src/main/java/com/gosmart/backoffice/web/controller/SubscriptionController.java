@@ -7,6 +7,7 @@ import com.gosmart.backoffice.service.MedicalPackageService;
 import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PackageSubscriptionService;
 import com.gosmart.backoffice.service.PatientRegistrationService;
+import com.gosmart.backoffice.service.PermissionService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,25 +28,29 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class SubscriptionController {
     private static final Logger log = LoggerFactory.getLogger(SubscriptionController.class);
+    private static final String SUBSCRIPTION_FUNCTION_PATH = "/patient/subscription";
 
     private final ProtectedPageModelService protectedPageModelService;
     private final MedicalProviderService medicalProviderService;
     private final MedicalPackageService medicalPackageService;
     private final PatientRegistrationService patientRegistrationService;
     private final PackageSubscriptionService packageSubscriptionService;
+    private final PermissionService permissionService;
 
     public SubscriptionController(
             ProtectedPageModelService protectedPageModelService,
             MedicalProviderService medicalProviderService,
             MedicalPackageService medicalPackageService,
             PatientRegistrationService patientRegistrationService,
-            PackageSubscriptionService packageSubscriptionService
+            PackageSubscriptionService packageSubscriptionService,
+            PermissionService permissionService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.medicalProviderService = medicalProviderService;
         this.medicalPackageService = medicalPackageService;
         this.patientRegistrationService = patientRegistrationService;
         this.packageSubscriptionService = packageSubscriptionService;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/patient/subscription")
@@ -82,6 +87,15 @@ public class SubscriptionController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        UserFunctionPermission permission =
+                permissionService.resolve(httpRequest, currentUserId, SUBSCRIPTION_FUNCTION_PATH);
+        boolean isEdit = request.getId() != null;
+        if (isEdit && (permission == null || !permission.isEdit())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to edit subscriptions.");
+        }
+        if (!isEdit && (permission == null || !permission.isCreate())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to create subscriptions.");
+        }
         try {
             SubscriptionView savedSubscription = packageSubscriptionService.saveSubscription(request, currentUserId);
             return ResponseEntity.ok(savedSubscription);
@@ -97,6 +111,12 @@ public class SubscriptionController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        permissionService.requireDelete(
+                request,
+                currentUserId,
+                SUBSCRIPTION_FUNCTION_PATH,
+                "You do not have permission to delete subscriptions."
+        );
         packageSubscriptionService.deleteSubscription(id);
     }
 }

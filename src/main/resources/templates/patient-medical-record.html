@@ -826,7 +826,10 @@
         medicalRecordList.innerHTML = pageItems
           .map(
             (record) => `
-              <tr>
+              <tr
+                class="${permissions.view ? "clickable-row" : ""}"
+                data-id="${escapeHtml(record.id)}"
+              >
                 <td>${escapeHtml(record.medicalProviderCode || "-")}</td>
                 <td>
                   ${
@@ -834,8 +837,6 @@
                       ? `
                         <a
                           class="record-name-link"
-                          href="#"
-                          data-action="view"
                           data-id="${escapeHtml(record.id)}"
                         >
                           ${escapeHtml(record.patientName || "-")}
@@ -854,21 +855,6 @@
                 </td>
                 <td>${escapeHtml(record.createdDateTime || "-")}</td>
                 <td class="text-nowrap">
-                  ${
-                    permissions.view
-                      ? `
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-info btn-sm-custom shadow-sm me-1"
-                          data-action="view"
-                          data-id="${escapeHtml(record.id)}"
-                          title="View"
-                        >
-                          <i class="bi bi-eye"></i>
-                        </button>
-                      `
-                      : ""
-                  }
                   ${
                     permissions.edit
                       ? `
@@ -1011,6 +997,26 @@
       medicalRecordList.addEventListener("click", (event) => {
         const trigger = event.target.closest("[data-action]");
         if (!trigger) {
+          if (!permissions.view) {
+            return;
+          }
+          if (
+            event.target.closest(
+              "button, input, select, textarea, .dropdown, .dropdown-menu",
+            )
+          ) {
+            return;
+          }
+
+          const row = event.target.closest("tr[data-id]");
+          const record = row
+            ? allMedicalRecords.find(
+                (item) => String(item.id) === String(row.dataset.id),
+              )
+            : null;
+          if (record) {
+            showRecordDetails(record);
+          }
           return;
         }
         event.preventDefault();
@@ -1023,9 +1029,6 @@
         }
 
         switch (trigger.dataset.action) {
-          case "view":
-            showRecordDetails(record);
-            break;
           case "edit":
             startEditRecord(record);
             break;

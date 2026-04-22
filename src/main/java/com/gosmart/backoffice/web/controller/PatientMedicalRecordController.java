@@ -2,10 +2,10 @@ package com.gosmart.backoffice.web.controller;
 
 import com.gosmart.backoffice.dto.PatientMedicalRecordSaveRequest;
 import com.gosmart.backoffice.dto.UserFunctionPermission;
-import com.gosmart.backoffice.repo.UserFunctionRepository;
 import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PatientMedicalRecordService;
 import com.gosmart.backoffice.service.PatientRegistrationService;
+import com.gosmart.backoffice.service.PermissionService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,20 +32,20 @@ public class PatientMedicalRecordController {
     private final MedicalProviderService medicalProviderService;
     private final PatientRegistrationService patientRegistrationService;
     private final PatientMedicalRecordService patientMedicalRecordService;
-    private final UserFunctionRepository userFunctionRepository;
+    private final PermissionService permissionService;
 
     public PatientMedicalRecordController(
             ProtectedPageModelService protectedPageModelService,
             MedicalProviderService medicalProviderService,
             PatientRegistrationService patientRegistrationService,
             PatientMedicalRecordService patientMedicalRecordService,
-            UserFunctionRepository userFunctionRepository
+            PermissionService permissionService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.medicalProviderService = medicalProviderService;
         this.patientRegistrationService = patientRegistrationService;
         this.patientMedicalRecordService = patientMedicalRecordService;
-        this.userFunctionRepository = userFunctionRepository;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/patient/medical-record")
@@ -86,7 +86,8 @@ public class PatientMedicalRecordController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
-        UserFunctionPermission permission = resolvePermission(httpRequest, currentUserId);
+        UserFunctionPermission permission =
+                permissionService.resolve(httpRequest, currentUserId, MEDICAL_RECORD_FUNCTION_PATH);
         boolean isEdit = request.getId() != null;
         if (isEdit && (permission == null || !permission.isEdit())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to edit medical records.");
@@ -115,31 +116,12 @@ public class PatientMedicalRecordController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
-        UserFunctionPermission permission = resolvePermission(request, currentUserId);
-        if (permission == null || !permission.isDelete()) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "You do not have permission to delete medical records."
-            );
-        }
+        permissionService.requireDelete(
+                request,
+                currentUserId,
+                MEDICAL_RECORD_FUNCTION_PATH,
+                "You do not have permission to delete medical records."
+        );
         patientMedicalRecordService.deleteRecord(id, currentUserId);
-    }
-
-    private UserFunctionPermission resolvePermission(HttpServletRequest request, String userId) {
-        UserFunctionPermission permission =
-                (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
-        if (permission != null) {
-            return permission;
-        }
-
-        return userFunctionRepository.findFunctionPermissionRow(userId, MEDICAL_RECORD_FUNCTION_PATH)
-                .filter(row -> row.getCanView() != null && "Y".equalsIgnoreCase(row.getCanView()))
-                .map(row -> new UserFunctionPermission(
-                        row.getCanCreate() != null && "Y".equalsIgnoreCase(row.getCanCreate()),
-                        row.getCanEdit() != null && "Y".equalsIgnoreCase(row.getCanEdit()),
-                        row.getCanDelete() != null && "Y".equalsIgnoreCase(row.getCanDelete()),
-                        true
-                ))
-                .orElse(null);
     }
 }

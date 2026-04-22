@@ -7,6 +7,7 @@ import com.gosmart.backoffice.service.CaregiverService;
 import com.gosmart.backoffice.service.MedicalProviderService;
 import com.gosmart.backoffice.service.PatientCaregiverService;
 import com.gosmart.backoffice.service.PatientRegistrationService;
+import com.gosmart.backoffice.service.PermissionService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,25 +29,29 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class PatientCaregiverController {
     private static final Logger log = LoggerFactory.getLogger(PatientCaregiverController.class);
+    private static final String PATIENT_CAREGIVER_FUNCTION_PATH = "/patient/patient-caregiver";
 
     private final ProtectedPageModelService protectedPageModelService;
     private final MedicalProviderService medicalProviderService;
     private final PatientRegistrationService patientRegistrationService;
     private final CaregiverService caregiverService;
     private final PatientCaregiverService patientCaregiverService;
+    private final PermissionService permissionService;
 
     public PatientCaregiverController(
             ProtectedPageModelService protectedPageModelService,
             MedicalProviderService medicalProviderService,
             PatientRegistrationService patientRegistrationService,
             CaregiverService caregiverService,
-            PatientCaregiverService patientCaregiverService
+            PatientCaregiverService patientCaregiverService,
+            PermissionService permissionService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.medicalProviderService = medicalProviderService;
         this.patientRegistrationService = patientRegistrationService;
         this.caregiverService = caregiverService;
         this.patientCaregiverService = patientCaregiverService;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/patient/patient-caregiver")
@@ -89,6 +94,17 @@ public class PatientCaregiverController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        UserFunctionPermission permission =
+                permissionService.resolve(httpRequest, currentUserId, PATIENT_CAREGIVER_FUNCTION_PATH);
+        boolean isEdit = request.getId() != null;
+        if (isEdit && (permission == null || !permission.isEdit())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You do not have permission to edit patient caregiver assignments.");
+        }
+        if (!isEdit && (permission == null || !permission.isCreate())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You do not have permission to create patient caregiver assignments.");
+        }
         try {
             Optional<PatientCaregiverView> savedView = patientCaregiverService.saveAssignments(request, currentUserId);
             if (savedView.isPresent()) {
@@ -107,6 +123,12 @@ public class PatientCaregiverController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        permissionService.requireDelete(
+                request,
+                currentUserId,
+                PATIENT_CAREGIVER_FUNCTION_PATH,
+                "You do not have permission to delete patient caregiver assignments."
+        );
         patientCaregiverService.deleteAssignmentGroup(id, currentUserId);
     }
 }

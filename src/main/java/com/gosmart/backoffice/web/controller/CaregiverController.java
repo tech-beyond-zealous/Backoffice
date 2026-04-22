@@ -4,6 +4,7 @@ import com.gosmart.backoffice.domain.CaregiverEntity;
 import com.gosmart.backoffice.dto.UserFunctionPermission;
 import com.gosmart.backoffice.service.CaregiverService;
 import com.gosmart.backoffice.service.MedicalProviderService;
+import com.gosmart.backoffice.service.PermissionService;
 import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 
@@ -16,19 +17,23 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class CaregiverController {
+    private static final String CAREGIVER_REGISTRATION_FUNCTION_PATH = "/caregiver/registration";
 
     private final ProtectedPageModelService protectedPageModelService;
     private final CaregiverService caregiverService;
     private final MedicalProviderService medicalProviderService;
+    private final PermissionService permissionService;
 
     public CaregiverController(
             ProtectedPageModelService protectedPageModelService,
             CaregiverService caregiverService,
-            MedicalProviderService medicalProviderService
+            MedicalProviderService medicalProviderService,
+            PermissionService permissionService
     ) {
         this.protectedPageModelService = protectedPageModelService;
         this.caregiverService = caregiverService;
         this.medicalProviderService = medicalProviderService;
+        this.permissionService = permissionService;
     }
 
     @GetMapping("/caregiver/registration")
@@ -47,6 +52,15 @@ public class CaregiverController {
     @ResponseBody
     public CaregiverEntity saveCaregiver(@RequestBody CaregiverEntity caregiver, HttpServletRequest request) {
         String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (userId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        permissionService.requireCreate(
+                request,
+                userId,
+                CAREGIVER_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to create caregivers."
+        );
         caregiver.setCreateBy(userId);
         caregiver.setModifyBy(userId);
         return caregiverService.save(caregiver);
@@ -55,10 +69,19 @@ public class CaregiverController {
     @PutMapping("/caregiver/{id}")
     @ResponseBody
     public CaregiverEntity updateCaregiver(@PathVariable Long id, @RequestBody CaregiverEntity caregiver, HttpServletRequest request) {
+        String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (userId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        permissionService.requireEdit(
+                request,
+                userId,
+                CAREGIVER_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to edit caregivers."
+        );
         Optional<CaregiverEntity> existing = caregiverService.findById(id);
         if (existing.isPresent()) {
             CaregiverEntity toUpdate = existing.get();
-            String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
             toUpdate.setMedicalProviderId(caregiver.getMedicalProviderId());
             toUpdate.setName(caregiver.getName());
             toUpdate.setEmail(caregiver.getEmail());
@@ -76,18 +99,42 @@ public class CaregiverController {
     @ResponseBody
     public void deleteCaregiver(@PathVariable Long id, HttpServletRequest request) {
         String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (userId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        permissionService.requireDelete(
+                request,
+                userId,
+                CAREGIVER_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to delete caregivers."
+        );
         caregiverService.softDelete(id, userId);
     }
 
     @GetMapping("/caregiver/{id}")
     @ResponseBody
-    public Optional<CaregiverEntity> getCaregiver(@PathVariable Long id) {
+    public Optional<CaregiverEntity> getCaregiver(@PathVariable Long id, HttpServletRequest request) {
+        requireView(request);
         return caregiverService.findById(id);
     }
 
     @GetMapping("/caregiver/all")
     @ResponseBody
-    public List<CaregiverEntity> getAllCaregivers() {
+    public List<CaregiverEntity> getAllCaregivers(HttpServletRequest request) {
+        requireView(request);
         return caregiverService.findAll();
+    }
+
+    private void requireView(HttpServletRequest request) {
+        String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (userId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        permissionService.requireView(
+                request,
+                userId,
+                CAREGIVER_REGISTRATION_FUNCTION_PATH,
+                "You do not have permission to view caregivers."
+        );
     }
 }
