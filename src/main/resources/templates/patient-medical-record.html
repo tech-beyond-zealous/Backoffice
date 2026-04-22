@@ -656,7 +656,12 @@
           closeMenu();
         }
 
-        textInput.addEventListener("focus", () => renderMenu(textInput.value));
+        function openPatientList() {
+          renderMenu(hiddenInput.value ? "" : textInput.value);
+        }
+
+        textInput.addEventListener("focus", openPatientList);
+        textInput.addEventListener("click", openPatientList);
         textInput.addEventListener("input", () => {
           hiddenInput.value = "";
           if (requiredMessage) {
@@ -1096,6 +1101,11 @@
             allMedicalRecords.unshift(savedRecord);
           }
 
+          filterMedicalProviderId.value = savedRecord.medicalProviderId || "";
+          filterPatientPicker.setProvider(
+            savedRecord.medicalProviderId,
+            savedRecord.patientId,
+          );
           currentPage = 1;
           renderMedicalRecordTable();
           getFormModal().hide();

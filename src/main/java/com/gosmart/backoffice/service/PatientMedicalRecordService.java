@@ -40,8 +40,12 @@ public class PatientMedicalRecordService {
     }
 
     public PatientMedicalRecordView saveRecord(PatientMedicalRecordSaveRequest request, String currentUserId) {
+        if (request.getPatientId() == null) {
+            throw new IllegalArgumentException("Please select a registered patient.");
+        }
         PatientRegistration patient = patientRegistrationService.findById(request.getPatientId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid patient selected."));
+                .filter(item -> "A".equalsIgnoreCase(item.getStatus()))
+                .orElseThrow(() -> new IllegalArgumentException("Selected patient is not registered or active."));
 
         if (patient.getMedicalProviderId() == null
                 || !String.valueOf(patient.getMedicalProviderId()).equals(String.valueOf(request.getMedicalProviderId()))) {
@@ -54,7 +58,8 @@ public class PatientMedicalRecordService {
                     .orElseThrow(() -> new IllegalArgumentException("Invalid medical record selected."));
         } else {
             record = new PatientMedicalRecord();
-            record.setId(Math.toIntExact(request.getPatientId()));
+            record.setId(patientMedicalRecordRepository.findMaxId() + 1);
+            record.setCreateDt(LocalDateTime.now());
             record.setCreateBy(currentUserId);
             record.setStatus("A");
         }
