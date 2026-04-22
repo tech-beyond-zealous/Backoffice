@@ -93,13 +93,14 @@
                       <span class="sort-arrow" data-field="gender"></span>
                     </th>
                     <th>IC/Passport</th>
-                    <th>Mobile</th>
+                    <th>Mobile Number</th>
                     <th class="sortable" data-sort="city">
                       City <span class="sort-arrow" data-field="city"></span>
                     </th>
                     <th>Chronic Disease</th>
                     <th class="sortable" data-sort="remark">
-                      Remark <span class="sort-arrow" data-field="remark"></span>
+                      Remark
+                      <span class="sort-arrow" data-field="remark"></span>
                     </th>
                     <th>Actions</th>
                   </tr>
@@ -493,7 +494,7 @@
 
               <!-- GoSmart User Id -->
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-vcard"></i> GoSmart User Id
+                <i class="bi bi-person-vcard"></i> GoSmart User ID
               </h3>
 
               <div class="form-group-compact col-span-2">
@@ -502,7 +503,7 @@
                   id="gosmartUserId"
                   name="gosmartUserId"
                   class="input-field"
-                  placeholder="GoSmart User Id"
+                  placeholder="GoSmart User ID"
                 />
               </div>
 
@@ -1422,6 +1423,10 @@
           <div class="detail-item">
             <div class="detail-label">IC / Passport</div>
             <div class="detail-value">${patient.icPassportNo || "-"}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">GoSmart User ID</div>
+            <div class="detail-value">${patient.gosmartUserId || "-"}</div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Age</div>
