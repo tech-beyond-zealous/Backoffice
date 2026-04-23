@@ -228,7 +228,7 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog modal-lg patient-registration-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="patientFormModalLabel">Add Patient</h5>
@@ -240,14 +240,18 @@
             ></button>
           </div>
           <div class="modal-body">
-            <form id="patientForm" class="form-grid">
+            <form
+              id="patientForm"
+              class="form-grid patient-registration-form"
+              novalidate
+            >
               <input type="hidden" id="patientId" name="id" />
 
               <!-- Medical Provider -->
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-badge"></i> Medical Provider
+              <h3 class="section-heading span-12">
+                <i class="bi bi-building"></i> Medical Provider
               </h3>
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-12">
                 <label
                   for="medicalProviderId"
                   class="form-label visually-hidden"
@@ -271,59 +275,43 @@
               </div>
 
               <!-- Basic Info -->
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading span-12">
                 <i class="bi bi-person"></i> Basic Information
               </h3>
-              <div class="form-group-compact">
+              <div class="form-group-compact span-8">
                 <input
                   type="text"
                   id="name"
                   name="name"
                   class="input-field"
                   placeholder="Full Name *"
+                  maxlength="100"
                   required
                 />
               </div>
-              <div class="form-group-compact">
+              <div class="form-group-compact span-4">
                 <input
-                  type="number"
+                  type="text"
                   id="age"
                   name="age"
                   class="input-field"
                   placeholder="Age *"
-                  min="0"
-                  max="120"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="3"
                   required
-                  oninvalid="
-                    this.setCustomValidity('Please enter the patient age')
-                  "
-                  oninput="this.setCustomValidity('')"
                 />
               </div>
 
-              <div class="form-group-compact">
-                <select
-                  id="gender"
-                  name="gender"
-                  class="input-field"
-                  required
-                  oninvalid="this.setCustomValidity('Please select a gender')"
-                  oninput="this.setCustomValidity('')"
-                >
+              <div class="form-group-compact span-6">
+                <select id="gender" name="gender" class="input-field" required>
                   <option value="" disabled selected>Select Gender *</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
               </div>
-              <div class="form-group-compact">
-                <select
-                  id="race"
-                  name="race"
-                  class="input-field"
-                  required
-                  oninvalid="this.setCustomValidity('Please select a race')"
-                  oninput="this.setCustomValidity('')"
-                >
+              <div class="form-group-compact span-6">
+                <select id="race" name="race" class="input-field" required>
                   <option value="" disabled selected>Select Race *</option>
                   <option value="Chinese">Chinese</option>
                   <option value="Indian">Indian</option>
@@ -333,125 +321,163 @@
               </div>
 
               <!-- Identity -->
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading span-12">
                 <i class="bi bi-card-text"></i> Identity
               </h3>
 
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-8">
                 <input
                   type="text"
                   id="icPassportNo"
                   name="icPassportNo"
                   class="input-field"
                   placeholder="IC / Passport Number *"
+                  maxlength="20"
                   required
                 />
               </div>
 
               <!-- Contact -->
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading span-12">
                 <i class="bi bi-telephone"></i> Contact
               </h3>
 
-              <div class="form-group-compact col-span-2">
-                <input
-                  type="tel"
-                  id="mobileNo"
-                  name="mobileNo"
-                  class="input-field"
-                  placeholder="Mobile Number *"
-                  pattern="[0-9+\- ]{7,20}"
-                  title="Enter a valid phone number"
-                  required
-                  oninvalid="
-                    this.setCustomValidity('Please enter a valid mobile number')
-                  "
-                  oninput="this.setCustomValidity('')"
-                />
+              <div class="form-group-compact span-8">
+                <input type="hidden" id="mobileNo" name="mobileNo" />
+                <div class="mobile-e164-group">
+                  <select
+                    id="mobileCountryCode"
+                    class="input-field mobile-country-code"
+                    aria-label="Mobile country code"
+                    required
+                  >
+                    <option value="+60" selected>🇲🇾 Malaysia +60</option>
+                    <option value="+65">🇸🇬 Singapore +65</option>
+                    <option value="+62">🇮🇩 Indonesia +62</option>
+                    <option value="+66">🇹🇭 Thailand +66</option>
+                    <option value="+63">🇵🇭 Philippines +63</option>
+                    <option value="+1">🇺🇸 United States +1</option>
+                    <option value="+44">🇬🇧 United Kingdom +44</option>
+                    <option value="+61">🇦🇺 Australia +61</option>
+                  </select>
+                  <input
+                    type="tel"
+                    id="mobileLocalNumber"
+                    class="input-field mobile-local-number"
+                    placeholder="Mobile Number *"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="15"
+                  />
+                </div>
+                <div
+                  id="mobileNumberError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <!-- Emergency -->
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading span-12 tight-section">
                 <i class="bi bi-shield-exclamation"></i> Emergency Contact
               </h3>
 
-              <div class="form-group-compact">
+              <div class="form-group-compact span-8">
                 <input
                   type="text"
                   id="emergencyContactName"
                   name="emergencyContactName"
                   class="input-field"
-                  placeholder="Contact Name *"
+                  placeholder="Full Name *"
+                  maxlength="100"
                   required
-                  oninvalid="
-                    this.setCustomValidity(
-                      'Please enter an emergency contact name',
-                    )
-                  "
-                  oninput="this.setCustomValidity('')"
                 />
               </div>
-              <div class="form-group-compact">
-                <input
-                  type="tel"
-                  id="emergencyContactNo"
-                  name="emergencyContactNo"
-                  class="input-field"
-                  placeholder="Contact Number *"
-                  pattern="[0-9+\- ]{7,20}"
-                  title="Enter a valid phone number"
-                  required
-                  oninvalid="
-                    this.setCustomValidity(
-                      'Please enter an emergency contact number',
-                    )
-                  "
-                  oninput="this.setCustomValidity('')"
-                />
-              </div>
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-4">
                 <input
                   type="text"
                   id="relationship"
                   name="relationship"
                   class="input-field"
                   placeholder="Relationship"
+                  maxlength="50"
                 />
+              </div>
+              <div class="form-group-compact span-8">
+                <input
+                  type="hidden"
+                  id="emergencyContactNo"
+                  name="emergencyContactNo"
+                />
+                <div class="mobile-e164-group compact-e164-group">
+                  <select
+                    id="emergencyCountryCode"
+                    class="input-field mobile-country-code"
+                    aria-label="Emergency contact country code"
+                    required
+                  >
+                    <option value="+60" selected>🇲🇾 Malaysia +60</option>
+                    <option value="+65">🇸🇬 Singapore +65</option>
+                    <option value="+62">🇮🇩 Indonesia +62</option>
+                    <option value="+66">🇹🇭 Thailand +66</option>
+                    <option value="+63">🇵🇭 Philippines +63</option>
+                    <option value="+1">🇺🇸 United States +1</option>
+                    <option value="+44">🇬🇧 United Kingdom +44</option>
+                    <option value="+61">🇦🇺 Australia +61</option>
+                  </select>
+                  <input
+                    type="tel"
+                    id="emergencyLocalNumber"
+                    class="input-field mobile-local-number"
+                    placeholder="Mobile Number *"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="15"
+                  />
+                </div>
+                <div
+                  id="emergencyContactNoError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <!-- Address -->
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading span-12">
                 <i class="bi bi-geo-alt"></i> Address
               </h3>
 
-              <div class="form-group-compact">
+              <div class="form-group-compact span-8">
                 <input
                   type="text"
                   id="address"
                   name="address"
                   class="input-field"
                   placeholder="Address"
+                  maxlength="255"
                 />
               </div>
-              <div class="form-group-compact">
+              <div class="form-group-compact span-4">
                 <input
                   type="text"
                   id="area"
                   name="area"
                   class="input-field"
                   placeholder="Area"
+                  maxlength="100"
                 />
               </div>
-              <div class="form-group-compact">
+              <div class="form-group-compact span-4">
                 <input
                   type="text"
-                  id="postcode"
-                  name="postcode"
+                  id="city"
+                  name="city"
                   class="input-field"
-                  placeholder="Postcode"
+                  placeholder="City"
+                  maxlength="100"
                 />
               </div>
-              <div class="form-group-compact">
+              <div class="form-group-compact span-5">
                 <select id="state" name="state" class="input-field">
                   <option value="" disabled selected>Select State</option>
                   <option value="Johor">Johor</option>
@@ -472,37 +498,39 @@
                   <option value="Putrajaya">Putrajaya</option>
                 </select>
               </div>
-              <div class="form-group-compact">
+              <div class="form-group-compact span-3">
                 <input
                   type="text"
-                  id="city"
-                  name="city"
+                  id="postcode"
+                  name="postcode"
                   class="input-field"
-                  placeholder="City"
+                  placeholder="Postcode"
+                  maxlength="10"
                 />
               </div>
 
               <!-- GoSmart User Id -->
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading span-12">
                 <i class="bi bi-person-vcard"></i> GoSmart User ID
               </h3>
 
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-8">
                 <input
                   type="text"
                   id="gosmartUserId"
                   name="gosmartUserId"
                   class="input-field"
                   placeholder="GoSmart User ID"
+                  maxlength="100"
                 />
               </div>
 
               <!-- Medical -->
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-heart-pulse"></i> Medical Info
+              <h3 class="section-heading span-12">
+                <i class="bi bi-heart-pulse"></i> Medical Information
               </h3>
 
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-4">
                 <select
                   id="hasChronicDisease"
                   name="hasChronicDisease"
@@ -512,26 +540,27 @@
                   <option value="Y">Chronic Disease: Yes</option>
                 </select>
               </div>
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-8">
                 <input
                   type="text"
                   id="chronicDisease"
                   name="chronicDisease"
                   class="input-field"
                   placeholder="If Yes, Specify Disease"
+                  maxlength="255"
                 />
               </div>
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-chat-left-text"></i> Remark
+              <h3 class="section-heading span-12">
+                <i class="bi bi-chat-left-text"></i> Remarks
               </h3>
-              <div class="form-group-compact col-span-2">
+              <div class="form-group-compact span-12">
                 <textarea
                   id="remark"
                   name="remark"
                   class="input-field"
                   rows="3"
                   maxlength="500"
-                  placeholder="Remark"
+                  placeholder="Enter remarks"
                 ></textarea>
                 <div class="text-end mt-2 text-muted">
                   <small id="remarkCount">0/500</small>
@@ -723,6 +752,27 @@
       const addPatientButton = document.getElementById("addPatientButton");
       const remark = document.getElementById("remark");
       const remarkCount = document.getElementById("remarkCount");
+      const mobileNo = document.getElementById("mobileNo");
+      const mobileCountryCode = document.getElementById("mobileCountryCode");
+      const mobileLocalNumber = document.getElementById("mobileLocalNumber");
+      const mobileNumberError = document.getElementById("mobileNumberError");
+      const emergencyContactNo = document.getElementById("emergencyContactNo");
+      const emergencyCountryCode = document.getElementById("emergencyCountryCode");
+      const emergencyLocalNumber = document.getElementById("emergencyLocalNumber");
+      const emergencyContactNoError = document.getElementById(
+        "emergencyContactNoError",
+      );
+
+      const mobileCountryCodes = [
+        "+60",
+        "+65",
+        "+62",
+        "+66",
+        "+63",
+        "+1",
+        "+44",
+        "+61",
+      ];
 
       const providerCodeMap = new Map(
         medicalProviders.map((provider) => [
@@ -780,6 +830,273 @@
         toast.show();
       }
 
+      const validationMessages = {
+        medicalProviderId: "Please select a medical provider.",
+        name: "Please enter the full name.",
+        age: "Please enter the patient age.",
+        gender: "Please select a gender.",
+        race: "Please select a race.",
+        icPassportNo: "Please enter the IC or passport number.",
+        emergencyContactName: "Please enter an emergency contact name.",
+        chronicDisease: "Please specify the disease.",
+      };
+
+      function getFieldErrorElement(field) {
+        const wrapper = field.closest(".form-group-compact");
+        if (!wrapper) return null;
+        let errorEl = wrapper.querySelector(".field-error");
+        if (!errorEl) {
+          errorEl = document.createElement("div");
+          errorEl.className = "field-error";
+          errorEl.setAttribute("aria-live", "polite");
+          wrapper.appendChild(errorEl);
+        }
+        return errorEl;
+      }
+
+      function setFieldError(field, message = "") {
+        const errorEl = getFieldErrorElement(field);
+        if (errorEl) {
+          errorEl.textContent = message;
+        }
+        field.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function getValidationMessage(field) {
+        if (validationMessages[field.id]) {
+          return validationMessages[field.id];
+        }
+        if (field.validity.rangeUnderflow || field.validity.rangeOverflow) {
+          return "Please enter a valid value.";
+        }
+        if (field.validity.patternMismatch || field.validity.typeMismatch) {
+          return "Please enter a valid value.";
+        }
+        return "This field is required.";
+      }
+
+      function focusInvalidField(field) {
+        const target = field.closest(".form-group-compact") || field;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => field.focus({ preventScroll: true }), 250);
+      }
+
+      function validateRequiredFields() {
+        let isValid = true;
+        let firstInvalidField = null;
+        form
+          .querySelectorAll("[required]")
+          .forEach((field) => {
+            if (
+              field.disabled ||
+              field.id === "mobileCountryCode" ||
+              field.id === "mobileLocalNumber" ||
+              field.id === "emergencyCountryCode" ||
+              field.id === "emergencyLocalNumber"
+            ) {
+              return;
+            }
+
+            if (!field.validity.valid) {
+              setFieldError(field, getValidationMessage(field));
+              if (!firstInvalidField) {
+                firstInvalidField = field;
+              }
+              isValid = false;
+            } else {
+              setFieldError(field);
+            }
+          });
+
+        const ageField = document.getElementById("age");
+        if (ageField.value && Number(ageField.value) > 120) {
+          setFieldError(ageField, "Please enter a valid age.");
+          if (!firstInvalidField) {
+            firstInvalidField = ageField;
+          }
+          isValid = false;
+        }
+
+        if (
+          chronicSelect.value === "Y" &&
+          !document.getElementById("chronicDisease").value.trim()
+        ) {
+          setFieldError(
+            document.getElementById("chronicDisease"),
+            validationMessages.chronicDisease,
+          );
+          if (!firstInvalidField) {
+            firstInvalidField = document.getElementById("chronicDisease");
+          }
+          isValid = false;
+        } else {
+          setFieldError(document.getElementById("chronicDisease"), "");
+        }
+
+        const e164MobileNo = buildE164MobileNo();
+        if (!/^\+[1-9]\d{6,14}$/.test(e164MobileNo)) {
+          setMobileNumberError("Please enter a valid mobile number.");
+          if (!firstInvalidField) {
+            firstInvalidField = mobileLocalNumber;
+          }
+          isValid = false;
+        } else {
+          setMobileNumberError();
+        }
+
+        const e164EmergencyContactNo = buildE164PhoneNumber(
+          emergencyContactNo,
+          emergencyCountryCode,
+          emergencyLocalNumber,
+        );
+        if (!/^\+[1-9]\d{6,14}$/.test(e164EmergencyContactNo)) {
+          setPhoneNumberError(
+            emergencyContactNoError,
+            emergencyLocalNumber,
+            "Please enter a valid emergency contact number.",
+          );
+          if (!firstInvalidField) {
+            firstInvalidField = emergencyLocalNumber;
+          }
+          isValid = false;
+        } else {
+          setPhoneNumberError(emergencyContactNoError, emergencyLocalNumber);
+        }
+
+        if (firstInvalidField) {
+          focusInvalidField(firstInvalidField);
+        }
+        return isValid;
+      }
+
+      function clearInlineValidation() {
+        form.querySelectorAll(".field-error").forEach((errorEl) => {
+          errorEl.textContent = "";
+        });
+        form.querySelectorAll(".is-invalid").forEach((field) => {
+          field.classList.remove("is-invalid");
+        });
+      }
+
+      form.addEventListener("input", (event) => {
+        const field = event.target.closest("[required]");
+        if (!field || field.id === "mobileLocalNumber") return;
+        if (field.validity.valid) {
+          setFieldError(field);
+        }
+        if (event.target.id === "chronicDisease" && event.target.value.trim()) {
+          setFieldError(event.target);
+        }
+      });
+
+      form.addEventListener("change", (event) => {
+        const field = event.target.closest("[required]");
+        if (!field || field.id === "mobileCountryCode") return;
+        if (field.validity.valid) {
+          setFieldError(field);
+        }
+      });
+
+      function digitsOnly(value) {
+        return String(value || "").replace(/\D/g, "");
+      }
+
+      function restrictToDigits(field, maxLength = null) {
+        let nextValue = digitsOnly(field.value);
+        if (maxLength) {
+          nextValue = nextValue.slice(0, maxLength);
+        }
+        if (field.value !== nextValue) {
+          field.value = nextValue;
+        }
+      }
+
+      function normalizeLocalMobileNumber(value) {
+        return digitsOnly(value).replace(/^0+/, "");
+      }
+
+      function buildE164PhoneNumber(hiddenField, countryCodeField, localNumberField) {
+        const localNumber = normalizeLocalMobileNumber(localNumberField.value);
+        if (!countryCodeField.value || !localNumber) {
+          hiddenField.value = "";
+          return "";
+        }
+        const e164Number = `${countryCodeField.value}${localNumber}`;
+        hiddenField.value = e164Number;
+        return e164Number;
+      }
+
+      function buildE164MobileNo() {
+        return buildE164PhoneNumber(mobileNo, mobileCountryCode, mobileLocalNumber);
+      }
+
+      function setPhoneNumberError(errorElement, localNumberField, message = "") {
+        errorElement.textContent = message;
+        localNumberField.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function setMobileNumberError(message = "") {
+        setPhoneNumberError(mobileNumberError, mobileLocalNumber, message);
+      }
+
+      function setPhoneFields(e164Number, countryCodeField, localNumberField, hiddenField) {
+        const normalized = String(e164Number || "").replace(/\s/g, "");
+        const matchedCode =
+          mobileCountryCodes.find((code) => normalized.startsWith(code)) ||
+          "+60";
+        countryCodeField.value = matchedCode;
+        localNumberField.value = normalized.startsWith(matchedCode)
+          ? normalized.slice(matchedCode.length)
+          : digitsOnly(normalized);
+        buildE164PhoneNumber(hiddenField, countryCodeField, localNumberField);
+      }
+
+      function setMobileFields(e164Number) {
+        setPhoneFields(e164Number, mobileCountryCode, mobileLocalNumber, mobileNo);
+        setMobileNumberError();
+      }
+
+      function setEmergencyContactFields(e164Number) {
+        setPhoneFields(
+          e164Number,
+          emergencyCountryCode,
+          emergencyLocalNumber,
+          emergencyContactNo,
+        );
+        setPhoneNumberError(emergencyContactNoError, emergencyLocalNumber);
+      }
+
+      mobileCountryCode.addEventListener("change", () => {
+        buildE164MobileNo();
+        setMobileNumberError();
+      });
+      mobileLocalNumber.addEventListener("input", () => {
+        restrictToDigits(mobileLocalNumber, 15);
+        buildE164MobileNo();
+        setMobileNumberError();
+      });
+      emergencyCountryCode.addEventListener("change", () => {
+        buildE164PhoneNumber(
+          emergencyContactNo,
+          emergencyCountryCode,
+          emergencyLocalNumber,
+        );
+        setPhoneNumberError(emergencyContactNoError, emergencyLocalNumber);
+      });
+      emergencyLocalNumber.addEventListener("input", () => {
+        restrictToDigits(emergencyLocalNumber, 15);
+        buildE164PhoneNumber(
+          emergencyContactNo,
+          emergencyCountryCode,
+          emergencyLocalNumber,
+        );
+        setPhoneNumberError(emergencyContactNoError, emergencyLocalNumber);
+      });
+
+      document.getElementById("age").addEventListener("input", (event) => {
+        restrictToDigits(event.target, 3);
+      });
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         if (patientId.value && !permissions.edit) {
@@ -788,6 +1105,9 @@
         }
         if (!patientId.value && !permissions.create) {
           showToast("You do not have permission to create patients");
+          return;
+        }
+        if (!validateRequiredFields()) {
           return;
         }
 
@@ -820,7 +1140,8 @@
               clearForm();
             }
           } else {
-            showToast("Error saving patient");
+            const errorMessage = await response.text();
+            showToast(errorMessage || "Error saving patient");
           }
         } catch (error) {
           console.error("Error:", error);
@@ -829,6 +1150,7 @@
       });
 
       function populateForm(patient) {
+        clearInlineValidation();
         document.getElementById("patientId").value = patient.id;
         document.getElementById("name").value = patient.name || "";
         document.getElementById("age").value = patient.age || "";
@@ -836,11 +1158,10 @@
         document.getElementById("race").value = patient.race || "";
         document.getElementById("icPassportNo").value =
           patient.icPassportNo || "";
-        document.getElementById("mobileNo").value = patient.mobileNo || "";
+        setMobileFields(patient.mobileNo || "");
         document.getElementById("emergencyContactName").value =
           patient.emergencyContactName || "";
-        document.getElementById("emergencyContactNo").value =
-          patient.emergencyContactNo || "";
+        setEmergencyContactFields(patient.emergencyContactNo || "");
         document.getElementById("relationship").value =
           patient.relationship || "";
         document.getElementById("address").value = patient.address || "";
@@ -912,6 +1233,9 @@
       function clearForm() {
         form.reset();
         patientId.value = "";
+        setMobileFields("");
+        setEmergencyContactFields("");
+        clearInlineValidation();
         updateRemarkCount();
         document.getElementById("patientFormModalLabel").textContent =
           "Add Patient";
@@ -1373,6 +1697,8 @@
           chronicInput.style.display = "block";
         } else {
           chronicInput.style.display = "none";
+          document.getElementById("chronicDisease").value = "";
+          setFieldError(document.getElementById("chronicDisease"), "");
         }
       }
 

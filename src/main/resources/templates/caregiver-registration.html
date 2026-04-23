@@ -202,7 +202,7 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="caregiverFormModalLabel">
@@ -216,12 +216,12 @@
             ></button>
           </div>
           <div class="modal-body">
-            <form id="caregiverForm" class="form-grid">
+            <form id="caregiverForm" class="form-grid" novalidate>
               <input type="hidden" id="caregiverId" name="id" />
 
               <!-- Medical Provider -->
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-badge"></i> Medical Provider
+                <i class="bi bi-building"></i> Medical Provider
               </h3>
               <div class="form-group-compact col-span-2">
                 <label
@@ -257,6 +257,7 @@
                   name="name"
                   class="input-field"
                   placeholder="Full Name *"
+                  maxlength="100"
                   required
                 />
               </div>
@@ -267,6 +268,7 @@
                   name="email"
                   class="input-field"
                   placeholder="Email Address *"
+                  maxlength="100"
                   required
                 />
               </div>
@@ -277,7 +279,8 @@
                   id="userId"
                   name="userId"
                   class="input-field"
-                  placeholder="User Id *"
+                  placeholder="User ID *"
+                  maxlength="100"
                   required
                 />
               </div>
@@ -287,21 +290,39 @@
                 <i class="bi bi-telephone"></i> Contact
               </h3>
 
-              <div class="form-group-compact col-span-2">
-                <input
-                  type="tel"
-                  id="mobileNumber"
-                  name="mobileNumber"
-                  class="input-field"
-                  placeholder="Mobile Number *"
-                  pattern="[0-9+\- ]{7,20}"
-                  title="Enter a valid phone number"
-                  required
-                  oninvalid="
-                    this.setCustomValidity('Please enter a valid mobile number')
-                  "
-                  oninput="this.setCustomValidity('')"
-                />
+              <div class="form-group-compact col-span-2 caregiver-contact-field">
+                <input type="hidden" id="mobileNumber" name="mobileNumber" />
+                <div class="mobile-e164-group">
+                  <select
+                    id="mobileCountryCode"
+                    class="input-field mobile-country-code"
+                    aria-label="Mobile country code"
+                    required
+                  >
+                    <option value="+60" selected>🇲🇾 Malaysia +60</option>
+                    <option value="+65">🇸🇬 Singapore +65</option>
+                    <option value="+62">🇮🇩 Indonesia +62</option>
+                    <option value="+66">🇹🇭 Thailand +66</option>
+                    <option value="+63">🇵🇭 Philippines +63</option>
+                    <option value="+1">🇺🇸 United States +1</option>
+                    <option value="+44">🇬🇧 United Kingdom +44</option>
+                    <option value="+61">🇦🇺 Australia +61</option>
+                  </select>
+                  <input
+                    type="tel"
+                    id="mobileLocalNumber"
+                    class="input-field mobile-local-number"
+                    placeholder="Mobile Number *"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="15"
+                  />
+                </div>
+                <div
+                  id="mobileNumberError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <h3 class="section-heading col-span-2">
@@ -490,6 +511,12 @@
       const caregiverSearch = document.getElementById("caregiverSearch");
       const caregiversPagination = document.getElementById("caregiversPagination");
       const caregiversInfo = document.getElementById("caregiversInfo");
+      const mobileNumber = document.getElementById("mobileNumber");
+      const mobileCountryCode = document.getElementById("mobileCountryCode");
+      const mobileLocalNumber = document.getElementById("mobileLocalNumber");
+      const mobileNumberError = document.getElementById("mobileNumberError");
+
+      const mobileCountryCodes = ["+60", "+65", "+62", "+66", "+63", "+1", "+44", "+61"];
 
       const providerCodeMap = new Map(
         medicalProviders.map((provider) => [
@@ -531,8 +558,179 @@
         toast.show();
       }
 
+      const validationMessages = {
+        medicalProviderId: "Please select a medical provider.",
+        name: "Please enter the full name.",
+        email: "Please enter a valid email address.",
+        userId: "Please enter the user id.",
+      };
+
+      function getFieldErrorElement(field) {
+        const wrapper = field.closest(".form-group-compact");
+        if (!wrapper) return null;
+        let errorEl = wrapper.querySelector(".field-error");
+        if (!errorEl) {
+          errorEl = document.createElement("div");
+          errorEl.className = "field-error";
+          errorEl.setAttribute("aria-live", "polite");
+          wrapper.appendChild(errorEl);
+        }
+        return errorEl;
+      }
+
+      function setFieldError(field, message = "") {
+        const errorEl = getFieldErrorElement(field);
+        if (errorEl) {
+          errorEl.textContent = message;
+        }
+        field.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function getValidationMessage(field) {
+        if (validationMessages[field.id]) {
+          return validationMessages[field.id];
+        }
+        if (field.validity.typeMismatch) {
+          return "Please enter a valid value.";
+        }
+        return "This field is required.";
+      }
+
+      function focusInvalidField(field) {
+        const target = field.closest(".form-group-compact") || field;
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(() => field.focus({ preventScroll: true }), 250);
+      }
+
+      function validateRequiredFields() {
+        let isValid = true;
+        let firstInvalidField = null;
+        form
+          .querySelectorAll("[required]")
+          .forEach((field) => {
+            if (
+              field.disabled ||
+              field.id === "mobileCountryCode" ||
+              field.id === "mobileLocalNumber"
+            ) {
+              return;
+            }
+
+            if (!field.validity.valid) {
+              setFieldError(field, getValidationMessage(field));
+              if (!firstInvalidField) {
+                firstInvalidField = field;
+              }
+              isValid = false;
+            } else {
+              setFieldError(field);
+            }
+          });
+
+        const e164MobileNumber = buildE164MobileNumber();
+        if (!/^\+[1-9]\d{6,14}$/.test(e164MobileNumber)) {
+          setMobileNumberError("Please enter a valid mobile number.");
+          if (!firstInvalidField) {
+            firstInvalidField = mobileLocalNumber;
+          }
+          isValid = false;
+        } else {
+          setMobileNumberError();
+        }
+
+        if (firstInvalidField) {
+          focusInvalidField(firstInvalidField);
+        }
+        return isValid;
+      }
+
+      function clearInlineValidation() {
+        form.querySelectorAll(".field-error").forEach((errorEl) => {
+          errorEl.textContent = "";
+        });
+        form.querySelectorAll(".is-invalid").forEach((field) => {
+          field.classList.remove("is-invalid");
+        });
+      }
+
+      form.addEventListener("input", (event) => {
+        const field = event.target.closest("[required]");
+        if (!field || field.id === "mobileLocalNumber") return;
+        if (field.validity.valid) {
+          setFieldError(field);
+        }
+      });
+
+      form.addEventListener("change", (event) => {
+        const field = event.target.closest("[required]");
+        if (!field || field.id === "mobileCountryCode") return;
+        if (field.validity.valid) {
+          setFieldError(field);
+        }
+      });
+
+      function digitsOnly(value) {
+        return String(value || "").replace(/\D/g, "");
+      }
+
+      function restrictToDigits(field, maxLength = null) {
+        let nextValue = digitsOnly(field.value);
+        if (maxLength) {
+          nextValue = nextValue.slice(0, maxLength);
+        }
+        if (field.value !== nextValue) {
+          field.value = nextValue;
+        }
+      }
+
+      function normalizeLocalMobileNumber(value) {
+        return digitsOnly(value).replace(/^0+/, "");
+      }
+
+      function buildE164MobileNumber() {
+        const localNumber = normalizeLocalMobileNumber(mobileLocalNumber.value);
+        if (!mobileCountryCode.value || !localNumber) {
+          mobileNumber.value = "";
+          return "";
+        }
+        const e164Number = `${mobileCountryCode.value}${localNumber}`;
+        mobileNumber.value = e164Number;
+        return e164Number;
+      }
+
+      function setMobileNumberError(message = "") {
+        mobileNumberError.textContent = message;
+        mobileLocalNumber.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function setMobileFields(e164Number) {
+        const normalized = String(e164Number || "").replace(/\s/g, "");
+        const matchedCode =
+          mobileCountryCodes.find((code) => normalized.startsWith(code)) ||
+          "+60";
+        mobileCountryCode.value = matchedCode;
+        mobileLocalNumber.value = normalized.startsWith(matchedCode)
+          ? normalized.slice(matchedCode.length)
+          : digitsOnly(normalized);
+        buildE164MobileNumber();
+        setMobileNumberError();
+      }
+
+      mobileCountryCode.addEventListener("change", () => {
+        buildE164MobileNumber();
+        setMobileNumberError();
+      });
+      mobileLocalNumber.addEventListener("input", () => {
+        restrictToDigits(mobileLocalNumber, 15);
+        buildE164MobileNumber();
+        setMobileNumberError();
+      });
+
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (!validateRequiredFields()) {
+          return;
+        }
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
@@ -555,7 +753,8 @@
             const modal = getCaregiverFormModal();
             modal.hide();
           } else {
-            showToast("Error saving caregiver");
+            const errorMessage = await response.text();
+            showToast(errorMessage || "Error saving caregiver");
           }
         } catch (error) {
           console.error("Error:", error);
@@ -564,11 +763,12 @@
       });
 
       function populateForm(caregiver) {
+        clearInlineValidation();
         document.getElementById("caregiverId").value = caregiver.id;
         document.getElementById("name").value = caregiver.name || "";
         document.getElementById("email").value = caregiver.email || "";
         document.getElementById("userId").value = caregiver.userId || "";
-        document.getElementById("mobileNumber").value = caregiver.mobileNumber || "";
+        setMobileFields(caregiver.mobileNumber || "");
         document.getElementById("status").value = caregiver.status || "A";
         document.getElementById("medicalProviderId").value = caregiver.medicalProviderId || "";
         document.getElementById("caregiverFormModalLabel").textContent = "Edit Caregiver";
@@ -612,6 +812,8 @@
       function clearForm() {
         form.reset();
         caregiverId.value = "";
+        setMobileFields("");
+        clearInlineValidation();
         document.getElementById("caregiverFormModalLabel").textContent = "Add Caregiver";
         submitBtn.textContent = "Save";
         form.classList.remove("border", "border-warning", "form-edit-mode");

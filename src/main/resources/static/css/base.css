@@ -21,6 +21,7 @@
 /* Form Elements */
 .form-group-compact {
   display: block;
+  margin: 0;
 }
 
 .input-field {
@@ -40,6 +41,25 @@
 .input-field:focus {
   border-color: #0d6efd;
   box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+.modal-body .input-field {
+  padding: 0.42rem 0.65rem;
+  font-size: 0.86rem;
+}
+
+.modal-body textarea.input-field {
+  min-height: 5.5rem;
+}
+
+.modal-body .section-heading {
+  margin-top: 1rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.modal-body .form-grid {
+  gap: 0.75rem;
 }
 
 /* Section Headings */
@@ -323,4 +343,5 @@ body {
 /* Toast Styles */
 .toast {
   border-radius: 0.6rem;
+  z-index: 2000;
 }

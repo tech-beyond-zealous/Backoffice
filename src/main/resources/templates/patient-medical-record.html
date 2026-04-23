@@ -82,10 +82,6 @@
               </div>
             </div>
 
-            <div id="selectionHint" class="selection-hint">
-              Select a Medical Provider and Patient to view medical records.
-            </div>
-
             <div
               th:if="${medicalRecordLoadError != null}"
               class="alert alert-warning"
@@ -95,7 +91,9 @@
             </div>
 
             <div class="table-responsive">
-              <table class="table table-hover align-middle medical-record-table">
+              <table
+                class="table table-hover align-middle medical-record-table"
+              >
                 <thead class="table-header-custom">
                   <tr>
                     <th>Medical Provider</th>
@@ -103,7 +101,7 @@
                     <th>Blood Pressure</th>
                     <th>Pulse</th>
                     <th>Sugar Level</th>
-                    <th>Remark</th>
+                    <th>Remarks</th>
                     <th>Recorded At</th>
                     <th>Actions</th>
                   </tr>
@@ -181,7 +179,7 @@
                   <div class="detail-value" id="detailSugarLevel">-</div>
                 </div>
                 <div class="detail-item">
-                  <div class="detail-label">Remark</div>
+                  <div class="detail-label">Remarks</div>
                   <div class="detail-value" id="detailRemark">-</div>
                 </div>
               </div>
@@ -226,7 +224,7 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="medicalRecordFormModalLabel">
@@ -244,7 +242,7 @@
               <input type="hidden" id="medicalRecordId" />
 
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-badge"></i> Patient Selection
+                <i class="bi bi-person-badge"></i> Select Provider & Patient
               </h3>
               <div class="form-group-compact">
                 <label for="medicalProviderId" class="medical-record-label">
@@ -290,64 +288,93 @@
                     class="search-select-menu d-none"
                   ></div>
                 </div>
+                <div
+                  id="patientSearchError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-heart"></i> Blood Pressure
+                <i class="bi bi-heart"></i> Vital Signs &amp; Measurements
               </h3>
               <div class="col-span-2 bp-grid">
                 <div class="bp-card">
                   <div class="bp-card-title">Systolic</div>
                   <input
-                    type="number"
+                    type="text"
                     id="systolic"
                     class="input-field"
-                    min="0"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="4"
                     placeholder="Enter systolic"
                     required
                   />
+                  <div
+                    id="systolicError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
                 </div>
                 <div class="bp-card">
                   <div class="bp-card-title">Diastolic</div>
                   <input
-                    type="number"
+                    type="text"
                     id="diastolic"
                     class="input-field"
-                    min="0"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="4"
                     placeholder="Enter diastolic"
                     required
                   />
+                  <div
+                    id="diastolicError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
                 </div>
                 <div class="bp-card">
                   <div class="bp-card-title">Pulse</div>
                   <input
-                    type="number"
+                    type="text"
                     id="pulse"
                     class="input-field"
-                    min="0"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="4"
                     placeholder="Enter pulse"
                     required
                   />
+                  <div
+                    id="pulseError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
+                </div>
+                <div class="bp-card">
+                  <div class="bp-card-title">Sugar Level</div>
+                  <input
+                    type="text"
+                    id="sugarLevel"
+                    class="input-field"
+                    inputmode="decimal"
+                    pattern="[0-9]{1,4}\.[0-9]{1,2}"
+                    maxlength="7"
+                    placeholder="Enter sugar level"
+                    required
+                  />
+                  <div
+                    id="sugarLevelError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
                 </div>
               </div>
 
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-droplet-half"></i> Sugar Level
-              </h3>
-              <div class="form-group-compact col-span-2">
-                <input
-                  type="number"
-                  id="sugarLevel"
-                  class="input-field"
-                  min="0"
-                  step="0.1"
-                  placeholder="Enter sugar level"
-                  required
-                />
-              </div>
-
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-chat-left-text"></i> Remark
+                <i class="bi bi-chat-left-text"></i> Remarks
               </h3>
               <div class="form-group-compact col-span-2">
                 <textarea
@@ -404,7 +431,6 @@
       const medicalRecordPagination = document.getElementById(
         "medicalRecordPagination",
       );
-      const selectionHint = document.getElementById("selectionHint");
       const filterMedicalProviderId = document.getElementById(
         "filterMedicalProviderId",
       );
@@ -415,6 +441,7 @@
       const patientId = document.getElementById("patientId");
       const patientSearchInput = document.getElementById("patientSearchInput");
       const patientSearchMenu = document.getElementById("patientSearchMenu");
+      const patientSearchError = document.getElementById("patientSearchError");
       const clearPatientSearchButton = document.getElementById(
         "clearPatientSearchButton",
       );
@@ -482,7 +509,7 @@
       }
 
       function formatSugarLevel(value) {
-        return value == null || value === "" ? "-" : value;
+        return value == null || value === "" ? "-" : Number(value).toFixed(1);
       }
 
       function getBloodPressureValue(record) {
@@ -535,6 +562,157 @@
         remarkTooltip.classList.add("show");
       }
 
+      const medicalRecordValidationMessages = {
+        medicalProviderId: "Please select a medical provider.",
+        systolic: "Please enter systolic.",
+        diastolic: "Please enter diastolic.",
+        pulse: "Please enter pulse.",
+        sugarLevel: "Please enter sugar level.",
+      };
+      const integerPattern = /^\d{1,4}$/;
+      const decimalPattern = /^\d{1,4}\.\d{1,2}$/;
+
+      function getFieldErrorElement(field) {
+        if (!field?.id) {
+          return null;
+        }
+        let errorElement = document.getElementById(`${field.id}Error`);
+        if (!errorElement) {
+          errorElement = document.createElement("div");
+          errorElement.id = `${field.id}Error`;
+          errorElement.className = "field-error";
+          errorElement.setAttribute("aria-live", "polite");
+          field.insertAdjacentElement("afterend", errorElement);
+        }
+        return errorElement;
+      }
+
+      function setFieldError(field, message = "") {
+        const errorElement = getFieldErrorElement(field);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+        field?.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function setPatientSearchError(message = "") {
+        if (patientSearchError) {
+          patientSearchError.textContent = message;
+        }
+        patientSearchInput.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function clearMedicalRecordValidation() {
+        [medicalProviderId, systolic, diastolic, pulse, sugarLevel].forEach(
+          (field) => setFieldError(field, ""),
+        );
+        setPatientSearchError("");
+      }
+
+      function focusInvalidField(field) {
+        const target =
+          field?.closest(".form-group-compact") ||
+          field?.closest(".bp-card") ||
+          field;
+        target?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => {
+          field?.focus?.({ preventScroll: true });
+        }, 250);
+      }
+
+      function validateMedicalRecordForm() {
+        clearMedicalRecordValidation();
+        let firstInvalidField = null;
+
+        [medicalProviderId, systolic, diastolic, pulse, sugarLevel].forEach(
+          (field) => {
+            const trimmedValue = String(field.value || "").trim();
+
+            if (!trimmedValue) {
+              setFieldError(field, medicalRecordValidationMessages[field.id]);
+              firstInvalidField ||= field;
+              return;
+            }
+
+            field.value = trimmedValue;
+
+            if (
+              [systolic, diastolic, pulse].includes(field) &&
+              (!integerPattern.test(trimmedValue) || Number(trimmedValue) < 0)
+            ) {
+              setFieldError(
+                field,
+                "Please enter a valid number using up to 4 digits.",
+              );
+              firstInvalidField ||= field;
+            } else if (
+              field === sugarLevel &&
+              (!decimalPattern.test(trimmedValue) || Number(trimmedValue) < 0)
+            ) {
+              setFieldError(
+                field,
+                "Please enter a valid decimal number using up to 4 digits and 1-2 decimal places.",
+              );
+              firstInvalidField ||= field;
+            }
+          },
+        );
+
+        if (
+          !firstInvalidField &&
+          Number(systolic.value) <= Number(diastolic.value)
+        ) {
+          setFieldError(systolic, "Systolic must be greater than diastolic.");
+          firstInvalidField = systolic;
+        }
+
+        if (!patientId.value) {
+          setPatientSearchError("Please select a patient.");
+          firstInvalidField ||= patientSearchInput;
+        }
+
+        if (firstInvalidField) {
+          focusInvalidField(firstInvalidField);
+          return false;
+        }
+        return true;
+      }
+
+      function digitsOnly(value) {
+        return String(value || "").replace(/\D/g, "");
+      }
+
+      function restrictToDigits(field, maxLength = null) {
+        let nextValue = digitsOnly(field.value);
+        if (maxLength) {
+          nextValue = nextValue.slice(0, maxLength);
+        }
+        if (field.value !== nextValue) {
+          field.value = nextValue;
+        }
+      }
+
+      function formatSugarDigitsAsDecimal(field) {
+        let nextValue = String(field.value || "").trim().replace(/[^\d.]/g, "");
+        const parts = nextValue.split(".");
+        const integerPart = parts[0].slice(0, 4);
+        const decimalPart = parts.slice(1).join("").slice(0, 2);
+        nextValue =
+          parts.length > 1 ? `${integerPart}.${decimalPart}` : integerPart;
+        if (field.value !== nextValue) {
+          field.value = nextValue;
+        }
+      }
+
+      function formatSugarLevelInput() {
+        const trimmedValue = String(sugarLevel.value || "").trim();
+        if (!trimmedValue) {
+          sugarLevel.value = "";
+          return;
+        }
+        sugarLevel.value = trimmedValue;
+      }
+
       function createPatientPicker({
         providerSelect,
         hiddenInput,
@@ -563,15 +741,14 @@
           if (!selectedPatient) {
             hiddenInput.value = "";
             textInput.value = "";
-            if (requiredMessage) {
-              textInput.setCustomValidity(requiredMessage);
-            }
             updateClearButtonVisibility();
             return;
           }
           hiddenInput.value = selectedPatient.id;
           textInput.value = getPatientLabel(selectedPatient);
-          textInput.setCustomValidity("");
+          if (textInput === patientSearchInput) {
+            setPatientSearchError("");
+          }
           closeMenu();
           updateClearButtonVisibility();
           currentPage = 1;
@@ -641,7 +818,9 @@
           textInput.placeholder = providerId
             ? "Search and select patient"
             : "Select Medical Provider first";
-          textInput.setCustomValidity(requiredMessage ? requiredMessage : "");
+          if (textInput === patientSearchInput) {
+            setPatientSearchError("");
+          }
           updateClearButtonVisibility();
 
           if (selectedPatientId) {
@@ -664,8 +843,8 @@
         textInput.addEventListener("click", openPatientList);
         textInput.addEventListener("input", () => {
           hiddenInput.value = "";
-          if (requiredMessage) {
-            textInput.setCustomValidity(requiredMessage);
+          if (textInput === patientSearchInput) {
+            setPatientSearchError("");
           }
           updateClearButtonVisibility();
           renderMenu(textInput.value);
@@ -691,8 +870,8 @@
           clearButton.addEventListener("click", () => {
             hiddenInput.value = "";
             textInput.value = "";
-            if (requiredMessage) {
-              textInput.setCustomValidity(requiredMessage);
+            if (textInput === patientSearchInput) {
+              setPatientSearchError("");
             }
             updateClearButtonVisibility();
             textInput.focus();
@@ -709,15 +888,11 @@
               return true;
             }
             if (!providerSelect.value) {
-              providerSelect.reportValidity();
               return false;
             }
             if (!hiddenInput.value) {
-              textInput.setCustomValidity(requiredMessage);
-              textInput.reportValidity();
               return false;
             }
-            textInput.setCustomValidity("");
             return true;
           },
         };
@@ -804,8 +979,6 @@
       function renderMedicalRecordTable() {
         const hasSelection =
           !!filterMedicalProviderId.value && !!filterPatientPicker.getValue();
-
-        selectionHint.style.display = hasSelection ? "none" : "block";
 
         if (!hasSelection) {
           medicalRecordList.innerHTML = "";
@@ -933,7 +1106,7 @@
         medicalRecordId.value = "";
         medicalProviderId.value = "";
         formPatientPicker.clear();
-        patientSearchInput.setCustomValidity("");
+        clearMedicalRecordValidation();
         document.getElementById("medicalRecordFormModalLabel").textContent =
           "Add Medical Record";
         updateRemarkCount();
@@ -958,7 +1131,8 @@
         systolic.value = record.systolic ?? "";
         diastolic.value = record.diastolic ?? "";
         pulse.value = record.pulse ?? "";
-        sugarLevel.value = record.sugarLevel ?? "";
+        sugarLevel.value =
+          record.sugarLevel == null ? "" : Number(record.sugarLevel).toFixed(1);
         remark.value = record.remark || "";
         document.getElementById("medicalRecordFormModalLabel").textContent =
           "Edit Medical Record";
@@ -1048,14 +1222,10 @@
       medicalRecordForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
-        if (!medicalRecordForm.checkValidity()) {
-          medicalRecordForm.reportValidity();
+        if (!validateMedicalRecordForm()) {
           return;
         }
-
-        if (!formPatientPicker.ensureValid()) {
-          return;
-        }
+        formatSugarLevelInput();
 
         const payload = {
           id: medicalRecordId.value ? Number(medicalRecordId.value) : null,
@@ -1113,6 +1283,11 @@
           showToast("Medical record saved successfully.");
         } catch (error) {
           console.error(error);
+          if (String(error.message || "").toLowerCase().includes("sugar level")) {
+            setFieldError(sugarLevel, error.message);
+            focusInvalidField(sugarLevel);
+            return;
+          }
           showToast(error.message || "Unable to save medical record.", true);
         }
       });
@@ -1124,8 +1299,22 @@
       });
 
       medicalProviderId.addEventListener("change", () => {
+        setFieldError(medicalProviderId, "");
+        setPatientSearchError("");
         formPatientPicker.setProvider(medicalProviderId.value);
       });
+
+      [systolic, diastolic, pulse, sugarLevel].forEach((field) => {
+        field.addEventListener("input", () => {
+          if (field === sugarLevel) {
+            formatSugarDigitsAsDecimal(field);
+          } else {
+            restrictToDigits(field, 3);
+          }
+          setFieldError(field, "");
+        });
+      });
+      sugarLevel.addEventListener("blur", formatSugarLevelInput);
 
       remark.addEventListener("input", updateRemarkCount);
       document.addEventListener("mousemove", (event) => {

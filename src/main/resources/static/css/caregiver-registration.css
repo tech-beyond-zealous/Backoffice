@@ -44,6 +44,55 @@
   max-width: 260px;
 }
 
+.caregiver-contact-field {
+  max-width: 66.6667%;
+}
+
+.mobile-e164-group {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.mobile-country-code,
+.mobile-local-number {
+  min-width: 0;
+}
+
+.mobile-country-code {
+  grid-column: span 4 / span 4;
+}
+
+.mobile-local-number {
+  grid-column: span 8 / span 8;
+}
+
+.field-error {
+  margin-top: 0.35rem;
+  color: #dc3545;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.input-field.is-invalid {
+  border-color: #dc3545;
+}
+
+@media (max-width: 575.98px) {
+  .caregiver-contact-field {
+    max-width: 100%;
+  }
+
+  .mobile-e164-group {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-country-code,
+  .mobile-local-number {
+    grid-column: auto;
+  }
+}
+
 .caregiver-name-link {
   cursor: pointer;
   color: var(--primary-color);

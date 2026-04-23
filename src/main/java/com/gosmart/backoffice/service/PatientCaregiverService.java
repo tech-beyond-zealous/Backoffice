@@ -217,6 +217,9 @@ public class PatientCaregiverService {
 
         List<PatientCaregiverEntity> activeCaregiverRecords = records.stream()
                 .filter(item -> {
+                    if ("D".equalsIgnoreCase(item.getStatus())) {
+                        return false;
+                    }
                     CaregiverEntity caregiver = caregiversById.get(item.getCaregiverId());
                     return caregiver != null && "A".equalsIgnoreCase(caregiver.getStatus());
                 })

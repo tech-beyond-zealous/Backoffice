@@ -6,6 +6,7 @@ import com.gosmart.backoffice.domain.PatientRegistration;
 import com.gosmart.backoffice.dto.PatientMedicalRecordSaveRequest;
 import com.gosmart.backoffice.dto.PatientMedicalRecordView;
 import com.gosmart.backoffice.repo.PatientMedicalRecordRepository;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PatientMedicalRecordService {
     private static final DateTimeFormatter AUDIT_DATE_TIME_FORMAT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final BigDecimal MAX_4_DIGIT_VALUE = new BigDecimal("9999");
 
     private final PatientMedicalRecordRepository patientMedicalRecordRepository;
     private final MedicalProviderService medicalProviderService;
@@ -43,6 +45,7 @@ public class PatientMedicalRecordService {
         if (request.getPatientId() == null) {
             throw new IllegalArgumentException("Please select a registered patient.");
         }
+        validateVitalSigns(request);
         PatientRegistration patient = patientRegistrationService.findById(request.getPatientId())
                 .filter(item -> "A".equalsIgnoreCase(item.getStatus()))
                 .orElseThrow(() -> new IllegalArgumentException("Selected patient is not registered or active."));
@@ -74,6 +77,31 @@ public class PatientMedicalRecordService {
 
         PatientMedicalRecord saved = patientMedicalRecordRepository.save(record);
         return toView(saved);
+    }
+
+    private void validateVitalSigns(PatientMedicalRecordSaveRequest request) {
+        validateNonNegativeInteger(request.getSystolic(), "Please enter a valid systolic value.");
+        validateNonNegativeInteger(request.getDiastolic(), "Please enter a valid diastolic value.");
+        validateNonNegativeInteger(request.getPulse(), "Please enter a valid pulse value.");
+
+        if (request.getSystolic() <= request.getDiastolic()) {
+            throw new IllegalArgumentException("Systolic must be greater than diastolic.");
+        }
+
+        BigDecimal sugarLevel = request.getSugarLevel();
+        if (sugarLevel == null
+                || sugarLevel.compareTo(BigDecimal.ZERO) < 0
+                || sugarLevel.compareTo(MAX_4_DIGIT_VALUE) > 0
+                || sugarLevel.stripTrailingZeros().scale() <= 0
+                || sugarLevel.scale() > 2) {
+            throw new IllegalArgumentException("Please enter a valid sugar level with a decimal point.");
+        }
+    }
+
+    private void validateNonNegativeInteger(Integer value, String message) {
+        if (value == null || value < 0 || value > 9999) {
+            throw new IllegalArgumentException(message);
+        }
     }
 
     public void deleteRecord(Integer id, String currentUserId) {

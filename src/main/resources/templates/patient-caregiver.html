@@ -80,7 +80,9 @@
             </div>
 
             <div class="table-responsive">
-              <table class="table table-hover align-middle patient-caregiver-table">
+              <table
+                class="table table-hover align-middle patient-caregiver-table"
+              >
                 <thead class="table-header-custom">
                   <tr>
                     <th class="sortable" data-sort="medicalProviderCode">
@@ -96,7 +98,10 @@
                     </th>
                     <th class="sortable" data-sort="caregiverNames">
                       Caregiver
-                      <span class="sort-arrow" data-field="caregiverNames"></span>
+                      <span
+                        class="sort-arrow"
+                        data-field="caregiverNames"
+                      ></span>
                     </th>
                     <th class="sortable" data-sort="status">
                       Status
@@ -216,7 +221,7 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="assignmentFormModalLabel">
@@ -232,10 +237,10 @@
           <div class="modal-body">
             <form id="assignmentForm" class="form-grid" novalidate>
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-building"></i> Medical Provider
+                <i class="bi bi-person-badge"></i> Select Provider & Patient
               </h3>
-              <div class="form-group-compact col-span-2">
-                <label for="medicalProviderId" class="form-label visually-hidden">
+              <div class="form-group-compact">
+                <label for="medicalProviderId" class="patient-caregiver-label">
                   Medical Provider
                 </label>
                 <select id="medicalProviderId" class="input-field" required>
@@ -248,20 +253,22 @@
                 </select>
               </div>
 
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-person"></i> Patient
-              </h3>
-              <div class="form-group-compact col-span-2">
-                <label for="patientId" class="form-label visually-hidden">
+              <div class="form-group-compact">
+                <label for="patientId" class="patient-caregiver-label">
                   Patient
                 </label>
                 <select id="patientId" class="input-field" required disabled>
                   <option value="">Select Patient *</option>
                 </select>
+                <div
+                  id="patientIdError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-heart-pulse"></i> Caregiver
+                <i class="bi bi-people"></i> Caregiver
               </h3>
               <div class="col-span-2">
                 <div
@@ -272,12 +279,19 @@
                 <div id="caregiverHelpText" class="form-text">
                   Select a medical provider to load caregivers.
                 </div>
+                <div
+                  id="caregiverChecklistError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <h3 class="section-heading col-span-2">
                 <i class="bi bi-shield-check"></i> Status
               </h3>
-              <div class="form-group-compact col-span-2 patient-caregiver-status">
+              <div
+                class="form-group-compact col-span-2 patient-caregiver-status"
+              >
                 <label for="status" class="form-label visually-hidden">
                   Status
                 </label>
@@ -298,7 +312,11 @@
             >
               Cancel
             </button>
-            <button type="button" id="saveAssignmentButton" class="btn btn-primary">
+            <button
+              type="button"
+              id="saveAssignmentButton"
+              class="btn btn-primary"
+            >
               Save Assignment
             </button>
           </div>
@@ -415,20 +433,38 @@
         const assignmentList = document.getElementById("assignmentList");
         const noAssignmentsRow = document.getElementById("noAssignmentsRow");
         const assignmentInfo = document.getElementById("assignmentInfo");
-        const assignmentPagination = document.getElementById("assignmentPagination");
-        const filterMedicalProvider = document.getElementById("filterMedicalProvider");
+        const assignmentPagination = document.getElementById(
+          "assignmentPagination",
+        );
+        const filterMedicalProvider = document.getElementById(
+          "filterMedicalProvider",
+        );
         const resetFiltersBtn = document.getElementById("resetFiltersBtn");
-        const applyFiltersButton = document.getElementById("applyFiltersButton");
-        const addAssignmentButton = document.getElementById("addAssignmentButton");
-        const assignmentFormModalEl = document.getElementById("assignmentFormModal");
-        const assignmentFormModalLabel = document.getElementById("assignmentFormModalLabel");
+        const applyFiltersButton =
+          document.getElementById("applyFiltersButton");
+        const addAssignmentButton = document.getElementById(
+          "addAssignmentButton",
+        );
+        const assignmentFormModalEl = document.getElementById(
+          "assignmentFormModal",
+        );
+        const assignmentFormModalLabel = document.getElementById(
+          "assignmentFormModalLabel",
+        );
         const assignmentForm = document.getElementById("assignmentForm");
         const medicalProviderId = document.getElementById("medicalProviderId");
         const patientId = document.getElementById("patientId");
+        const patientIdError = document.getElementById("patientIdError");
         const statusField = document.getElementById("status");
-        const caregiverChecklist = document.getElementById("caregiverChecklist");
+        const caregiverChecklist =
+          document.getElementById("caregiverChecklist");
         const caregiverHelpText = document.getElementById("caregiverHelpText");
-        const saveAssignmentButton = document.getElementById("saveAssignmentButton");
+        const caregiverChecklistError = document.getElementById(
+          "caregiverChecklistError",
+        );
+        const saveAssignmentButton = document.getElementById(
+          "saveAssignmentButton",
+        );
         const toastEl = document.getElementById("liveToast");
         const toastBody = toastEl.querySelector(".toast-body");
         const detailProvider = document.getElementById("detailProvider");
@@ -436,8 +472,12 @@
         const detailCaregiver = document.getElementById("detailCaregiver");
         const detailStatus = document.getElementById("detailStatus");
         const detailCreatedBy = document.getElementById("detailCreatedBy");
-        const detailCreatedDateTime = document.getElementById("detailCreatedDateTime");
-        const detailModifiedDateTime = document.getElementById("detailModifiedDateTime");
+        const detailCreatedDateTime = document.getElementById(
+          "detailCreatedDateTime",
+        );
+        const detailModifiedDateTime = document.getElementById(
+          "detailModifiedDateTime",
+        );
         const detailModifiedBy = document.getElementById("detailModifiedBy");
         const toast = new bootstrap.Toast(toastEl, { delay: 2200 });
         const assignmentFormModal = new bootstrap.Modal(assignmentFormModalEl);
@@ -465,6 +505,51 @@
           toastBody.classList.toggle("bg-danger", isError);
           toastBody.classList.add("text-white");
           toast.show();
+        }
+
+        function getFieldErrorElement(field) {
+          if (!field?.id) {
+            return null;
+          }
+          let errorElement = document.getElementById(`${field.id}Error`);
+          if (!errorElement) {
+            errorElement = document.createElement("div");
+            errorElement.id = `${field.id}Error`;
+            errorElement.className = "field-error";
+            errorElement.setAttribute("aria-live", "polite");
+            field.insertAdjacentElement("afterend", errorElement);
+          }
+          return errorElement;
+        }
+
+        function setFieldError(field, message = "") {
+          const errorElement = getFieldErrorElement(field);
+          if (errorElement) {
+            errorElement.textContent = message;
+          }
+          field?.classList.toggle("is-invalid", Boolean(message));
+        }
+
+        function setCaregiverChecklistError(message = "") {
+          caregiverChecklistError.textContent = message;
+          caregiverChecklist.classList.toggle("is-invalid", Boolean(message));
+        }
+
+        function clearAssignmentValidation() {
+          setFieldError(medicalProviderId, "");
+          setFieldError(patientId, "");
+          setCaregiverChecklistError("");
+        }
+
+        function focusInvalidField(field) {
+          const target =
+            field?.closest(".form-group-compact") ||
+            field?.closest(".col-span-2") ||
+            field;
+          target?.scrollIntoView({ behavior: "smooth", block: "center" });
+          setTimeout(() => {
+            field?.focus?.({ preventScroll: true });
+          }, 250);
         }
 
         function getPatientsForProvider(providerId) {
@@ -547,12 +632,13 @@
 
         function setDuplicatePatientValidity() {
           if (!patientId.value) {
-            patientId.setCustomValidity("");
+            setFieldError(patientId, "");
             return false;
           }
 
           const isDuplicate = hasExistingAssignmentForPatient(patientId.value);
-          patientId.setCustomValidity(
+          setFieldError(
+            patientId,
             isDuplicate
               ? "Patient record already exists in the patient caregiver list."
               : "",
@@ -566,8 +652,7 @@
             return false;
           }
 
-          alert("This patient already has caregiver.");
-          patientId.reportValidity();
+          focusInvalidField(patientId);
           return true;
         }
 
@@ -575,12 +660,48 @@
           alertDuplicatePatientSelection();
         }
 
+        function validateAssignmentForm() {
+          clearAssignmentValidation();
+          let firstInvalidField = null;
+
+          if (!medicalProviderId.value) {
+            setFieldError(
+              medicalProviderId,
+              "Please select a medical provider.",
+            );
+            firstInvalidField ||= medicalProviderId;
+          }
+          if (!patientId.value) {
+            setFieldError(patientId, "Please select a patient.");
+            firstInvalidField ||= patientId;
+          } else if (hasExistingAssignmentForPatient(patientId.value)) {
+            setFieldError(
+              patientId,
+              "Patient record already exists in the patient caregiver list.",
+            );
+            firstInvalidField ||= patientId;
+          }
+          if (getSelectedCaregiverIds().length === 0) {
+            setCaregiverChecklistError("Please select at least one caregiver.");
+            firstInvalidField ||= caregiverChecklist;
+          }
+
+          if (firstInvalidField) {
+            focusInvalidField(firstInvalidField);
+            return false;
+          }
+          return true;
+        }
+
         function updateSortArrows() {
           document.querySelectorAll(".sort-arrow").forEach((arrow) => {
             const isActive = arrow.dataset.field === currentSortBy;
             arrow.classList.toggle("active", isActive);
             arrow.classList.toggle("asc", isActive && currentSortDir === "asc");
-            arrow.classList.toggle("desc", isActive && currentSortDir === "desc");
+            arrow.classList.toggle(
+              "desc",
+              isActive && currentSortDir === "desc",
+            );
           });
         }
 
@@ -702,7 +823,9 @@
           const startIndex = (currentPage - 1) * pageSize;
           const pageItems = filtered.slice(startIndex, startIndex + pageSize);
 
-          assignmentList.querySelectorAll("tr.assignment-row").forEach((row) => row.remove());
+          assignmentList
+            .querySelectorAll("tr.assignment-row")
+            .forEach((row) => row.remove());
 
           pageItems.forEach((assignment) => {
             const row = document.createElement("tr");
@@ -772,13 +895,17 @@
         }
 
         function populatePatients(providerIdValue, selectedPatientId = "") {
-          const patients = providerIdValue ? getPatientsForProvider(providerIdValue) : [];
+          const patients = providerIdValue
+            ? getPatientsForProvider(providerIdValue)
+            : [];
           patientId.innerHTML = '<option value="">Select Patient *</option>';
           patientId.disabled = patients.length === 0;
           patients.forEach((patient) => {
             const option = document.createElement("option");
             option.value = patient.id;
-            option.textContent = patient.name || `Patient #${patient.id}`;
+            option.textContent = patient.icPassportNo
+              ? `${patient.name || `Patient #${patient.id}`} (${patient.icPassportNo})`
+              : patient.name || `Patient #${patient.id}`;
             patientId.appendChild(option);
           });
           if (selectedPatientId) {
@@ -789,7 +916,9 @@
 
         function populateCaregivers(providerIdValue, selectedIds = null) {
           caregiverChecklist.innerHTML = "";
-          const caregivers = providerIdValue ? getCaregiversForProvider(providerIdValue) : [];
+          const caregivers = providerIdValue
+            ? getCaregiversForProvider(providerIdValue)
+            : [];
 
           if (caregivers.length === 0) {
             caregiverHelpText.textContent =
@@ -843,11 +972,11 @@
           medicalProviderId.value = "";
           patientId.innerHTML = '<option value="">Select Patient *</option>';
           patientId.disabled = true;
-          patientId.setCustomValidity("");
           caregiverChecklist.innerHTML = "";
           caregiverHelpText.textContent =
             "Select a medical provider to load caregivers.";
           statusField.value = "A";
+          clearAssignmentValidation();
         }
 
         function resetAssignmentFilters() {
@@ -867,10 +996,15 @@
 
         function startEditAssignment(id) {
           if (!permissions.edit) {
-            showToast("You do not have permission to edit patient caregiver assignments.", true);
+            showToast(
+              "You do not have permission to edit patient caregiver assignments.",
+              true,
+            );
             return;
           }
-          const assignment = allAssignments.find((item) => String(item.id) === String(id));
+          const assignment = allAssignments.find(
+            (item) => String(item.id) === String(id),
+          );
           if (!assignment) {
             showToast("Patient caregiver assignment not found.", true);
             return;
@@ -879,20 +1013,28 @@
           assignmentFormModalLabel.textContent = "Edit Patient Caregiver";
           medicalProviderId.value = String(assignment.medicalProviderId || "");
           populatePatients(assignment.medicalProviderId, assignment.patientId);
-          populateCaregivers(assignment.medicalProviderId, assignment.caregiverIds || []);
+          populateCaregivers(
+            assignment.medicalProviderId,
+            assignment.caregiverIds || [],
+          );
           statusField.value = String(assignment.status || "A").toUpperCase();
           assignmentFormModal.show();
         }
 
         async function deleteAssignment(id) {
           if (!permissions.delete) {
-            showToast("You do not have permission to delete patient caregiver assignments.", true);
+            showToast(
+              "You do not have permission to delete patient caregiver assignments.",
+              true,
+            );
             return;
           }
-          if (!window.confirm("Delete this patient caregiver assignment?")) return;
+          if (!window.confirm("Delete this patient caregiver assignment?"))
+            return;
 
           const gsAuth = window.GSAuth || {};
-          const doFetch = gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
+          const doFetch =
+            gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
 
           try {
             const response = await doFetch(`/patient/patient-caregiver/${id}`, {
@@ -902,7 +1044,9 @@
             if (!response.ok) {
               throw new Error("Delete failed");
             }
-            allAssignments = allAssignments.filter((item) => String(item.id) !== String(id));
+            allAssignments = allAssignments.filter(
+              (item) => String(item.id) !== String(id),
+            );
             currentPage = 1;
             renderAssignmentsTable();
             showToast("Patient caregiver assignment deleted successfully.");
@@ -913,30 +1057,24 @@
 
         async function saveAssignment() {
           if (editingAssignmentId && !permissions.edit) {
-            showToast("You do not have permission to edit patient caregiver assignments.", true);
+            showToast(
+              "You do not have permission to edit patient caregiver assignments.",
+              true,
+            );
             return;
           }
           if (!editingAssignmentId && !permissions.create) {
-            showToast("You do not have permission to create patient caregiver assignments.", true);
+            showToast(
+              "You do not have permission to create patient caregiver assignments.",
+              true,
+            );
             return;
           }
-          if (!medicalProviderId.value) {
-            showToast("Please select a medical provider.", true);
-            return;
-          }
-          if (!patientId.value) {
-            showToast("Please select a patient.", true);
-            return;
-          }
-          if (alertDuplicatePatientSelection()) {
+          if (!validateAssignmentForm()) {
             return;
           }
 
           const caregiverIds = getSelectedCaregiverIds();
-          if (caregiverIds.length === 0) {
-            showToast("Please select at least one caregiver.", true);
-            return;
-          }
 
           const payload = {
             id: editingAssignmentId ? Number(editingAssignmentId) : null,
@@ -947,7 +1085,8 @@
           };
 
           const gsAuth = window.GSAuth || {};
-          const doFetch = gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
+          const doFetch =
+            gsAuth.fetchWithSessionHandling || window.fetch.bind(window);
           saveAssignmentButton.disabled = true;
 
           try {
@@ -968,7 +1107,8 @@
             allAssignments = allAssignments.filter(
               (item) =>
                 !(
-                  String(item.medicalProviderId) === String(payload.medicalProviderId) &&
+                  String(item.medicalProviderId) ===
+                    String(payload.medicalProviderId) &&
                   String(item.patientId) === String(payload.patientId)
                 ),
             );
@@ -989,11 +1129,11 @@
                 "Patient record already exists in the patient caregiver list.",
               )
             ) {
-              patientId.setCustomValidity(
+              setFieldError(
+                patientId,
                 "Patient record already exists in the patient caregiver list.",
               );
-              alert("This patient already has caregiver.");
-              patientId.reportValidity();
+              focusInvalidField(patientId);
             }
             showToast(error.message || "Unable to save assignment.", true);
           } finally {
@@ -1002,11 +1142,19 @@
         }
 
         medicalProviderId.addEventListener("change", () => {
+          setFieldError(medicalProviderId, "");
+          setFieldError(patientId, "");
+          setCaregiverChecklistError("");
           populatePatients(medicalProviderId.value);
           populateCaregivers(medicalProviderId.value);
         });
         patientId.addEventListener("change", () => {
           handlePatientSelectionChange();
+        });
+        caregiverChecklist.addEventListener("change", (event) => {
+          if (event.target.closest(".caregiver-checkbox")) {
+            setCaregiverChecklistError("");
+          }
         });
 
         saveAssignmentButton.addEventListener("click", saveAssignment);

@@ -9,6 +9,7 @@ import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class PatientRegistrationController {
     private static final String PATIENT_REGISTRATION_FUNCTION_PATH = "/patient/registration";
+    private static final Pattern E164_MOBILE_PATTERN = Pattern.compile("^\\+[1-9]\\d{6,14}$");
 
     private final ProtectedPageModelService protectedPageModelService;
     private final PatientRegistrationService patientRegistrationService;
@@ -69,6 +71,7 @@ public class PatientRegistrationController {
         );
 
         // Set create_by and modify_by automatically
+        patient.setMobileNo(normalizeMobileNo(patient.getMobileNo()));
         patient.setCreateBy(currentUserId);
         patient.setModifyBy(currentUserId);
 
@@ -96,7 +99,7 @@ public class PatientRegistrationController {
             toUpdate.setGender(patient.getGender());
             toUpdate.setRace(patient.getRace());
             toUpdate.setIcPassportNo(patient.getIcPassportNo());
-            toUpdate.setMobileNo(patient.getMobileNo());
+            toUpdate.setMobileNo(normalizeMobileNo(patient.getMobileNo()));
             toUpdate.setEmergencyContactName(patient.getEmergencyContactName());
             toUpdate.setEmergencyContactNo(patient.getEmergencyContactNo());
             toUpdate.setRelationship(patient.getRelationship());
@@ -156,5 +159,16 @@ public class PatientRegistrationController {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
         permissionService.requireView(request, currentUserId, PATIENT_REGISTRATION_FUNCTION_PATH, message);
+    }
+
+    private String normalizeMobileNo(String mobileNo) {
+        String normalized = mobileNo == null ? "" : mobileNo.replaceAll("\\s+", "");
+        if (!E164_MOBILE_PATTERN.matcher(normalized).matches()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Mobile number must use E.164 format, for example +60123857583."
+            );
+        }
+        return normalized;
     }
 }

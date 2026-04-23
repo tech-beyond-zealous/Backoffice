@@ -160,7 +160,7 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-xl">
+      <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="subscriptionFormModalLabel">
@@ -178,7 +178,7 @@
               <input type="hidden" id="subscriptionId" name="subscriptionId" />
 
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-badge"></i> Medical Provider
+                <i class="bi bi-building"></i> Medical Provider
               </h3>
               <div class="form-group-compact col-span-2">
                 <label
@@ -192,10 +192,6 @@
                   name="medicalProviderId"
                   class="input-field"
                   required
-                  oninvalid="
-                    this.setCustomValidity('Please select a medical provider')
-                  "
-                  oninput="this.setCustomValidity('')"
                 >
                   <option value="">Select Medical Provider *</option>
                   <option
@@ -207,10 +203,13 @@
               </div>
 
               <h3 class="section-heading col-span-2">
-                <i class="bi bi-person"></i> Subscription Details
+                <i class="bi bi-card-checklist"></i> Subscription Details
               </h3>
               <div class="form-group-compact">
-                <label for="patientSearchInput" class="form-label visually-hidden">
+                <label
+                  for="patientSearchInput"
+                  class="form-label subscription-field-label"
+                >
                   Patient
                 </label>
                 <div class="search-select has-clear">
@@ -240,11 +239,16 @@
                     class="search-select-menu d-none"
                   ></div>
                 </div>
+                <div
+                  id="patientSearchError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
               <div class="form-group-compact">
                 <label
                   for="medicalPackageId"
-                  class="form-label visually-hidden"
+                  class="form-label subscription-field-label"
                 >
                   Package
                 </label>
@@ -254,10 +258,6 @@
                     name="medicalPackageId"
                     class="input-field package-select-input"
                     required
-                    oninvalid="
-                      this.setCustomValidity('Please select a package name')
-                    "
-                    oninput="this.setCustomValidity('')"
                   >
                     <option value="">Select Package *</option>
                     <option
@@ -275,6 +275,11 @@
                     <i class="bi bi-info-circle"></i>
                   </button>
                 </div>
+                <div
+                  id="medicalPackageIdError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <div
@@ -309,13 +314,6 @@
                       id="modeMonthly"
                       value="MONTHLY"
                       required
-                      oninvalid="
-                        this.setCustomValidity(
-                          'Please select a subscription mode',
-                        )
-                      "
-                      oninput="this.setCustomValidity('')"
-                      onchange="this.setCustomValidity('')"
                     />
                     <span class="mode-option-card">
                       <span class="mode-option-title">Monthly</span>
@@ -331,13 +329,6 @@
                       id="modeYearly"
                       value="YEARLY"
                       required
-                      oninvalid="
-                        this.setCustomValidity(
-                          'Please select a subscription mode',
-                        )
-                      "
-                      oninput="this.setCustomValidity('')"
-                      onchange="this.setCustomValidity('')"
                     />
                     <span class="mode-option-card">
                       <span class="mode-option-title">Yearly</span>
@@ -347,6 +338,11 @@
                     </span>
                   </label>
                 </div>
+                <div
+                  id="modeError"
+                  class="field-error"
+                  aria-live="polite"
+                ></div>
               </div>
 
               <div class="form-group-compact">
@@ -639,12 +635,14 @@
       const patientId = document.getElementById("patientId");
       const patientSearchInput = document.getElementById("patientSearchInput");
       const patientSearchMenu = document.getElementById("patientSearchMenu");
+      const patientSearchError = document.getElementById("patientSearchError");
       const clearPatientSearchButton = document.getElementById(
         "clearPatientSearchButton",
       );
       const medicalPackageId = document.getElementById("medicalPackageId");
       const modeMonthly = document.getElementById("modeMonthly");
       const modeYearly = document.getElementById("modeYearly");
+      const modeError = document.getElementById("modeError");
       const monthlyModeLabel = document.getElementById("monthlyModeLabel");
       const yearlyModeLabel = document.getElementById("yearlyModeLabel");
       const togglePackageInfoButton = document.getElementById(
@@ -724,6 +722,107 @@
         return value == null ? "-" : `RM ${Number(value).toFixed(2)}`;
       }
 
+      const subscriptionValidationMessages = {
+        medicalProviderId: "Please select a medical provider.",
+        medicalPackageId: "Please select a package name.",
+      };
+
+      function getFieldErrorElement(field) {
+        if (!field?.id) {
+          return null;
+        }
+        let errorElement = document.getElementById(`${field.id}Error`);
+        if (!errorElement) {
+          errorElement = document.createElement("div");
+          errorElement.id = `${field.id}Error`;
+          errorElement.className = "field-error";
+          errorElement.setAttribute("aria-live", "polite");
+          field.insertAdjacentElement("afterend", errorElement);
+        }
+        return errorElement;
+      }
+
+      function setFieldError(field, message = "") {
+        const errorElement = getFieldErrorElement(field);
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+        field?.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function setCustomControlError(errorElement, target, message = "") {
+        if (errorElement) {
+          errorElement.textContent = message;
+        }
+        target?.classList.toggle("is-invalid", Boolean(message));
+      }
+
+      function clearSubscriptionValidation() {
+        [medicalProviderId, medicalPackageId].forEach((field) =>
+          setFieldError(field, ""),
+        );
+        setCustomControlError(patientSearchError, patientSearchInput, "");
+        setCustomControlError(
+          modeError,
+          document.querySelector(".mode-selector"),
+          "",
+        );
+      }
+
+      function focusInvalidField(field) {
+        const target =
+          field?.closest(".form-group-compact") ||
+          field?.closest(".col-span-2") ||
+          field;
+        target?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => {
+          field?.focus?.({ preventScroll: true });
+        }, 250);
+      }
+
+      function validateSubscriptionForm() {
+        clearSubscriptionValidation();
+        let firstInvalidField = null;
+
+        [medicalProviderId, medicalPackageId].forEach((field) => {
+          if (!field.value) {
+            setFieldError(field, subscriptionValidationMessages[field.id]);
+            firstInvalidField ||= field;
+          }
+        });
+
+        if (!patientId.value) {
+          setCustomControlError(
+            patientSearchError,
+            patientSearchInput,
+            "Please select a patient name.",
+          );
+          firstInvalidField ||= patientSearchInput;
+        } else if (hasExistingSubscriptionForPatient(patientId.value)) {
+          setCustomControlError(
+            patientSearchError,
+            patientSearchInput,
+            "Patient record already exists in the subscription list.",
+          );
+          firstInvalidField ||= patientSearchInput;
+        }
+
+        if (!getSelectedMode()) {
+          setCustomControlError(
+            modeError,
+            document.querySelector(".mode-selector"),
+            "Please select a subscription mode.",
+          );
+          firstInvalidField ||= modeMonthly;
+        }
+
+        if (firstInvalidField) {
+          focusInvalidField(firstInvalidField);
+          return false;
+        }
+        return true;
+      }
+
       function hasExistingSubscriptionForPatient(patientValue) {
         return allSubscriptions.some((subscription) => {
           if (String(subscription.patientId) !== String(patientValue)) {
@@ -738,12 +837,14 @@
 
       function setDuplicatePatientValidity() {
         if (!patientId.value) {
-          patientSearchInput.setCustomValidity("");
+          setCustomControlError(patientSearchError, patientSearchInput, "");
           return false;
         }
 
         const isDuplicate = hasExistingSubscriptionForPatient(patientId.value);
-        patientSearchInput.setCustomValidity(
+        setCustomControlError(
+          patientSearchError,
+          patientSearchInput,
           isDuplicate
             ? "Patient record already exists in the subscription list."
             : "",
@@ -757,8 +858,7 @@
           return false;
         }
 
-        alert("This patient already has a subscription.");
-        patientSearchInput.reportValidity();
+        focusInvalidField(patientSearchInput);
         return true;
       }
 
@@ -1036,7 +1136,7 @@
         patientSearchInput.placeholder = selectedProviderId
           ? "Search and select patient"
           : "Select Medical Provider first";
-        patientSearchInput.setCustomValidity("");
+        setCustomControlError(patientSearchError, patientSearchInput, "");
         clearPatientSearchButton.classList.add("d-none");
 
         patientSearchMenu.innerHTML = "";
@@ -1084,7 +1184,7 @@
                   if (!selectedPatient) return;
                   patientId.value = selectedPatient.id;
                   patientSearchInput.value = getPatientLabel(selectedPatient);
-                  patientSearchInput.setCustomValidity("");
+                  setCustomControlError(patientSearchError, patientSearchInput, "");
                   clearPatientSearchButton.classList.remove("d-none");
                   patientSearchMenu.classList.add("d-none");
                   alertDuplicatePatientSelection();
@@ -1099,7 +1199,7 @@
         patientSearchInput.onfocus = () => renderPatientMenu(patientSearchInput.value);
         patientSearchInput.oninput = () => {
           patientId.value = "";
-          patientSearchInput.setCustomValidity("");
+          setCustomControlError(patientSearchError, patientSearchInput, "");
           clearPatientSearchButton.classList.toggle(
             "d-none",
             patientSearchInput.value.length === 0,
@@ -1220,6 +1320,7 @@
       function resetSubscriptionForm() {
         editingSubscriptionId = null;
         subscriptionForm.reset();
+        clearSubscriptionValidation();
         document.getElementById("subscriptionId").value = "";
         subscriptionFormModalLabel.textContent = "Add Subscription";
         patientId.value = "";
@@ -1243,9 +1344,6 @@
           <span class="package-price-unit">/ year</span>
         `;
         packageSummaryDetails.innerHTML = "";
-        patientSearchInput.setCustomValidity("");
-        modeMonthly.setCustomValidity("");
-        modeYearly.setCustomValidity("");
         togglePackageSummaryVisibility(false);
         updateRemarkCount();
         updateSaveButtonState();
@@ -1380,14 +1478,7 @@
           showToast("You do not have permission to create subscriptions.", true);
           return;
         }
-        setDuplicatePatientValidity();
-        if (!subscriptionForm.checkValidity()) {
-          subscriptionForm.reportValidity();
-          return;
-        }
-        if (!patientId.value) {
-          patientSearchInput.setCustomValidity("Please select a patient name");
-          patientSearchInput.reportValidity();
+        if (!validateSubscriptionForm()) {
           return;
         }
         const selectedMode = getSelectedMode();
@@ -1421,9 +1512,12 @@
                 "Patient record already exists in the subscription list.",
               )
             ) {
-              patientSearchInput.setCustomValidity(errorMessage);
-              alert("This patient already has a subscription.");
-              patientSearchInput.reportValidity();
+              setCustomControlError(
+                patientSearchError,
+                patientSearchInput,
+                errorMessage,
+              );
+              focusInvalidField(patientSearchInput);
               updateSaveButtonState();
               return;
             }
@@ -1468,6 +1562,8 @@
         });
 
       medicalProviderId.addEventListener("change", () => {
+        setFieldError(medicalProviderId, "");
+        setCustomControlError(patientSearchError, patientSearchInput, "");
         populatePatientOptions();
         updateSaveButtonState();
       });
@@ -1475,7 +1571,7 @@
       clearPatientSearchButton.addEventListener("click", () => {
         patientId.value = "";
         patientSearchInput.value = "";
-        patientSearchInput.setCustomValidity("");
+        setCustomControlError(patientSearchError, patientSearchInput, "");
         clearPatientSearchButton.classList.add("d-none");
         patientSearchInput.focus();
         if (!patientSearchInput.disabled) {
@@ -1485,18 +1581,19 @@
       });
 
       medicalPackageId.addEventListener("change", () => {
+        setFieldError(medicalPackageId, "");
         updatePackageSummary();
         togglePackageSummaryVisibility(false);
         updateSaveButtonState();
       });
 
       medicalProviderId.addEventListener("input", () => {
-        medicalProviderId.setCustomValidity("");
+        setFieldError(medicalProviderId, "");
         updateSaveButtonState();
       });
 
       medicalPackageId.addEventListener("input", () => {
-        medicalPackageId.setCustomValidity("");
+        setFieldError(medicalPackageId, "");
         updateSaveButtonState();
       });
 
@@ -1521,14 +1618,20 @@
       });
 
       modeMonthly.addEventListener("change", () => {
-        modeMonthly.setCustomValidity("");
-        modeYearly.setCustomValidity("");
+        setCustomControlError(
+          modeError,
+          document.querySelector(".mode-selector"),
+          "",
+        );
         updateAmountAndExpiration();
         updateSaveButtonState();
       });
       modeYearly.addEventListener("change", () => {
-        modeMonthly.setCustomValidity("");
-        modeYearly.setCustomValidity("");
+        setCustomControlError(
+          modeError,
+          document.querySelector(".mode-selector"),
+          "",
+        );
         updateAmountAndExpiration();
         updateSaveButtonState();
       });

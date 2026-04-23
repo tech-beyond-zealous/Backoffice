@@ -152,6 +152,17 @@
   background: #f8f9fa;
 }
 
+.field-error {
+  margin-top: 0.35rem;
+  color: #dc3545;
+  font-size: 0.82rem;
+  line-height: 1.3;
+}
+
+.input-field.is-invalid {
+  border-color: #dc3545;
+}
+
 .bp-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -160,21 +171,22 @@
 
 @media (min-width: 768px) {
   .bp-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 .bp-card {
-  padding: 0.85rem;
+  padding: 0.65rem;
   border: 1px solid #dbe7f7;
-  border-radius: 0.9rem;
+  border-radius: 0.65rem;
   background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
 }
 
 .bp-card-title {
   font-weight: 700;
   color: var(--primary-color);
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.86rem;
 }
 
 .bp-card .input-field {

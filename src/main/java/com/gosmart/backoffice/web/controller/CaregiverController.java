@@ -11,6 +11,7 @@ import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class CaregiverController {
     private static final String CAREGIVER_REGISTRATION_FUNCTION_PATH = "/caregiver/registration";
+    private static final Pattern E164_MOBILE_PATTERN = Pattern.compile("^\\+[1-9]\\d{6,14}$");
 
     private final ProtectedPageModelService protectedPageModelService;
     private final CaregiverService caregiverService;
@@ -61,6 +63,7 @@ public class CaregiverController {
                 CAREGIVER_REGISTRATION_FUNCTION_PATH,
                 "You do not have permission to create caregivers."
         );
+        caregiver.setMobileNumber(normalizeMobileNumber(caregiver.getMobileNumber()));
         caregiver.setCreateBy(userId);
         caregiver.setModifyBy(userId);
         return caregiverService.save(caregiver);
@@ -85,7 +88,7 @@ public class CaregiverController {
             toUpdate.setMedicalProviderId(caregiver.getMedicalProviderId());
             toUpdate.setName(caregiver.getName());
             toUpdate.setEmail(caregiver.getEmail());
-            toUpdate.setMobileNumber(caregiver.getMobileNumber());
+            toUpdate.setMobileNumber(normalizeMobileNumber(caregiver.getMobileNumber()));
             toUpdate.setUserId(caregiver.getUserId());
             toUpdate.setModifyBy(userId);
             toUpdate.setStatus(caregiver.getStatus());
@@ -136,5 +139,16 @@ public class CaregiverController {
                 CAREGIVER_REGISTRATION_FUNCTION_PATH,
                 "You do not have permission to view caregivers."
         );
+    }
+
+    private String normalizeMobileNumber(String mobileNumber) {
+        String normalized = mobileNumber == null ? "" : mobileNumber.replaceAll("\\s+", "");
+        if (!E164_MOBILE_PATTERN.matcher(normalized).matches()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.BAD_REQUEST,
+                    "Mobile number must use E.164 format, for example +60123857583."
+            );
+        }
+        return normalized;
     }
 }
