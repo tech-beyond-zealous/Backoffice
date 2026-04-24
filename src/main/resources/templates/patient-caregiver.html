@@ -28,16 +28,30 @@
             </h2>
 
             <div class="table-tools">
-              <div class="input-group flex-grow-1">
-                <span class="input-group-text">
-                  <i class="bi bi-search"></i>
-                </span>
-                <input
-                  id="assignmentSearch"
-                  type="search"
-                  class="form-control"
-                  placeholder="Search by provider, patient, or caregiver"
-                />
+              <div class="table-tools-left">
+                <select
+                  id="tableMedicalProviderFilter"
+                  class="form-select"
+                  aria-label="Filter by medical provider"
+                >
+                  <option value="">All Medical Providers</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.code + ' - ' + provider.name}"
+                  ></option>
+                </select>
+                <div class="input-group flex-grow-1">
+                  <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input
+                    id="assignmentSearch"
+                    type="search"
+                    class="form-control"
+                    placeholder="Search by provider, patient, or caregiver"
+                  />
+                </div>
               </div>
               <div class="d-flex gap-2">
                 <button
@@ -286,7 +300,7 @@
                 ></div>
               </div>
 
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading section-label-emphasis col-span-2">
                 <i class="bi bi-shield-check"></i> Status
               </h3>
               <div
@@ -351,7 +365,7 @@
               </select>
             </div>
             <div class="mb-4">
-              <h6 class="mb-3">Status</h6>
+              <h6 class="mb-3 section-label-emphasis">Status</h6>
               <div class="form-check">
                 <input
                   class="form-check-input filter-checkbox"
@@ -430,6 +444,9 @@
     <script>
       (() => {
         const assignmentSearch = document.getElementById("assignmentSearch");
+        const tableMedicalProviderFilter = document.getElementById(
+          "tableMedicalProviderFilter",
+        );
         const assignmentList = document.getElementById("assignmentList");
         const noAssignmentsRow = document.getElementById("noAssignmentsRow");
         const assignmentInfo = document.getElementById("assignmentInfo");
@@ -982,6 +999,7 @@
         function resetAssignmentFilters() {
           assignmentSearch.value = "";
           filterMedicalProvider.value = "";
+          tableMedicalProviderFilter.value = "";
           document
             .querySelectorAll('input[data-filter="status"]')
             .forEach((input) => {
@@ -1162,7 +1180,13 @@
           currentPage = 1;
           renderAssignmentsTable();
         });
+        tableMedicalProviderFilter.addEventListener("change", () => {
+          filterMedicalProvider.value = tableMedicalProviderFilter.value;
+          currentPage = 1;
+          renderAssignmentsTable();
+        });
         applyFiltersButton.addEventListener("click", () => {
+          tableMedicalProviderFilter.value = filterMedicalProvider.value;
           currentPage = 1;
           renderAssignmentsTable();
           showToast("Filters applied successfully.");

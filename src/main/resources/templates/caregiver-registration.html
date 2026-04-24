@@ -28,16 +28,30 @@
               <i class="bi bi-people"></i> Caregiver List
             </h2>
             <div class="table-tools">
-              <div class="input-group flex-grow-1">
-                <span class="input-group-text"
-                  ><i class="bi bi-search"></i
-                ></span>
-                <input
-                  id="caregiverSearch"
-                  type="search"
-                  class="form-control"
-                  placeholder="Search by Name, Email, Mobile Number, User Id"
-                />
+              <div class="table-tools-left">
+                <select
+                  id="tableMedicalProviderFilter"
+                  class="form-select"
+                  aria-label="Filter by medical provider"
+                >
+                  <option value="">All Medical Providers</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="|${provider.name} (${provider.code})|"
+                  ></option>
+                </select>
+                <div class="input-group flex-grow-1">
+                  <span class="input-group-text"
+                    ><i class="bi bi-search"></i
+                  ></span>
+                  <input
+                    id="caregiverSearch"
+                    type="search"
+                    class="form-control"
+                    placeholder="Search by Name, Email, Mobile Number, User Id"
+                  />
+                </div>
               </div>
               <div class="d-flex gap-2">
                 <button
@@ -325,7 +339,7 @@
                 ></div>
               </div>
 
-              <h3 class="section-heading col-span-2">
+              <h3 class="section-heading section-label-emphasis col-span-2">
                 <i class="bi bi-shield-check"></i> Status
               </h3>
               <div class="form-group-compact col-span-2 caregiver-status">
@@ -431,7 +445,7 @@
               </select>
             </div>
             <div class="mb-4">
-              <h6 class="mb-3">Status</h6>
+              <h6 class="mb-3 section-label-emphasis">Status</h6>
               <div class="form-check">
                 <input
                   class="form-check-input filter-checkbox"
@@ -509,6 +523,9 @@
       const resetBtn = document.getElementById("resetBtn");
       const caregiversList = document.getElementById("caregiversList");
       const caregiverSearch = document.getElementById("caregiverSearch");
+      const tableMedicalProviderFilter = document.getElementById(
+        "tableMedicalProviderFilter",
+      );
       const caregiversPagination = document.getElementById("caregiversPagination");
       const caregiversInfo = document.getElementById("caregiversInfo");
       const mobileNumber = document.getElementById("mobileNumber");
@@ -1028,6 +1045,9 @@
           currentPage = 1;
           renderCaregiversTable();
         });
+        tableMedicalProviderFilter?.addEventListener("change", () => {
+          applyTableMedicalProviderFilter();
+        });
 
         // Add event listeners to sortable headers
         document.querySelectorAll("th.sortable").forEach((th) => {
@@ -1097,6 +1117,9 @@
         if (providerFilter) {
           providerFilter.value = "";
         }
+        if (tableMedicalProviderFilter) {
+          tableMedicalProviderFilter.value = "";
+        }
 
         // Reset filter criteria
         filterCriteria.status = ["A"];
@@ -1120,7 +1143,23 @@
 
         const providerFilter = document.getElementById("filterMedicalProvider");
         filterCriteria.medicalProviderId = providerFilter ? providerFilter.value : "";
+        if (tableMedicalProviderFilter) {
+          tableMedicalProviderFilter.value = filterCriteria.medicalProviderId;
+        }
 
+        currentPage = 1;
+        renderCaregiversTable();
+      }
+
+      function applyTableMedicalProviderFilter() {
+        const selectedProviderId = tableMedicalProviderFilter
+          ? tableMedicalProviderFilter.value
+          : "";
+        const providerFilter = document.getElementById("filterMedicalProvider");
+        filterCriteria.medicalProviderId = selectedProviderId;
+        if (providerFilter) {
+          providerFilter.value = selectedProviderId;
+        }
         currentPage = 1;
         renderCaregiversTable();
       }

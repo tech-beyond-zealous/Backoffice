@@ -27,16 +27,30 @@
               <i class="bi bi-card-checklist"></i> Subscription List
             </h2>
             <div class="table-tools">
-              <div class="input-group flex-grow-1">
-                <span class="input-group-text">
-                  <i class="bi bi-search"></i>
-                </span>
-                <input
-                  id="subscriptionSearch"
-                  type="search"
-                  class="form-control"
-                  placeholder="Search by patient, package, or provider"
-                />
+              <div class="table-tools-left">
+                <select
+                  id="tableMedicalProviderFilter"
+                  class="form-select"
+                  aria-label="Filter by medical provider"
+                >
+                  <option value="">All Medical Providers</option>
+                  <option
+                    th:each="provider : ${medicalProviders}"
+                    th:value="${provider.id}"
+                    th:text="${provider.code + ' - ' + provider.name}"
+                  ></option>
+                </select>
+                <div class="input-group flex-grow-1">
+                  <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                  </span>
+                  <input
+                    id="subscriptionSearch"
+                    type="search"
+                    class="form-control"
+                    placeholder="Search by patient, package, or provider"
+                  />
+                </div>
               </div>
               <div class="d-flex gap-2">
                 <button
@@ -607,6 +621,9 @@
       let allSubscriptions = /*[[${subscriptions}]]*/ [];
 
       const subscriptionSearch = document.getElementById("subscriptionSearch");
+      const tableMedicalProviderFilter = document.getElementById(
+        "tableMedicalProviderFilter",
+      );
       const subscriptionList = document.getElementById("subscriptionList");
       const noSubscriptionsRow = document.getElementById("noSubscriptionsRow");
       const subscriptionInfo = document.getElementById("subscriptionInfo");
@@ -1422,6 +1439,7 @@
       function resetSubscriptionFilters() {
         subscriptionSearch.value = "";
         filterMedicalProvider.value = "";
+        tableMedicalProviderFilter.value = "";
         filterPackage.value = "";
         filterMode.value = "";
         filterStatus.value = "";
@@ -1642,7 +1660,14 @@
         renderSubscriptionsTable();
       });
 
+      tableMedicalProviderFilter.addEventListener("change", () => {
+        filterMedicalProvider.value = tableMedicalProviderFilter.value;
+        currentPage = 1;
+        renderSubscriptionsTable();
+      });
+
       filterMedicalProvider.addEventListener("change", () => {
+        tableMedicalProviderFilter.value = filterMedicalProvider.value;
         currentPage = 1;
         renderSubscriptionsTable();
       });

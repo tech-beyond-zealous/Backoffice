@@ -78,6 +78,11 @@
   margin-top: 0;
 }
 
+.section-label-emphasis {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 /* Responsive Form Grid */
 .form-grid {
   display: grid;
@@ -214,6 +219,23 @@
   margin-bottom: 1.25rem;
 }
 
+.table-tools-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.table-tools-left .input-group {
+  flex: 1 1 18rem;
+  min-width: 16rem;
+}
+
+.table-tools-left .form-select {
+  flex: 0 0 14rem;
+}
+
 .table-tools .input-group,
 .table-tools .form-select {
   min-width: 14rem;
@@ -226,6 +248,17 @@
 @media (max-width: 768px) {
   .table-tools {
     grid-template-columns: 1fr;
+  }
+
+  .table-tools-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-tools-left .input-group,
+  .table-tools-left .form-select {
+    width: 100%;
+    max-width: none;
   }
 }
 
