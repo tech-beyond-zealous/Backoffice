@@ -303,40 +303,22 @@
                     />
                   </div>
 
-<<<<<<< HEAD
-              <!-- GoSmart User Id -->
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-vcard"></i> GoSmart User ID
-              </h3>
-
-              <div class="form-group-compact">
-                <input
-                  type="email"
-                  id="gosmartUserId"
-                  name="gosmartUserId"
-                  class="input-field"
-                  placeholder="GoSmart User ID"
-                  maxlength="100"
-                />
-              </div>
-=======
                   <div class="form-group-compact caregiver-user-id-field">
                     <label for="userId" class="form-label visually-hidden">
-                      User ID
+                      GoSmart User ID
                     </label>
                     <input
                       type="email"
                       id="userId"
                       name="userId"
                       class="input-field"
-                      placeholder="User ID *"
+                      placeholder="GoSmart User ID *"
                       maxlength="100"
                       required
                     />
                   </div>
                 </div>
               </section>
->>>>>>> e0b10fd (Add new input and medical provider filter)
 
               <!-- Contact -->
               <section class="clinical-section col-span-2">
@@ -806,8 +788,6 @@
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData);
-        data.userId = data.gosmartUserId || "";
-        delete data.gosmartUserId;
 
         const url = data.id ? `/caregiver/${data.id}` : "/caregiver/save";
         const method = data.id ? "PUT" : "POST";
@@ -841,7 +821,7 @@
         document.getElementById("caregiverId").value = caregiver.id;
         document.getElementById("name").value = caregiver.name || "";
         document.getElementById("email").value = caregiver.email || "";
-        document.getElementById("gosmartUserId").value = caregiver.userId || "";
+        document.getElementById("userId").value = caregiver.userId || "";
         setMobileFields(caregiver.mobileNumber || "");
         document.getElementById("status").value = caregiver.status || "A";
         document.getElementById("medicalProviderId").value = caregiver.medicalProviderId || "";
@@ -1303,28 +1283,6 @@
         const formatDateTime = (value) =>
           value ? new Date(value).toLocaleString("en-GB").replace(",", "") : "-";
         content.innerHTML = `
-<<<<<<< HEAD
-          <div class="detail-item">
-            <div class="detail-label">Full Name</div>
-            <div class="detail-value">${caregiver.name || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Email</div>
-            <div class="detail-value">${caregiver.email || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">GoSmart User ID</div>
-            <div class="detail-value">${caregiver.userId || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Mobile Number</div>
-            <div class="detail-value">${caregiver.mobileNumber || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Status</div>
-            <div class="detail-value">
-              <span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">${caregiver.status === 'A' ? 'Active' : (caregiver.status === 'X' ? 'Inactive' : 'Deleted')}</span>
-=======
           <section class="detail-profile-summary">
             <div class="detail-avatar">${field(initials)}</div>
             <div class="detail-profile-main">
@@ -1334,7 +1292,6 @@
                 <span>User ID</span>
                 <strong>${field(caregiver.userId)}</strong>
               </div>
->>>>>>> e0b10fd (Add new input and medical provider filter)
             </div>
             <div class="detail-profile-provider">
               <i class="bi bi-hospital"></i>
