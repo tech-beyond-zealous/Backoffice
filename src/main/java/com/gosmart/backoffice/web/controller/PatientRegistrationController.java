@@ -9,7 +9,9 @@ import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,8 +49,16 @@ public class PatientRegistrationController {
         protectedPageModelService.apply(model, request, null);
         UserFunctionPermission permission =
                 (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
-        model.addAttribute("patients", patientRegistrationService.findAll());
-        model.addAttribute("medicalProviders", medicalProviderService.findAll());
+        String currentUserId = requireCurrentUserId(request);
+        var medicalProviders = medicalProviderService.findAccessibleByUserId(currentUserId);
+        Set<Long> allowedProviderIds = medicalProviders.stream()
+                .map(provider -> provider.getId().longValue())
+                .collect(Collectors.toSet());
+        model.addAttribute("patients", patientRegistrationService.findAll().stream()
+                .filter(patient -> patient.getMedicalProviderId() != null)
+                .filter(patient -> allowedProviderIds.contains(patient.getMedicalProviderId()))
+                .toList());
+        model.addAttribute("medicalProviders", medicalProviders);
         model.addAttribute("permission", permission);
         model.addAttribute("requestPath", request.getRequestURI());
         model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));
@@ -63,6 +73,7 @@ public class PatientRegistrationController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        requireMedicalProviderAccess(currentUserId, patient.getMedicalProviderId());
         permissionService.requireCreate(
                 request,
                 currentUserId,
@@ -85,6 +96,7 @@ public class PatientRegistrationController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        requireMedicalProviderAccess(currentUserId, patient.getMedicalProviderId());
         permissionService.requireEdit(
                 request,
                 currentUserId,
@@ -110,6 +122,9 @@ public class PatientRegistrationController {
             toUpdate.setCity(patient.getCity());
             toUpdate.setHasChronicDisease(patient.getHasChronicDisease());
             toUpdate.setChronicDisease(patient.getChronicDisease());
+            toUpdate.setMedicineTakenNow(patient.getMedicineTakenNow());
+            toUpdate.setHasAllergies(patient.getHasAllergies());
+            toUpdate.setAllergyDetails(patient.getAllergyDetails());
             toUpdate.setRemark(patient.getRemark());
             toUpdate.setMedicalProviderId(patient.getMedicalProviderId());
 
@@ -143,22 +158,52 @@ public class PatientRegistrationController {
     @ResponseBody
     public Optional<PatientRegistration> getPatient(@PathVariable Long id, HttpServletRequest request) {
         requireView(request, "You do not have permission to view patients.");
-        return patientRegistrationService.findById(id);
+        String currentUserId = requireCurrentUserId(request);
+        Set<Long> allowedProviderIds = accessibleProviderIds(currentUserId);
+        return patientRegistrationService.findById(id)
+                .filter(patient -> patient.getMedicalProviderId() != null)
+                .filter(patient -> allowedProviderIds.contains(patient.getMedicalProviderId()));
     }
 
     @GetMapping("/patient/all")
     @ResponseBody
     public java.util.List<PatientRegistration> getAllPatients(HttpServletRequest request) {
         requireView(request, "You do not have permission to view patients.");
-        return patientRegistrationService.findAll();
+        String currentUserId = requireCurrentUserId(request);
+        Set<Long> allowedProviderIds = accessibleProviderIds(currentUserId);
+        return patientRegistrationService.findAll().stream()
+                .filter(patient -> patient.getMedicalProviderId() != null)
+                .filter(patient -> allowedProviderIds.contains(patient.getMedicalProviderId()))
+                .toList();
     }
 
     private void requireView(HttpServletRequest request, String message) {
+        String currentUserId = requireCurrentUserId(request);
+        permissionService.requireView(request, currentUserId, PATIENT_REGISTRATION_FUNCTION_PATH, message);
+    }
+
+    private String requireCurrentUserId(HttpServletRequest request) {
         String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
-        permissionService.requireView(request, currentUserId, PATIENT_REGISTRATION_FUNCTION_PATH, message);
+        return currentUserId;
+    }
+
+    private Set<Long> accessibleProviderIds(String currentUserId) {
+        return medicalProviderService.findAccessibleByUserId(currentUserId).stream()
+                .map(provider -> provider.getId().longValue())
+                .collect(Collectors.toSet());
+    }
+
+    private void requireMedicalProviderAccess(String currentUserId, Long medicalProviderId) {
+        Integer providerId = medicalProviderId == null ? null : Math.toIntExact(medicalProviderId);
+        if (!medicalProviderService.hasAccessibleProvider(currentUserId, providerId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "You do not have access to this medical provider."
+            );
+        }
     }
 
     private String normalizeMobileNo(String mobileNo) {

@@ -75,7 +75,11 @@ public class MedicalProviderController {
 
     @GetMapping("/medical-provider/all")
     @ResponseBody
-    public List<MedicalProviderEntity> getAllMedicalProviders() {
-        return medicalProviderService.findAll();
+    public List<MedicalProviderEntity> getAllMedicalProviders(HttpServletRequest request) {
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        return medicalProviderService.findAccessibleByUserId(currentUserId);
     }
 }

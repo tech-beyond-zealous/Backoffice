@@ -10,6 +10,8 @@ import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -53,15 +55,26 @@ public class PatientMedicalRecordController {
         protectedPageModelService.apply(model, request, null);
         UserFunctionPermission permission =
                 (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
+        String currentUserId = requireCurrentUserId(request);
+        var medicalProviders = medicalProviderService.findAccessibleByUserId(currentUserId);
+        Set<Long> allowedProviderIds = medicalProviders.stream()
+                .map(provider -> provider.getId().longValue())
+                .collect(Collectors.toSet());
 
-        model.addAttribute("medicalProviders", medicalProviderService.findAll().stream()
-                .filter(provider -> "A".equalsIgnoreCase(provider.getStatus()))
-                .toList());
+        model.addAttribute("medicalProviders", medicalProviders);
         model.addAttribute("patients", patientRegistrationService.findAll().stream()
                 .filter(patient -> "A".equalsIgnoreCase(patient.getStatus()))
+                .filter(patient -> patient.getMedicalProviderId() != null)
+                .filter(patient -> allowedProviderIds.contains(patient.getMedicalProviderId()))
                 .toList());
         try {
-            model.addAttribute("medicalRecords", patientMedicalRecordService.findAllActiveRecords());
+            Set<Integer> allowedProviderIdsInt = medicalProviders.stream()
+                    .map(provider -> provider.getId())
+                    .collect(Collectors.toSet());
+            model.addAttribute("medicalRecords", patientMedicalRecordService.findAllActiveRecords().stream()
+                    .filter(record -> record.getMedicalProviderId() != null)
+                    .filter(record -> allowedProviderIdsInt.contains(record.getMedicalProviderId()))
+                    .toList());
         } catch (RuntimeException ex) {
             log.error("Unable to load patient medical records page data", ex);
             model.addAttribute("medicalRecords", Collections.emptyList());
@@ -85,6 +98,9 @@ public class PatientMedicalRecordController {
         String currentUserId = (String) httpRequest.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        if (!medicalProviderService.hasAccessibleProvider(currentUserId, request.getMedicalProviderId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have access to this medical provider.");
         }
         UserFunctionPermission permission =
                 permissionService.resolve(httpRequest, currentUserId, MEDICAL_RECORD_FUNCTION_PATH);
@@ -112,10 +128,7 @@ public class PatientMedicalRecordController {
     @DeleteMapping("/patient/medical-record/{id}")
     @ResponseBody
     public void deletePatientMedicalRecord(@PathVariable Integer id, HttpServletRequest request) {
-        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
-        if (currentUserId == null) {
-            throw new IllegalStateException("Logged-in user id is missing from request attributes");
-        }
+        String currentUserId = requireCurrentUserId(request);
         permissionService.requireDelete(
                 request,
                 currentUserId,
@@ -123,5 +136,13 @@ public class PatientMedicalRecordController {
                 "You do not have permission to delete medical records."
         );
         patientMedicalRecordService.deleteRecord(id, currentUserId);
+    }
+
+    private String requireCurrentUserId(HttpServletRequest request) {
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        return currentUserId;
     }
 }

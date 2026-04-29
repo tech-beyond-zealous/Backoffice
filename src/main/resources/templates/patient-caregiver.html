@@ -31,7 +31,7 @@
               <div class="table-tools-left">
                 <select
                   id="tableMedicalProviderFilter"
-                  class="form-select"
+                  class="form-select caregiver-assignment-provider-filter"
                   aria-label="Filter by medical provider"
                 >
                   <option value="">All Medical Providers</option>
@@ -41,7 +41,9 @@
                     th:text="${provider.code + ' - ' + provider.name}"
                   ></option>
                 </select>
-                <div class="input-group flex-grow-1">
+                <div
+                  class="input-group flex-grow-1 caregiver-assignment-search"
+                >
                   <span class="input-group-text">
                     <i class="bi bi-search"></i>
                   </span>
@@ -161,64 +163,91 @@
       aria-labelledby="assignmentDetailModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div
+        class="modal-dialog modal-lg modal-dialog-centered app-modal-dialog detail-modal-dialog"
+      >
+        <div class="modal-content app-modal-content detail-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title" id="assignmentDetailModalLabel">
               Patient Caregiver Details
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
-            <div class="card bg-light border-0 p-3">
-              <div class="details-grid">
-                <div class="detail-item">
-                  <div class="detail-label">Medical Provider</div>
-                  <div class="detail-value" id="detailProvider">-</div>
+          <div class="modal-body app-modal-body">
+            <div class="detail-dashboard">
+              <section class="detail-profile-summary">
+                <div class="detail-avatar" id="detailPatientInitials">-</div>
+                <div class="detail-profile-main">
+                  <h2 id="detailPatient">-</h2>
+                  <div class="detail-profile-id">
+                    <i class="bi bi-card-text"></i>
+                    <span>IC / Passport</span>
+                    <strong id="detailPatientIc">-</strong>
+                    <button
+                      type="button"
+                      class="detail-copy-btn"
+                      id="detailPatientIcCopy"
+                      title="Copy IC / Passport"
+                      aria-label="Copy IC / Passport"
+                    >
+                      <i class="bi bi-copy"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="detail-item">
-                  <div class="detail-label">Patient Name</div>
-                  <div class="detail-value" id="detailPatient">-</div>
+                <div class="detail-profile-provider">
+                  <i class="bi bi-hospital"></i>
+                  <div class="detail-profile-provider-text">
+                    <span>Medical Provider</span>
+                    <strong id="detailProvider">-</strong>
+                  </div>
                 </div>
-                <div class="detail-item">
-                  <div class="detail-label">Caregiver</div>
-                  <div class="detail-value" id="detailCaregiver">-</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Status</div>
-                  <div class="detail-value" id="detailStatus">-</div>
-                </div>
-              </div>
+              </section>
 
-              <div class="audit-grid col-span-2">
-                <div class="audit-item">
-                  <div class="audit-label">Created Date/Time</div>
-                  <div class="audit-value" id="detailCreatedDateTime">-</div>
+              <section class="detail-section">
+                <div class="detail-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-people-fill"></i> Assignment Information
+                  </h3>
                 </div>
-                <div class="audit-item">
-                  <div class="audit-label">Created By</div>
-                  <div class="audit-value" id="detailCreatedBy">-</div>
+                <div class="detail-rows">
+                  <div class="detail-row detail-caregiver-row">
+                    <div class="detail-row-label">Caregiver</div>
+                    <div
+                      class="detail-row-value detail-caregiver-value"
+                      id="detailCaregiver"
+                    >
+                      -
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <div class="detail-row-label">Status</div>
+                    <div class="detail-row-value" id="detailStatus">-</div>
+                  </div>
                 </div>
-                <div class="audit-item">
-                  <div class="audit-label">Last Updated</div>
-                  <div class="audit-value" id="detailModifiedDateTime">-</div>
-                </div>
-                <div class="audit-item">
-                  <div class="audit-label">Modified By</div>
-                  <div class="audit-value" id="detailModifiedBy">-</div>
-                </div>
+              </section>
+
+              <div class="detail-audit-line">
+                <span
+                  >Created: <strong id="detailCreatedDateTime">-</strong> by
+                  <strong id="detailCreatedBy">-</strong></span
+                >
+                <span class="detail-audit-divider">|</span>
+                <span
+                  >Updated: <strong id="detailModifiedDateTime">-</strong> by
+                  <strong id="detailModifiedBy">-</strong></span
+                >
               </div>
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-outline-secondary"
+              class="btn btn-primary app-modal-btn-primary"
               data-bs-dismiss="modal"
             >
               Close
@@ -235,93 +264,127 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div class="modal-dialog modal-lg app-modal-dialog">
+        <div class="modal-content app-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title" id="assignmentFormModalLabel">
               Add Patient Caregiver
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body app-modal-body">
             <form id="assignmentForm" class="form-grid" novalidate>
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-badge"></i> Select Provider & Patient
-              </h3>
-              <div class="form-group-compact">
-                <label for="medicalProviderId" class="patient-caregiver-label">
-                  Medical Provider
-                </label>
-                <select id="medicalProviderId" class="input-field" required>
-                  <option value="">Select Medical Provider *</option>
-                  <option
-                    th:each="provider : ${medicalProviders}"
-                    th:value="${provider.id}"
-                    th:text="${provider.code + ' - ' + provider.name}"
-                  ></option>
-                </select>
-              </div>
-
-              <div class="form-group-compact">
-                <label for="patientId" class="patient-caregiver-label">
-                  Patient
-                </label>
-                <select id="patientId" class="input-field" required disabled>
-                  <option value="">Select Patient *</option>
-                </select>
-                <div
-                  id="patientIdError"
-                  class="field-error"
-                  aria-live="polite"
-                ></div>
-              </div>
-
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-people"></i> Caregiver
-              </h3>
-              <div class="col-span-2">
-                <div
-                  id="caregiverChecklist"
-                  class="caregiver-checklist"
-                  aria-live="polite"
-                ></div>
-                <div id="caregiverHelpText" class="form-text">
-                  Select a medical provider to load caregivers.
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-person-badge"></i> Select Provider & Patient
+                  </h3>
                 </div>
-                <div
-                  id="caregiverChecklistError"
-                  class="field-error"
-                  aria-live="polite"
-                ></div>
-              </div>
+                <div class="patient-caregiver-provider-grid">
+                  <div class="form-section-card">
+                    <label
+                      for="medicalProviderId"
+                      class="patient-caregiver-label"
+                    >
+                      Medical Provider
+                    </label>
+                    <div class="icon-input-shell select-shell">
+                      <span class="field-icon">
+                        <i class="bi bi-building"></i>
+                      </span>
+                      <select
+                        id="medicalProviderId"
+                        class="input-field"
+                        required
+                      >
+                        <option value="">Select Medical Provider *</option>
+                        <option
+                          th:each="provider : ${medicalProviders}"
+                          th:value="${provider.id}"
+                          th:text="${provider.code + ' - ' + provider.name}"
+                        ></option>
+                      </select>
+                    </div>
+                  </div>
 
-              <h3 class="section-heading section-label-emphasis col-span-2">
-                <i class="bi bi-shield-check"></i> Status
-              </h3>
-              <div
-                class="form-group-compact col-span-2 patient-caregiver-status"
-              >
-                <label for="status" class="form-label visually-hidden">
-                  Status
-                </label>
-                <select id="status" name="status" class="input-field">
-                  <option value="" disabled>Select Status</option>
-                  <option value="A" selected>Active</option>
-                  <option value="X">Inactive</option>
-                  <option value="D">Deleted</option>
-                </select>
-              </div>
+                  <div class="form-section-card">
+                    <label for="patientId" class="patient-caregiver-label">
+                      Patient
+                    </label>
+                    <div class="icon-input-shell select-shell">
+                      <span class="field-icon">
+                        <i class="bi bi-people"></i>
+                      </span>
+                      <select
+                        id="patientId"
+                        class="input-field"
+                        required
+                        disabled
+                      >
+                        <option value="">Select Patient *</option>
+                      </select>
+                    </div>
+                    <div
+                      id="patientIdError"
+                      class="field-error"
+                      aria-live="polite"
+                    ></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-people"></i> Caregiver
+                  </h3>
+                </div>
+                <div>
+                  <div
+                    id="caregiverChecklist"
+                    class="caregiver-checklist"
+                    aria-live="polite"
+                  ></div>
+                  <div id="caregiverHelpText" class="form-text">
+                    Select a medical provider to load caregivers.
+                  </div>
+                  <div
+                    id="caregiverChecklistError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
+                </div>
+              </section>
+
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading section-label-emphasis">
+                    <i class="bi bi-shield-check"></i> Status
+                  </h3>
+                </div>
+                <div class="form-group-compact patient-caregiver-status">
+                  <label for="status" class="form-label visually-hidden">
+                    Status
+                  </label>
+                  <select id="status" name="status" class="input-field">
+                    <option value="" disabled>Select Status</option>
+                    <option value="A" selected>Active</option>
+                    <option value="X">Inactive</option>
+                    <option value="D">Deleted</option>
+                  </select>
+                </div>
+              </section>
             </form>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-outline-secondary"
+              class="btn btn-secondary app-modal-btn-secondary"
               data-bs-dismiss="modal"
             >
               Cancel
@@ -329,9 +392,9 @@
             <button
               type="button"
               id="saveAssignmentButton"
-              class="btn btn-primary"
+              class="btn btn-primary app-modal-btn-primary"
             >
-              Save Assignment
+              Save
             </button>
           </div>
         </div>
@@ -486,6 +549,12 @@
         const toastBody = toastEl.querySelector(".toast-body");
         const detailProvider = document.getElementById("detailProvider");
         const detailPatient = document.getElementById("detailPatient");
+        const detailPatientInitials = document.getElementById(
+          "detailPatientInitials",
+        );
+        const detailPatientIc = document.getElementById("detailPatientIc");
+        const detailPatientIcCopy =
+          document.getElementById("detailPatientIcCopy");
         const detailCaregiver = document.getElementById("detailCaregiver");
         const detailStatus = document.getElementById("detailStatus");
         const detailCreatedBy = document.getElementById("detailCreatedBy");
@@ -514,6 +583,17 @@
             .replaceAll(">", "&gt;")
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#39;");
+        }
+
+        function getInitials(name) {
+          const initials = String(name || "")
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part.charAt(0).toUpperCase())
+            .join("");
+          return initials || "-";
         }
 
         function showToast(message, isError = false) {
@@ -725,6 +805,16 @@
         function showAssignmentDetails(assignment) {
           detailProvider.textContent = assignment.medicalProviderCode || "-";
           detailPatient.textContent = assignment.patientName || "-";
+          detailPatientIc.textContent = assignment.patientIcPassportNo || "-";
+          detailPatientIcCopy.dataset.copy =
+            assignment.patientIcPassportNo || "";
+          detailPatientIcCopy.classList.toggle(
+            "d-none",
+            !assignment.patientIcPassportNo,
+          );
+          detailPatientInitials.textContent = getInitials(
+            assignment.patientName,
+          );
           detailCaregiver.textContent = assignment.caregiverNames || "-";
           detailStatus.innerHTML = `<span class="badge ${statusBadgeClass(
             assignment.status,
@@ -735,6 +825,18 @@
             assignment.modifiedDateTime || "-";
           detailModifiedBy.textContent = assignment.modifiedBy || "-";
           assignmentDetailModal.show();
+        }
+
+        function copyDetailValue(value) {
+          if (!value || value === "-") return;
+          if (!navigator.clipboard) {
+            showToast("Clipboard is not available", true);
+            return;
+          }
+          navigator.clipboard
+            .writeText(value)
+            .then(() => showToast("Copied to clipboard"))
+            .catch(() => showToast("Unable to copy", true));
         }
 
         function filterAssignments() {
@@ -1176,6 +1278,9 @@
         });
 
         saveAssignmentButton.addEventListener("click", saveAssignment);
+        detailPatientIcCopy.addEventListener("click", () => {
+          copyDetailValue(detailPatientIcCopy.dataset.copy || "");
+        });
         assignmentSearch.addEventListener("input", () => {
           currentPage = 1;
           renderAssignmentsTable();

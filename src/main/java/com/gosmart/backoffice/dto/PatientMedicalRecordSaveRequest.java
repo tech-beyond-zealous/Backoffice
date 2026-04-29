@@ -10,6 +10,9 @@ public class PatientMedicalRecordSaveRequest {
     private Integer diastolic;
     private Integer pulse;
     private BigDecimal sugarLevel;
+    private Integer spo2;
+    private BigDecimal temperature;
+    private Integer painScore;
     private String remark;
 
     public Integer getId() {
@@ -66,6 +69,30 @@ public class PatientMedicalRecordSaveRequest {
 
     public void setSugarLevel(BigDecimal sugarLevel) {
         this.sugarLevel = sugarLevel;
+    }
+
+    public Integer getSpo2() {
+        return spo2;
+    }
+
+    public void setSpo2(Integer spo2) {
+        this.spo2 = spo2;
+    }
+
+    public BigDecimal getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(BigDecimal temperature) {
+        this.temperature = temperature;
+    }
+
+    public Integer getPainScore() {
+        return painScore;
+    }
+
+    public void setPainScore(Integer painScore) {
+        this.painScore = painScore;
     }
 
     public String getRemark() {

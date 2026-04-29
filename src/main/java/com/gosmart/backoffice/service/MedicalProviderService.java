@@ -33,6 +33,26 @@ public class MedicalProviderService {
     }
 
     /**
+     * Get active medical providers assigned to the logged-in user.
+     */
+    public List<MedicalProviderEntity> findAccessibleByUserId(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return List.of();
+        }
+        return medicalProviderRepository.findAccessibleActiveByUserId(userId);
+    }
+
+    public boolean hasAccessibleProvider(String userId, Integer medicalProviderId) {
+        if (userId == null || userId.isBlank() || medicalProviderId == null) {
+            return false;
+        }
+        return medicalProviderRepository.countAccessibleActiveByUserIdAndMedicalProviderId(
+                userId,
+                medicalProviderId
+        ) > 0;
+    }
+
+    /**
      * Get a medical provider by ID.
      */
     public Optional<MedicalProviderEntity> findById(Integer id) {

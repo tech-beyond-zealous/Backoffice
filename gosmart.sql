@@ -255,6 +255,29 @@ INSERT INTO `medical_provider` (`id`, `create_dt`, `create_by`, `code`, `name`, 
 UNLOCK TABLES;
 
 --
+-- Table structure for table `user_medical_provider`
+--
+
+DROP TABLE IF EXISTS `user_medical_provider`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_medical_provider` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime NOT NULL,
+  `create_by` varchar(100) NOT NULL,
+  `modify_dt` datetime DEFAULT NULL,
+  `modify_by` varchar(100) DEFAULT NULL,
+  `user_id` int NOT NULL,
+  `medical_provider_id` int NOT NULL,
+  `status` char(1) NOT NULL DEFAULT 'Y',
+  PRIMARY KEY (`id`),
+  KEY `idx_user_medical_provider_user_id` (`user_id`),
+  KEY `idx_user_medical_provider_provider_id` (`medical_provider_id`),
+  KEY `idx_user_medical_provider_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `caregiver`
 --
 
@@ -402,8 +425,17 @@ CREATE TABLE `patient_medical_record` (
   `patient_id` bigint NOT NULL,
   `bp_systolic` int DEFAULT NULL,
   `bp_diastolic` int DEFAULT NULL,
+  `bp_recorded_at` datetime DEFAULT NULL,
   `pulse` int DEFAULT NULL,
+  `pulse_recorded_at` datetime DEFAULT NULL,
   `sugar_level` decimal(10,2) DEFAULT NULL,
+  `sugar_test_date` datetime DEFAULT NULL,
+  `spo2` int DEFAULT NULL,
+  `spo2_recorded_at` datetime DEFAULT NULL,
+  `temperature` decimal(5,1) DEFAULT NULL,
+  `temperature_recorded_at` datetime DEFAULT NULL,
+  `pain_score` int DEFAULT NULL,
+  `pain_score_recorded_at` datetime DEFAULT NULL,
   `remark` varchar(500) DEFAULT NULL,
   `create_dt` datetime DEFAULT CURRENT_TIMESTAMP,
   `create_by` varchar(100) NOT NULL,
@@ -436,6 +468,9 @@ CREATE TABLE `patient_registration` (
   `city` varchar(100) DEFAULT NULL,
   `has_chronic_disease` char(1) DEFAULT 'N',
   `chronic_disease` varchar(255) DEFAULT NULL,
+  `medicine_taken_now` varchar(255) DEFAULT NULL,
+  `has_allergies` char(1) DEFAULT 'N',
+  `allergy_details` varchar(255) DEFAULT NULL,
   `remark` varchar(250) DEFAULT NULL,
   `gosmart_user_id` varchar(100) DEFAULT NULL,
   `modify_dt` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

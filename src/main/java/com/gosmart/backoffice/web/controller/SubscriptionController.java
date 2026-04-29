@@ -12,6 +12,8 @@ import com.gosmart.backoffice.service.ProtectedPageModelService;
 import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -58,11 +60,25 @@ public class SubscriptionController {
         protectedPageModelService.apply(model, request, null);
         UserFunctionPermission permission =
                 (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
-        model.addAttribute("medicalProviders", medicalProviderService.findAll());
-        model.addAttribute("patients", patientRegistrationService.findAll());
+        String currentUserId = requireCurrentUserId(request);
+        var medicalProviders = medicalProviderService.findAccessibleByUserId(currentUserId);
+        Set<Integer> allowedProviderIds = medicalProviders.stream()
+                .map(provider -> provider.getId())
+                .collect(Collectors.toSet());
+        Set<Long> allowedProviderIdsLong = allowedProviderIds.stream()
+                .map(Integer::longValue)
+                .collect(Collectors.toSet());
+        model.addAttribute("medicalProviders", medicalProviders);
+        model.addAttribute("patients", patientRegistrationService.findAll().stream()
+                .filter(patient -> patient.getMedicalProviderId() != null)
+                .filter(patient -> allowedProviderIdsLong.contains(patient.getMedicalProviderId()))
+                .toList());
         model.addAttribute("subscriptionPackages", medicalPackageService.getAllPackages());
         try {
-            model.addAttribute("subscriptions", packageSubscriptionService.findAllActiveSubscriptions());
+            model.addAttribute("subscriptions", packageSubscriptionService.findAllActiveSubscriptions().stream()
+                    .filter(subscription -> subscription.getMedicalProviderId() != null)
+                    .filter(subscription -> allowedProviderIds.contains(subscription.getMedicalProviderId()))
+                    .toList());
         } catch (RuntimeException ex) {
             log.error("Unable to load patient subscription page data", ex);
             model.addAttribute("subscriptions", Collections.emptyList());
@@ -87,6 +103,9 @@ public class SubscriptionController {
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        if (!medicalProviderService.hasAccessibleProvider(currentUserId, request.getMedicalProviderId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have access to this medical provider.");
+        }
         UserFunctionPermission permission =
                 permissionService.resolve(httpRequest, currentUserId, SUBSCRIPTION_FUNCTION_PATH);
         boolean isEdit = request.getId() != null;
@@ -107,10 +126,7 @@ public class SubscriptionController {
     @DeleteMapping("/patient/subscription/{id}")
     @ResponseBody
     public void deleteSubscription(@PathVariable int id, HttpServletRequest request) {
-        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
-        if (currentUserId == null) {
-            throw new IllegalStateException("Logged-in user id is missing from request attributes");
-        }
+        String currentUserId = requireCurrentUserId(request);
         permissionService.requireDelete(
                 request,
                 currentUserId,
@@ -118,5 +134,13 @@ public class SubscriptionController {
                 "You do not have permission to delete subscriptions."
         );
         packageSubscriptionService.deleteSubscription(id);
+    }
+
+    private String requireCurrentUserId(HttpServletRequest request) {
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        return currentUserId;
     }
 }

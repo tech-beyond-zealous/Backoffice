@@ -25,10 +25,35 @@ public class PatientMedicalRecord {
     @Column(name = "bp_diastolic")
     private Integer diastolic;
 
+    @Column(name = "bp_recorded_at")
+    private LocalDateTime bpRecordedAt;
+
     private Integer pulse;
+
+    @Column(name = "pulse_recorded_at")
+    private LocalDateTime pulseRecordedAt;
 
     @Column(name = "sugar_level")
     private BigDecimal sugarLevel;
+
+    @Column(name = "sugar_test_date")
+    private LocalDateTime sugarTestDate;
+
+    private Integer spo2;
+
+    @Column(name = "spo2_recorded_at")
+    private LocalDateTime spo2RecordedAt;
+
+    private BigDecimal temperature;
+
+    @Column(name = "temperature_recorded_at")
+    private LocalDateTime temperatureRecordedAt;
+
+    @Column(name = "pain_score")
+    private Integer painScore;
+
+    @Column(name = "pain_score_recorded_at")
+    private LocalDateTime painScoreRecordedAt;
 
     private String remark;
 
@@ -95,6 +120,14 @@ public class PatientMedicalRecord {
         this.diastolic = diastolic;
     }
 
+    public LocalDateTime getBpRecordedAt() {
+        return bpRecordedAt;
+    }
+
+    public void setBpRecordedAt(LocalDateTime bpRecordedAt) {
+        this.bpRecordedAt = bpRecordedAt;
+    }
+
     public Integer getPulse() {
         return pulse;
     }
@@ -103,12 +136,76 @@ public class PatientMedicalRecord {
         this.pulse = pulse;
     }
 
+    public LocalDateTime getPulseRecordedAt() {
+        return pulseRecordedAt;
+    }
+
+    public void setPulseRecordedAt(LocalDateTime pulseRecordedAt) {
+        this.pulseRecordedAt = pulseRecordedAt;
+    }
+
     public BigDecimal getSugarLevel() {
         return sugarLevel;
     }
 
     public void setSugarLevel(BigDecimal sugarLevel) {
         this.sugarLevel = sugarLevel;
+    }
+
+    public LocalDateTime getSugarTestDate() {
+        return sugarTestDate;
+    }
+
+    public void setSugarTestDate(LocalDateTime sugarTestDate) {
+        this.sugarTestDate = sugarTestDate;
+    }
+
+    public Integer getSpo2() {
+        return spo2;
+    }
+
+    public void setSpo2(Integer spo2) {
+        this.spo2 = spo2;
+    }
+
+    public LocalDateTime getSpo2RecordedAt() {
+        return spo2RecordedAt;
+    }
+
+    public void setSpo2RecordedAt(LocalDateTime spo2RecordedAt) {
+        this.spo2RecordedAt = spo2RecordedAt;
+    }
+
+    public BigDecimal getTemperature() {
+        return temperature;
+    }
+
+    public void setTemperature(BigDecimal temperature) {
+        this.temperature = temperature;
+    }
+
+    public LocalDateTime getTemperatureRecordedAt() {
+        return temperatureRecordedAt;
+    }
+
+    public void setTemperatureRecordedAt(LocalDateTime temperatureRecordedAt) {
+        this.temperatureRecordedAt = temperatureRecordedAt;
+    }
+
+    public Integer getPainScore() {
+        return painScore;
+    }
+
+    public void setPainScore(Integer painScore) {
+        this.painScore = painScore;
+    }
+
+    public LocalDateTime getPainScoreRecordedAt() {
+        return painScoreRecordedAt;
+    }
+
+    public void setPainScoreRecordedAt(LocalDateTime painScoreRecordedAt) {
+        this.painScoreRecordedAt = painScoreRecordedAt;
     }
 
     public String getRemark() {

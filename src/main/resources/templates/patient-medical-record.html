@@ -96,19 +96,28 @@
               >
                 <thead class="table-header-custom">
                   <tr>
-                    <th>Medical Provider</th>
                     <th>Patient Name</th>
-                    <th>Blood Pressure</th>
+                    <th>Systolic</th>
+                    <th>Diastolic</th>
                     <th>Pulse</th>
-                    <th>Sugar Level</th>
+                    <th>Blood Sugar</th>
+                    <th>SpO<sub>2</sub></th>
+                    <th>Temperature</th>
+                    <th>Pain Score</th>
                     <th>Remarks</th>
-                    <th>Recorded At</th>
+                    <th class="sortable" data-sort="createdDateTime">
+                      Recorded On
+                      <span
+                        class="sort-arrow"
+                        data-field="createdDateTime"
+                      ></span>
+                    </th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="medicalRecordList">
                   <tr id="noMedicalRecordsRow" class="d-none">
-                    <td colspan="8" class="text-center text-muted py-4">
+                    <td colspan="11" class="text-center text-muted py-4">
                       No medical records found.
                     </td>
                   </tr>
@@ -144,70 +153,240 @@
       tabindex="-1"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered app-modal-dialog detail-modal-dialog"
+      >
+        <div class="modal-content app-modal-content detail-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title">Medical Record Details</h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
-            <div class="card bg-light border-0 p-3">
-              <div class="details-grid">
-                <div class="detail-item">
-                  <div class="detail-label">Medical Provider</div>
-                  <div class="detail-value" id="detailProvider">-</div>
+          <div class="modal-body app-modal-body">
+            <div class="detail-dashboard">
+              <section class="record-profile-summary">
+                <div class="record-avatar" id="detailPatientInitials">-</div>
+                <div class="record-profile-main">
+                  <h2 id="detailPatient">-</h2>
+                  <div class="record-profile-identity">
+                    <i class="bi bi-card-text"></i>
+                    <span>IC / Passport</span>
+                    <strong id="detailPatientIc">-</strong>
+                    <button
+                      type="button"
+                      class="detail-copy-btn"
+                      id="detailPatientIcCopy"
+                      title="Copy IC / Passport"
+                      aria-label="Copy IC / Passport"
+                      onclick="copyDetailValue(this)"
+                    >
+                      <i class="bi bi-copy"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="detail-item">
-                  <div class="detail-label">Patient Name</div>
-                  <div class="detail-value" id="detailPatient">-</div>
+                <div class="record-profile-provider">
+                  <i class="bi bi-hospital"></i>
+                  <div
+                    class="record-profile-detail-text record-profile-provider-text"
+                  >
+                    <span>Medical Provider</span>
+                    <strong id="detailProvider">-</strong>
+                  </div>
                 </div>
-                <div class="detail-item">
-                  <div class="detail-label">Blood Pressure</div>
-                  <div class="detail-value" id="detailBloodPressure">-</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Pulse</div>
-                  <div class="detail-value" id="detailPulse">-</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Sugar Level</div>
-                  <div class="detail-value" id="detailSugarLevel">-</div>
-                </div>
-                <div class="detail-item">
-                  <div class="detail-label">Remarks</div>
-                  <div class="detail-value" id="detailRemark">-</div>
-                </div>
+              </section>
+
+              <div class="detail-clinical-grid">
+                <section class="clinical-section detail-panel-vitals">
+                  <div class="clinical-section-header">
+                    <h3 class="section-heading">
+                      <i class="bi bi-heart-pulse"></i> Vital Signs
+                    </h3>
+                  </div>
+
+                  <div class="detail-subsection">
+                    <div class="detail-subsection-label">Blood Pressure</div>
+                    <div class="detail-vital-tiles">
+                      <div class="vital-panel detail-metric-card">
+                        <div class="detail-metric-label">Systolic</div>
+                        <div class="detail-metric-value-row">
+                          <span class="detail-metric-value" id="detailSystolic"
+                            >-</span
+                          >
+                          <span
+                            class="detail-metric-unit"
+                            id="detailSystolicUnit"
+                          ></span>
+                        </div>
+                        <div
+                          class="detail-metric-timestamps"
+                          data-recorded-field="bpRecordedAt"
+                        ></div>
+                      </div>
+                      <div class="vital-panel detail-metric-card">
+                        <div class="detail-metric-label">Diastolic</div>
+                        <div class="detail-metric-value-row">
+                          <span class="detail-metric-value" id="detailDiastolic"
+                            >-</span
+                          >
+                          <span
+                            class="detail-metric-unit"
+                            id="detailDiastolicUnit"
+                          ></span>
+                        </div>
+                        <div
+                          class="detail-metric-timestamps"
+                          data-recorded-field="bpRecordedAt"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="detail-subsection">
+                    <div class="detail-subsection-label">Other Vital Signs</div>
+                    <div class="detail-vital-tiles detail-vital-tiles-three">
+                      <div class="vital-panel detail-metric-card">
+                        <div class="detail-metric-label">
+                          Pulse Rate (Heart Rate)
+                        </div>
+                        <div class="detail-metric-value-row">
+                          <span class="detail-metric-value" id="detailPulse"
+                            >-</span
+                          >
+                          <span
+                            class="detail-metric-unit"
+                            id="detailPulseUnit"
+                          ></span>
+                        </div>
+                        <div
+                          class="detail-metric-timestamps"
+                          data-recorded-field="pulseRecordedAt"
+                        ></div>
+                      </div>
+                      <div class="vital-panel detail-metric-card">
+                        <div class="detail-metric-label">Temperature</div>
+                        <div class="detail-metric-value-row">
+                          <span
+                            class="detail-metric-value"
+                            id="detailTemperature"
+                            >-</span
+                          >
+                          <span
+                            class="detail-metric-unit"
+                            id="detailTemperatureUnit"
+                          ></span>
+                        </div>
+                        <div
+                          class="detail-metric-timestamps"
+                          data-recorded-field="temperatureRecordedAt"
+                        ></div>
+                      </div>
+                      <div class="vital-panel detail-metric-card">
+                        <div class="detail-metric-label">
+                          SpO<sub>2</sub> (Oxygen Saturation)
+                        </div>
+                        <div class="detail-metric-value-row">
+                          <span class="detail-metric-value" id="detailSpo2"
+                            >-</span
+                          >
+                          <span
+                            class="detail-metric-unit"
+                            id="detailSpo2Unit"
+                          ></span>
+                        </div>
+                        <div
+                          class="detail-metric-timestamps"
+                          data-recorded-field="spo2RecordedAt"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="clinical-section form-section-stack">
+                  <div class="clinical-section-header">
+                    <h3 class="section-heading">
+                      <i class="bi bi-emoji-frown"></i> Pain Assessment
+                    </h3>
+                  </div>
+
+                  <div class="detail-subsection">
+                    <div class="vital-panel detail-lab-highlight">
+                      <div class="detail-metric-label">Pain Score</div>
+                      <div class="detail-metric-value-row">
+                        <span class="detail-metric-value" id="detailPainScore"
+                          >-</span
+                        >
+                        <span
+                          class="detail-metric-unit"
+                          id="detailPainScoreUnit"
+                        ></span>
+                      </div>
+                      <div
+                        class="detail-metric-timestamps"
+                        data-recorded-field="painScoreRecordedAt"
+                      ></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="clinical-section form-section-stack">
+                  <div class="clinical-section-header">
+                    <h3 class="section-heading">
+                      <i class="bi bi-droplet-half"></i> Laboratory Results
+                    </h3>
+                  </div>
+
+                  <div class="detail-subsection">
+                    <div class="vital-panel detail-lab-highlight">
+                      <div class="detail-metric-label">Blood Sugar Level</div>
+                      <div class="detail-metric-value-row">
+                        <span class="detail-metric-value" id="detailSugarLevel"
+                          >-</span
+                        >
+                        <span
+                          class="detail-metric-unit"
+                          id="detailSugarLevelUnit"
+                        ></span>
+                      </div>
+                      <div
+                        class="detail-metric-timestamps"
+                        data-recorded-field="sugarTestDate"
+                      ></div>
+                    </div>
+                  </div>
+                </section>
               </div>
 
-              <div class="audit-grid col-span-2">
-                <div class="audit-item">
-                  <div class="audit-label">Created Date/Time</div>
-                  <div class="audit-value" id="detailCreatedDateTime">-</div>
+              <section class="clinical-section">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-chat-left-text"></i> Remarks
+                  </h3>
                 </div>
-                <div class="audit-item">
-                  <div class="audit-label">Created By</div>
-                  <div class="audit-value" id="detailCreatedBy">-</div>
-                </div>
-                <div class="audit-item">
-                  <div class="audit-label">Last Updated</div>
-                  <div class="audit-value" id="detailModifiedDateTime">-</div>
-                </div>
-                <div class="audit-item">
-                  <div class="audit-label">Modified By</div>
-                  <div class="audit-value" id="detailModifiedBy">-</div>
-                </div>
+                <div class="detail-remarks-value" id="detailRemark">-</div>
+              </section>
+
+              <div class="detail-audit-line">
+                <span
+                  >Created: <strong id="detailCreatedDateTime">-</strong> by
+                  <strong id="detailCreatedBy">-</strong></span
+                >
+                <span class="detail-audit-divider">|</span>
+                <span
+                  >Updated: <strong id="detailModifiedDateTime">-</strong> by
+                  <strong id="detailModifiedBy">-</strong></span
+                >
               </div>
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-outline-secondary"
+              class="btn btn-primary app-modal-btn-primary"
               data-bs-dismiss="modal"
             >
               Close
@@ -224,176 +403,355 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div class="modal-dialog modal-xl modal-dialog-centered app-modal-dialog">
+        <div class="modal-content app-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title" id="medicalRecordFormModalLabel">
               Add Medical Record
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body app-modal-body">
             <form id="medicalRecordForm" class="form-grid" novalidate>
               <input type="hidden" id="medicalRecordId" />
 
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-person-badge"></i> Select Provider & Patient
-              </h3>
-              <div class="form-group-compact">
-                <label for="medicalProviderId" class="medical-record-label">
-                  Medical Provider
-                </label>
-                <select id="medicalProviderId" class="input-field" required>
-                  <option value="">Select Medical Provider *</option>
-                  <option
-                    th:each="provider : ${medicalProviders}"
-                    th:value="${provider.id}"
-                    th:text="${provider.code + ' - ' + provider.name}"
-                  ></option>
-                </select>
-              </div>
-              <div class="form-group-compact">
-                <label for="patientSearchInput" class="medical-record-label">
-                  Patient
-                </label>
-                <div class="search-select has-clear">
-                  <input type="hidden" id="patientId" />
-                  <div class="search-select-input-wrap">
-                    <input
-                      id="patientSearchInput"
-                      type="text"
-                      class="input-field"
-                      placeholder="Select Medical Provider first"
-                      autocomplete="off"
-                      disabled
-                      required
-                    />
-                    <button
-                      type="button"
-                      id="clearPatientSearchButton"
-                      class="search-select-clear d-none"
-                      aria-label="Clear selected patient"
-                      title="Clear selected patient"
-                    >
-                      <i class="bi bi-x"></i>
-                    </button>
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-person-badge"></i> Select Provider & Patient
+                  </h3>
+                </div>
+                <div class="provider-patient-grid">
+                  <div class="form-section-card">
+                    <label for="medicalProviderId" class="medical-record-label">
+                      Medical Provider
+                    </label>
+                    <div class="icon-input-shell select-shell">
+                      <span class="field-icon">
+                        <i class="bi bi-building"></i>
+                      </span>
+                      <select
+                        id="medicalProviderId"
+                        class="input-field"
+                        required
+                      >
+                        <option value="">Select Medical Provider *</option>
+                        <option
+                          th:each="provider : ${medicalProviders}"
+                          th:value="${provider.id}"
+                          th:text="${provider.code + ' - ' + provider.name}"
+                        ></option>
+                      </select>
+                    </div>
+                    <div
+                      id="medicalProviderIdError"
+                      class="field-error"
+                      aria-live="polite"
+                    ></div>
                   </div>
-                  <div
-                    id="patientSearchMenu"
-                    class="search-select-menu d-none"
-                  ></div>
+                  <div class="form-section-card">
+                    <label
+                      for="patientSearchInput"
+                      class="medical-record-label"
+                    >
+                      Patient
+                    </label>
+                    <div class="search-select has-clear">
+                      <input type="hidden" id="patientId" />
+                      <div class="search-select-input-wrap icon-input-shell">
+                        <span class="field-icon">
+                          <i class="bi bi-people"></i>
+                        </span>
+                        <input
+                          id="patientSearchInput"
+                          type="text"
+                          class="input-field"
+                          placeholder="Select Medical Provider first"
+                          autocomplete="off"
+                          disabled
+                          required
+                        />
+                        <button
+                          type="button"
+                          id="clearPatientSearchButton"
+                          class="search-select-clear d-none"
+                          aria-label="Clear selected patient"
+                          title="Clear selected patient"
+                        >
+                          <i class="bi bi-x"></i>
+                        </button>
+                      </div>
+                      <div
+                        id="patientSearchMenu"
+                        class="search-select-menu d-none"
+                      ></div>
+                    </div>
+                    <div
+                      id="patientSearchError"
+                      class="field-error"
+                      aria-live="polite"
+                    ></div>
+                  </div>
                 </div>
-                <div
-                  id="patientSearchError"
-                  class="field-error"
-                  aria-live="polite"
-                ></div>
+              </section>
+
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-heart-pulse"></i> Vital Signs
+                  </h3>
+                </div>
+
+                <div class="vitals-layout">
+                  <div
+                    class="vital-panel vital-panel-blood-pressure vital-panel-wide"
+                  >
+                    <div class="clinical-card-heading">Blood Pressure</div>
+                    <div class="bp-combined-row">
+                      <div class="measurement-field">
+                        <label for="systolic" class="measurement-label">
+                          Systolic
+                        </label>
+                        <input
+                          type="text"
+                          id="systolic"
+                          class="input-field measurement-input"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          maxlength="4"
+                          placeholder="e.g. 120"
+                        />
+                      </div>
+                      <div class="bp-divider">/</div>
+                      <div class="measurement-field">
+                        <label for="diastolic" class="measurement-label">
+                          Diastolic
+                        </label>
+                        <input
+                          type="text"
+                          id="diastolic"
+                          class="input-field measurement-input"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          maxlength="4"
+                          placeholder="e.g. 80"
+                        />
+                      </div>
+                      <div class="bp-unit">mmHg</div>
+                    </div>
+                    <div
+                      id="systolicError"
+                      class="field-error"
+                      aria-live="polite"
+                    ></div>
+                    <div
+                      id="diastolicError"
+                      class="field-error"
+                      aria-live="polite"
+                    ></div>
+                  </div>
+
+                  <div class="vital-panel">
+                    <div class="measurement-field">
+                      <label for="pulse" class="measurement-label">
+                        Pulse Rate (Heart Rate)
+                      </label>
+                      <div class="measurement-input-wrap">
+                        <span class="measurement-icon">
+                          <i class="bi bi-heart-pulse"></i>
+                        </span>
+                        <input
+                          type="text"
+                          id="pulse"
+                          class="input-field measurement-input"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          maxlength="4"
+                          placeholder="e.g. 72"
+                        />
+                        <span class="measurement-unit">bpm</span>
+                      </div>
+                      <div
+                        id="pulseError"
+                        class="field-error"
+                        aria-live="polite"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="vital-panel">
+                    <div class="measurement-field">
+                      <label for="temperature" class="measurement-label">
+                        Temperature
+                      </label>
+                      <div class="measurement-input-wrap">
+                        <span class="measurement-icon">
+                          <i class="bi bi-thermometer-half"></i>
+                        </span>
+                        <input
+                          type="text"
+                          id="temperature"
+                          class="input-field measurement-input"
+                          inputmode="decimal"
+                          pattern="[0-9]{1,3}(\\.[0-9])?"
+                          maxlength="5"
+                          placeholder="e.g. 36.8"
+                        />
+                        <span class="measurement-unit">°C</span>
+                      </div>
+                      <div
+                        id="temperatureError"
+                        class="field-error"
+                        aria-live="polite"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="vital-panel vital-panel-spo2-row">
+                    <div class="measurement-field">
+                      <label for="spo2" class="measurement-label">
+                        SpO<sub>2</sub> (Oxygen Saturation)
+                      </label>
+                      <div class="measurement-input-wrap">
+                        <span class="measurement-icon">
+                          <i class="bi bi-lungs"></i>
+                        </span>
+                        <input
+                          type="text"
+                          id="spo2"
+                          class="input-field measurement-input"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          maxlength="3"
+                          placeholder="e.g. 98"
+                        />
+                        <span class="measurement-unit">%</span>
+                      </div>
+                      <div
+                        id="spo2Error"
+                        class="field-error"
+                        aria-live="polite"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="col-span-2 assessment-lab-row">
+                <section class="clinical-section form-section-stack">
+                  <div class="clinical-section-header">
+                    <h3 class="section-heading">
+                      <i class="bi bi-emoji-frown"></i> Pain Assessment
+                    </h3>
+                    <div class="pain-header-status">
+                      <output id="painScoreValue" for="painScore">0/10</output>
+                      <span id="painSeverityLabel" class="pain-severity">
+                        No pain
+                      </span>
+                    </div>
+                  </div>
+                  <div class="pain-assessment-grid">
+                    <div class="vital-panel">
+                      <div class="measurement-field">
+                        <div class="slider-label-row">
+                          <label for="painScore" class="measurement-label">
+                            Pain Score
+                          </label>
+                        </div>
+                        <input
+                          type="range"
+                          id="painScore"
+                          class="pain-slider"
+                          min="0"
+                          max="10"
+                          step="1"
+                          value="0"
+                        />
+                        <div class="pain-scale">
+                          <span>0</span>
+                          <span>5</span>
+                          <span>10</span>
+                        </div>
+                        <div
+                          id="painScoreError"
+                          class="field-error"
+                          aria-live="polite"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="clinical-section form-section-stack">
+                  <div class="clinical-section-header">
+                    <h3 class="section-heading">
+                      <i class="bi bi-droplet-half"></i> Laboratory Results
+                    </h3>
+                  </div>
+                  <div class="lab-results-grid">
+                    <div class="vital-panel">
+                      <div class="measurement-field">
+                        <label for="sugarLevel" class="measurement-label">
+                          Blood Sugar (Glucose)
+                        </label>
+                        <div class="measurement-input-wrap">
+                          <span class="measurement-icon">
+                            <i class="bi bi-activity"></i>
+                          </span>
+                          <input
+                            type="text"
+                            id="sugarLevel"
+                            class="input-field measurement-input"
+                            inputmode="decimal"
+                            pattern="[0-9]{1,4}\.[0-9]{1,2}"
+                            maxlength="7"
+                            placeholder="e.g. 5.4"
+                          />
+                          <span class="measurement-unit">mmol/L</span>
+                        </div>
+                        <div
+                          id="sugarLevelError"
+                          class="field-error"
+                          aria-live="polite"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
               </div>
 
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-heart"></i> Vital Signs &amp; Measurements
-              </h3>
-              <div class="col-span-2 bp-grid">
-                <div class="bp-card">
-                  <div class="bp-card-title">Systolic</div>
-                  <input
-                    type="text"
-                    id="systolic"
-                    class="input-field"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="4"
-                    placeholder="Enter systolic"
-                    required
-                  />
-                  <div
-                    id="systolicError"
-                    class="field-error"
-                    aria-live="polite"
-                  ></div>
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-chat-left-text"></i> Remarks
+                  </h3>
                 </div>
-                <div class="bp-card">
-                  <div class="bp-card-title">Diastolic</div>
-                  <input
-                    type="text"
-                    id="diastolic"
-                    class="input-field"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="4"
-                    placeholder="Enter diastolic"
-                    required
-                  />
-                  <div
-                    id="diastolicError"
-                    class="field-error"
-                    aria-live="polite"
-                  ></div>
+                <div class="form-group-compact remarks-section">
+                  <textarea
+                    id="remark"
+                    class="input-field remarks-textarea"
+                    rows="5"
+                    maxlength="500"
+                    placeholder="Enter remarks"
+                  ></textarea>
+                  <div class="remarks-footer">
+                    <small id="remarkCount" class="remarks-counter"
+                      >0/500</small
+                    >
+                  </div>
                 </div>
-                <div class="bp-card">
-                  <div class="bp-card-title">Pulse</div>
-                  <input
-                    type="text"
-                    id="pulse"
-                    class="input-field"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="4"
-                    placeholder="Enter pulse"
-                    required
-                  />
-                  <div
-                    id="pulseError"
-                    class="field-error"
-                    aria-live="polite"
-                  ></div>
-                </div>
-                <div class="bp-card">
-                  <div class="bp-card-title">Sugar Level</div>
-                  <input
-                    type="text"
-                    id="sugarLevel"
-                    class="input-field"
-                    inputmode="decimal"
-                    pattern="[0-9]{1,4}\.[0-9]{1,2}"
-                    maxlength="7"
-                    placeholder="Enter sugar level"
-                    required
-                  />
-                  <div
-                    id="sugarLevelError"
-                    class="field-error"
-                    aria-live="polite"
-                  ></div>
-                </div>
-              </div>
-
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-chat-left-text"></i> Remarks
-              </h3>
-              <div class="form-group-compact col-span-2">
-                <textarea
-                  id="remark"
-                  class="input-field"
-                  rows="4"
-                  maxlength="500"
-                  placeholder="Enter remarks"
-                ></textarea>
-                <div class="text-end mt-2 text-muted">
-                  <small id="remarkCount">0/500</small>
-                </div>
-              </div>
+              </section>
             </form>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-secondary app-modal-btn-secondary"
               data-bs-dismiss="modal"
             >
               Cancel
@@ -402,7 +760,7 @@
               type="submit"
               form="medicalRecordForm"
               id="saveMedicalRecordButton"
-              class="btn btn-primary"
+              class="btn btn-primary app-modal-btn-primary"
             >
               Save
             </button>
@@ -449,15 +807,44 @@
       const diastolic = document.getElementById("diastolic");
       const pulse = document.getElementById("pulse");
       const sugarLevel = document.getElementById("sugarLevel");
+      const spo2 = document.getElementById("spo2");
+      const temperature = document.getElementById("temperature");
+      const painScore = document.getElementById("painScore");
+      const painScoreValue = document.getElementById("painScoreValue");
+      const painSeverityLabel = document.getElementById("painSeverityLabel");
       const remark = document.getElementById("remark");
       const remarkCount = document.getElementById("remarkCount");
       const remarkTooltip = document.getElementById("remarkTooltip");
 
       const detailProvider = document.getElementById("detailProvider");
       const detailPatient = document.getElementById("detailPatient");
-      const detailBloodPressure = document.getElementById("detailBloodPressure");
+      const detailPatientInitials = document.getElementById(
+        "detailPatientInitials",
+      );
+      const detailPatientIc = document.getElementById("detailPatientIc");
+      const detailPatientIcCopy = document.getElementById(
+        "detailPatientIcCopy",
+      );
+      const detailSystolic = document.getElementById("detailSystolic");
+      const detailSystolicUnit = document.getElementById("detailSystolicUnit");
+      const detailDiastolic = document.getElementById("detailDiastolic");
+      const detailDiastolicUnit = document.getElementById("detailDiastolicUnit");
       const detailPulse = document.getElementById("detailPulse");
+      const detailPulseUnit = document.getElementById("detailPulseUnit");
       const detailSugarLevel = document.getElementById("detailSugarLevel");
+      const detailSugarLevelUnit = document.getElementById(
+        "detailSugarLevelUnit",
+      );
+      const detailSpo2 = document.getElementById("detailSpo2");
+      const detailSpo2Unit = document.getElementById("detailSpo2Unit");
+      const detailTemperature = document.getElementById("detailTemperature");
+      const detailTemperatureUnit = document.getElementById(
+        "detailTemperatureUnit",
+      );
+      const detailPainScore = document.getElementById("detailPainScore");
+      const detailPainScoreUnit = document.getElementById(
+        "detailPainScoreUnit",
+      );
       const detailRemark = document.getElementById("detailRemark");
       const detailCreatedBy = document.getElementById("detailCreatedBy");
       const detailCreatedDateTime = document.getElementById(
@@ -470,6 +857,8 @@
 
       const pageSize = 6;
       let currentPage = 1;
+      let currentSortBy = "createdDateTime";
+      let currentSortDir = "desc";
       const detailModalElement = document.getElementById(
         "medicalRecordDetailModal",
       );
@@ -512,15 +901,19 @@
         return value == null || value === "" ? "-" : Number(value).toFixed(1);
       }
 
-      function getBloodPressureValue(record) {
-        const hasValues =
-          record.systolic != null ||
-          record.diastolic != null ||
-          record.pulse != null;
-        if (!hasValues) {
-          return "-";
-        }
-        return `${record.systolic ?? "-"} / ${record.diastolic ?? "-"}`;
+      function formatTemperature(value) {
+        return value == null || value === "" ? "-" : Number(value).toFixed(1);
+      }
+
+      function getInitials(name) {
+        const initials = String(name || "")
+          .trim()
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("");
+        return initials || "-";
       }
 
       function getPatientLabel(patient) {
@@ -537,6 +930,19 @@
         toastBody.classList.toggle("bg-danger", isError);
         const toast = new bootstrap.Toast(toastEl);
         toast.show();
+      }
+
+      function copyDetailValue(button) {
+        const value = button?.dataset?.copy || "";
+        if (!value || value === "-") return;
+        if (!navigator.clipboard) {
+          showToast("Clipboard is not available", true);
+          return;
+        }
+        navigator.clipboard
+          .writeText(value)
+          .then(() => showToast("Copied to clipboard"))
+          .catch(() => showToast("Unable to copy", true));
       }
 
       function moveRemarkTooltip(event) {
@@ -567,10 +973,14 @@
         systolic: "Please enter systolic.",
         diastolic: "Please enter diastolic.",
         pulse: "Please enter pulse.",
-        sugarLevel: "Please enter sugar level.",
+        sugarLevel: "Please enter blood sugar.",
+        spo2: "Please enter SPO2.",
+        temperature: "Please enter temperature.",
+        painScore: "Please enter pain score.",
       };
       const integerPattern = /^\d{1,4}$/;
       const decimalPattern = /^\d{1,4}\.\d{1,2}$/;
+      const temperaturePattern = /^\d{1,3}(\.\d)?$/;
 
       function getFieldErrorElement(field) {
         if (!field?.id) {
@@ -603,16 +1013,24 @@
       }
 
       function clearMedicalRecordValidation() {
-        [medicalProviderId, systolic, diastolic, pulse, sugarLevel].forEach(
-          (field) => setFieldError(field, ""),
-        );
+        [
+          medicalProviderId,
+          systolic,
+          diastolic,
+          pulse,
+          sugarLevel,
+          spo2,
+          temperature,
+          painScore,
+        ].forEach((field) => setFieldError(field, ""));
         setPatientSearchError("");
       }
 
       function focusInvalidField(field) {
         const target =
           field?.closest(".form-group-compact") ||
-          field?.closest(".bp-card") ||
+          field?.closest(".clinical-section") ||
+          field?.closest(".vital-panel") ||
           field;
         target?.scrollIntoView({ behavior: "smooth", block: "center" });
         setTimeout(() => {
@@ -624,13 +1042,23 @@
         clearMedicalRecordValidation();
         let firstInvalidField = null;
 
-        [medicalProviderId, systolic, diastolic, pulse, sugarLevel].forEach(
-          (field) => {
+        [medicalProviderId].forEach((field) => {
             const trimmedValue = String(field.value || "").trim();
 
             if (!trimmedValue) {
               setFieldError(field, medicalRecordValidationMessages[field.id]);
               firstInvalidField ||= field;
+              return;
+            }
+
+            field.value = trimmedValue;
+          });
+
+        [systolic, diastolic, pulse, sugarLevel, spo2, temperature].forEach(
+          (field) => {
+            const trimmedValue = String(field.value || "").trim();
+            if (!trimmedValue) {
+              field.value = "";
               return;
             }
 
@@ -654,15 +1082,56 @@
                 "Please enter a valid decimal number using up to 4 digits and 1-2 decimal places.",
               );
               firstInvalidField ||= field;
+            } else if (
+              field === spo2 &&
+              (!/^\d{1,3}$/.test(trimmedValue) ||
+                Number(trimmedValue) < 0 ||
+                Number(trimmedValue) > 100)
+            ) {
+              setFieldError(field, "Please enter a valid SPO2 value from 0 to 100.");
+              firstInvalidField ||= field;
+            } else if (
+              field === temperature &&
+              (!temperaturePattern.test(trimmedValue) || Number(trimmedValue) < 0)
+            ) {
+              setFieldError(
+                field,
+                "Please enter a valid temperature using up to 1 decimal place.",
+              );
+              firstInvalidField ||= field;
             }
           },
         );
 
+        if (painScore.dataset.recorded === "true") {
+          const trimmedValue = String(painScore.value || "").trim();
+          if (
+            !/^\d{1,2}$/.test(trimmedValue) ||
+            Number(trimmedValue) < 0 ||
+            Number(trimmedValue) > 10
+          ) {
+            setFieldError(painScore, "Please enter a valid pain score from 0 to 10.");
+            firstInvalidField ||= painScore;
+          }
+        }
+
         if (
           !firstInvalidField &&
+          systolic.value &&
+          diastolic.value &&
           Number(systolic.value) <= Number(diastolic.value)
         ) {
           setFieldError(systolic, "Systolic must be greater than diastolic.");
+          firstInvalidField = systolic;
+        }
+
+        if (!firstInvalidField && systolic.value && !diastolic.value) {
+          setFieldError(diastolic, "Please enter diastolic for blood pressure.");
+          firstInvalidField = diastolic;
+        }
+
+        if (!firstInvalidField && !systolic.value && diastolic.value) {
+          setFieldError(systolic, "Please enter systolic for blood pressure.");
           firstInvalidField = systolic;
         }
 
@@ -711,6 +1180,68 @@
           return;
         }
         sugarLevel.value = trimmedValue;
+      }
+
+      function formatTemperatureInput() {
+        const trimmedValue = String(temperature.value || "").trim();
+        if (!trimmedValue) {
+          temperature.value = "";
+          return;
+        }
+        temperature.value = trimmedValue;
+      }
+
+      function formatTemperatureDigitsAsDecimal(field) {
+        let nextValue = String(field.value || "").trim().replace(/[^\d.]/g, "");
+        const parts = nextValue.split(".");
+        const integerPart = parts[0].slice(0, 3);
+        const decimalPart = parts.slice(1).join("").slice(0, 1);
+        nextValue =
+          parts.length > 1 ? `${integerPart}.${decimalPart}` : integerPart;
+        if (field.value !== nextValue) {
+          field.value = nextValue;
+        }
+      }
+
+      function updatePainScoreDisplay() {
+        if (painScore.dataset.recorded !== "true") {
+          painScoreValue.textContent = "Not recorded";
+          painSeverityLabel.textContent = "Not recorded";
+          painSeverityLabel.classList.remove(
+            "pain-severity-moderate",
+            "pain-severity-severe",
+          );
+          return;
+        }
+
+        const score = Number(painScore.value || 0);
+        let severity = "No pain";
+        let severityClass = "";
+
+        if (score >= 7) {
+          severity = "Severe pain";
+          severityClass = "pain-severity-severe";
+        } else if (score >= 4) {
+          severity = "Moderate pain";
+          severityClass = "pain-severity-moderate";
+        } else if (score >= 1) {
+          severity = "Mild pain";
+        }
+
+        painScoreValue.textContent = `${score}/10`;
+        painSeverityLabel.textContent = severity;
+        painSeverityLabel.classList.remove(
+          "pain-severity-moderate",
+          "pain-severity-severe",
+        );
+        if (severityClass) {
+          painSeverityLabel.classList.add(severityClass);
+        }
+      }
+
+      function markPainScoreRecorded() {
+        painScore.dataset.recorded = "true";
+        updatePainScoreDisplay();
       }
 
       function createPatientPicker({
@@ -932,11 +1463,56 @@
               String(record.medicalProviderId) === String(selectedProvider) &&
               String(record.patientId) === String(selectedPatient),
           )
-          .sort((left, right) =>
-            normalize(right.createdDateTime).localeCompare(
-              normalize(left.createdDateTime),
-            ),
+          .sort((left, right) => compareRecords(left, right));
+      }
+
+      function compareRecords(left, right) {
+        const leftValue = getSortValue(left, currentSortBy);
+        const rightValue = getSortValue(right, currentSortBy);
+        const direction = currentSortDir === "asc" ? 1 : -1;
+        if (typeof leftValue === "number" && typeof rightValue === "number") {
+          return (leftValue - rightValue) * direction;
+        }
+        return String(leftValue).localeCompare(String(rightValue)) * direction;
+      }
+
+      function getSortValue(record, field) {
+        const value = record?.[field];
+        if (field === "createdDateTime") {
+          return parseDisplayDateTime(value);
+        }
+        return normalize(value);
+      }
+
+      function parseDisplayDateTime(value) {
+        const match = String(value || "").match(
+          /^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/,
+        );
+        if (!match) {
+          return 0;
+        }
+        const [, day, month, year, hour = "00", minute = "00", second = "00"] =
+          match;
+        return new Date(
+          Number(year),
+          Number(month) - 1,
+          Number(day),
+          Number(hour),
+          Number(minute),
+          Number(second),
+        ).getTime();
+      }
+
+      function updateSortArrows() {
+        document.querySelectorAll(".sort-arrow").forEach((arrow) => {
+          const isActive = arrow.dataset.field === currentSortBy;
+          arrow.classList.toggle("active", isActive);
+          arrow.classList.toggle("asc", isActive && currentSortDir === "asc");
+          arrow.classList.toggle(
+            "desc",
+            isActive && currentSortDir === "desc",
           );
+        });
       }
 
       function renderPagination(totalPages) {
@@ -988,6 +1564,7 @@
           medicalRecordList.appendChild(noMedicalRecordsRow);
           medicalRecordInfo.textContent = "Showing 0 of 0 medical records";
           medicalRecordPagination.innerHTML = "";
+          updateSortArrows();
           return;
         }
 
@@ -1008,7 +1585,6 @@
                 class="${permissions.view ? "clickable-row" : ""}"
                 data-id="${escapeHtml(record.id)}"
               >
-                <td>${escapeHtml(record.medicalProviderCode || "-")}</td>
                 <td>
                   ${
                     permissions.view
@@ -1023,9 +1599,13 @@
                       : escapeHtml(record.patientName || "-")
                   }
                 </td>
-                <td>${escapeHtml(getBloodPressureValue(record))}</td>
+                <td>${escapeHtml(record.systolic ?? "-")}</td>
+                <td>${escapeHtml(record.diastolic ?? "-")}</td>
                 <td>${escapeHtml(record.pulse ?? "-")}</td>
                 <td>${escapeHtml(formatSugarLevel(record.sugarLevel))}</td>
+                <td>${escapeHtml(record.spo2 ?? "-")}</td>
+                <td>${escapeHtml(formatTemperature(record.temperature))}</td>
+                <td>${escapeHtml(record.painScore ?? "-")}</td>
                 <td>
                   <span class="remark-preview" data-full-remark="${escapeHtml(record.remark || "")}">
                     ${escapeHtml(truncateText(record.remark))}
@@ -1085,18 +1665,49 @@
         )} of ${totalItems} medical records`;
 
         renderPagination(totalPages);
+        updateSortArrows();
       }
 
       function showRecordDetails(record) {
+        const capturedDateTime = record.createdDateTime || "-";
+        const modifiedDateTime = record.modifiedDateTime || "-";
+
         detailProvider.textContent = record.medicalProviderCode || "-";
         detailPatient.textContent = record.patientName || "-";
-        detailBloodPressure.textContent = getBloodPressureValue(record);
+        detailPatientInitials.textContent = getInitials(record.patientName);
+        detailPatientIc.textContent = record.patientIcPassportNo || "-";
+        detailPatientIcCopy.dataset.copy = record.patientIcPassportNo || "";
+        detailPatientIcCopy.classList.toggle(
+          "d-none",
+          !record.patientIcPassportNo || record.patientIcPassportNo === "-",
+        );
+        detailSystolic.textContent = record.systolic ?? "-";
+        detailSystolicUnit.textContent = record.systolic == null ? "" : "mmHg";
+        detailDiastolic.textContent = record.diastolic ?? "-";
+        detailDiastolicUnit.textContent =
+          record.diastolic == null ? "" : "mmHg";
         detailPulse.textContent = record.pulse ?? "-";
+        detailPulseUnit.textContent = record.pulse == null ? "" : "bpm";
         detailSugarLevel.textContent = formatSugarLevel(record.sugarLevel);
+        detailSugarLevelUnit.textContent =
+          record.sugarLevel == null ? "" : "mmol/L";
+        detailSpo2.textContent = record.spo2 ?? "-";
+        detailSpo2Unit.textContent = record.spo2 == null ? "" : "%";
+        detailTemperature.textContent = formatTemperature(record.temperature);
+        detailTemperatureUnit.textContent =
+          record.temperature == null ? "" : "°C";
+        detailPainScore.textContent = record.painScore ?? "-";
+        detailPainScoreUnit.textContent = record.painScore == null ? "" : "/10";
+        document
+          .querySelectorAll("[data-recorded-field]")
+          .forEach((element) => {
+            const recordedAt = record[element.dataset.recordedField] || "-";
+            element.textContent = `Recorded On: ${recordedAt}`;
+          });
         detailRemark.textContent = record.remark || "-";
         detailCreatedBy.textContent = record.createdBy || "-";
-        detailCreatedDateTime.textContent = record.createdDateTime || "-";
-        detailModifiedDateTime.textContent = record.modifiedDateTime || "-";
+        detailCreatedDateTime.textContent = capturedDateTime;
+        detailModifiedDateTime.textContent = modifiedDateTime;
         detailModifiedBy.textContent = record.modifiedBy || "-";
         getDetailModal().show();
       }
@@ -1109,7 +1720,10 @@
         clearMedicalRecordValidation();
         document.getElementById("medicalRecordFormModalLabel").textContent =
           "Add Medical Record";
+        painScore.value = "0";
+        painScore.dataset.recorded = "false";
         updateRemarkCount();
+        updatePainScoreDisplay();
       }
 
       function populateMedicalRecordFormFromFilters() {
@@ -1133,10 +1747,18 @@
         pulse.value = record.pulse ?? "";
         sugarLevel.value =
           record.sugarLevel == null ? "" : Number(record.sugarLevel).toFixed(1);
+        spo2.value = record.spo2 ?? "";
+        temperature.value =
+          record.temperature == null
+            ? ""
+            : Number(record.temperature).toFixed(1);
+        painScore.value = record.painScore ?? 0;
+        painScore.dataset.recorded = record.painScore == null ? "false" : "true";
         remark.value = record.remark || "";
         document.getElementById("medicalRecordFormModalLabel").textContent =
           "Edit Medical Record";
         updateRemarkCount();
+        updatePainScoreDisplay();
         getFormModal().show();
       }
 
@@ -1227,14 +1849,25 @@
         }
         formatSugarLevelInput();
 
+        const nullableNumber = (field) => {
+          const value = String(field.value || "").trim();
+          return value ? Number(value) : null;
+        };
+
         const payload = {
           id: medicalRecordId.value ? Number(medicalRecordId.value) : null,
           medicalProviderId: Number(medicalProviderId.value),
           patientId: Number(patientId.value),
-          systolic: Number(systolic.value),
-          diastolic: Number(diastolic.value),
-          pulse: Number(pulse.value),
-          sugarLevel: Number(sugarLevel.value),
+          systolic: nullableNumber(systolic),
+          diastolic: nullableNumber(diastolic),
+          pulse: nullableNumber(pulse),
+          sugarLevel: nullableNumber(sugarLevel),
+          spo2: nullableNumber(spo2),
+          temperature: nullableNumber(temperature),
+          painScore:
+            painScore.dataset.recorded === "true"
+              ? Number(painScore.value)
+              : null,
           remark: remark.value.trim(),
         };
 
@@ -1283,9 +1916,28 @@
           showToast("Medical record saved successfully.");
         } catch (error) {
           console.error(error);
-          if (String(error.message || "").toLowerCase().includes("sugar level")) {
+          const errorMessage = String(error.message || "").toLowerCase();
+          if (
+            errorMessage.includes("sugar level") ||
+            errorMessage.includes("blood sugar")
+          ) {
             setFieldError(sugarLevel, error.message);
             focusInvalidField(sugarLevel);
+            return;
+          }
+          if (errorMessage.includes("spo2")) {
+            setFieldError(spo2, error.message);
+            focusInvalidField(spo2);
+            return;
+          }
+          if (errorMessage.includes("temperature")) {
+            setFieldError(temperature, error.message);
+            focusInvalidField(temperature);
+            return;
+          }
+          if (errorMessage.includes("pain score")) {
+            setFieldError(painScore, error.message);
+            focusInvalidField(painScore);
             return;
           }
           showToast(error.message || "Unable to save medical record.", true);
@@ -1304,10 +1956,16 @@
         formPatientPicker.setProvider(medicalProviderId.value);
       });
 
-      [systolic, diastolic, pulse, sugarLevel].forEach((field) => {
+      [systolic, diastolic, pulse, sugarLevel, spo2, temperature, painScore].forEach((field) => {
         field.addEventListener("input", () => {
           if (field === sugarLevel) {
             formatSugarDigitsAsDecimal(field);
+          } else if (field === temperature) {
+            formatTemperatureDigitsAsDecimal(field);
+          } else if (field === spo2) {
+            restrictToDigits(field, 3);
+          } else if (field === painScore) {
+            markPainScoreRecorded();
           } else {
             restrictToDigits(field, 3);
           }
@@ -1315,6 +1973,7 @@
         });
       });
       sugarLevel.addEventListener("blur", formatSugarLevelInput);
+      temperature.addEventListener("blur", formatTemperatureInput);
 
       remark.addEventListener("input", updateRemarkCount);
       document.addEventListener("mousemove", (event) => {
@@ -1347,6 +2006,20 @@
           populateMedicalRecordFormFromFilters();
         });
       }
+
+      document.querySelectorAll("th.sortable").forEach((header) => {
+        header.addEventListener("click", () => {
+          const nextSort = header.dataset.sort;
+          if (nextSort === currentSortBy) {
+            currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+          } else {
+            currentSortBy = nextSort;
+            currentSortDir = "asc";
+          }
+          currentPage = 1;
+          renderMedicalRecordTable();
+        });
+      });
 
       document.addEventListener("DOMContentLoaded", () => {
         resetMedicalRecordForm();

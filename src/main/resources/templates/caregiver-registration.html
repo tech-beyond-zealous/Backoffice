@@ -31,7 +31,7 @@
               <div class="table-tools-left">
                 <select
                   id="tableMedicalProviderFilter"
-                  class="form-select"
+                  class="form-select caregiver-table-provider-filter"
                   aria-label="Filter by medical provider"
                 >
                   <option value="">All Medical Providers</option>
@@ -41,7 +41,7 @@
                     th:text="|${provider.name} (${provider.code})|"
                   ></option>
                 </select>
-                <div class="input-group flex-grow-1">
+                <div class="input-group flex-grow-1 caregiver-table-search">
                   <span class="input-group-text"
                     ><i class="bi bi-search"></i
                   ></span>
@@ -216,77 +216,94 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div class="modal-dialog modal-lg app-modal-dialog">
+        <div class="modal-content app-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title" id="caregiverFormModalLabel">
               Add Caregiver
             </h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body app-modal-body">
             <form id="caregiverForm" class="form-grid" novalidate>
               <input type="hidden" id="caregiverId" name="id" />
 
               <!-- Medical Provider -->
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-building"></i> Medical Provider
-              </h3>
-              <div class="form-group-compact col-span-2">
-                <label
-                  for="medicalProviderId"
-                  class="form-label visually-hidden"
-                  >Medical Provider</label
-                >
-                <select
-                  id="medicalProviderId"
-                  name="medicalProviderId"
-                  class="input-field"
-                  required
-                >
-                  <option value="" disabled selected>
-                    Select Medical Provider *
-                  </option>
-                  <option
-                    th:each="provider : ${medicalProviders}"
-                    th:value="${provider.id}"
-                    th:text="|${provider.name} (${provider.code})|"
-                  ></option>
-                </select>
-              </div>
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-building"></i> Medical Provider
+                  </h3>
+                </div>
+                <div class="form-group-compact caregiver-provider-field">
+                  <label
+                    for="medicalProviderId"
+                    class="form-label visually-hidden"
+                    >Medical Provider</label
+                  >
+                  <div class="select-shell">
+                    <select
+                      id="medicalProviderId"
+                      name="medicalProviderId"
+                      class="input-field"
+                      required
+                    >
+                      <option value="" disabled selected>
+                        Select Medical Provider *
+                      </option>
+                      <option
+                        th:each="provider : ${medicalProviders}"
+                        th:value="${provider.id}"
+                        th:text="|${provider.name} (${provider.code})|"
+                      ></option>
+                    </select>
+                  </div>
+                </div>
+              </section>
 
               <!-- Basic Info -->
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-person"></i> Basic Information
-              </h3>
-              <div class="form-group-compact">
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  class="input-field"
-                  placeholder="Full Name *"
-                  maxlength="100"
-                  required
-                />
-              </div>
-              <div class="form-group-compact">
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  class="input-field"
-                  placeholder="Email Address *"
-                  maxlength="100"
-                  required
-                />
-              </div>
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-person"></i> Basic Information
+                  </h3>
+                </div>
+                <div class="form-section-grid caregiver-basic-grid">
+                  <div class="form-group-compact caregiver-name-field">
+                    <label for="name" class="form-label visually-hidden">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      class="input-field"
+                      placeholder="Full Name *"
+                      maxlength="100"
+                      required
+                    />
+                  </div>
+                  <div class="form-group-compact">
+                    <label for="email" class="form-label visually-hidden">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      class="input-field"
+                      placeholder="Email Address *"
+                      maxlength="100"
+                      required
+                    />
+                  </div>
 
+<<<<<<< HEAD
               <!-- GoSmart User Id -->
               <h3 class="section-heading col-span-2">
                 <i class="bi bi-person-vcard"></i> GoSmart User ID
@@ -302,67 +319,102 @@
                   maxlength="100"
                 />
               </div>
+=======
+                  <div class="form-group-compact caregiver-user-id-field">
+                    <label for="userId" class="form-label visually-hidden">
+                      User ID
+                    </label>
+                    <input
+                      type="email"
+                      id="userId"
+                      name="userId"
+                      class="input-field"
+                      placeholder="User ID *"
+                      maxlength="100"
+                      required
+                    />
+                  </div>
+                </div>
+              </section>
+>>>>>>> e0b10fd (Add new input and medical provider filter)
 
               <!-- Contact -->
-              <h3 class="section-heading col-span-2">
-                <i class="bi bi-telephone"></i> Contact
-              </h3>
-
-              <div class="form-group-compact col-span-2 caregiver-contact-field">
-                <input type="hidden" id="mobileNumber" name="mobileNumber" />
-                <div class="mobile-e164-group">
-                  <select
-                    id="mobileCountryCode"
-                    class="input-field mobile-country-code"
-                    aria-label="Mobile country code"
-                    required
-                  >
-                    <option value="+60" selected>🇲🇾 Malaysia +60</option>
-                    <option value="+65">🇸🇬 Singapore +65</option>
-                    <option value="+62">🇮🇩 Indonesia +62</option>
-                    <option value="+66">🇹🇭 Thailand +66</option>
-                    <option value="+63">🇵🇭 Philippines +63</option>
-                    <option value="+1">🇺🇸 United States +1</option>
-                    <option value="+44">🇬🇧 United Kingdom +44</option>
-                    <option value="+61">🇦🇺 Australia +61</option>
-                  </select>
-                  <input
-                    type="tel"
-                    id="mobileLocalNumber"
-                    class="input-field mobile-local-number"
-                    placeholder="Mobile Number *"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="15"
-                  />
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading">
+                    <i class="bi bi-telephone"></i> Contact
+                  </h3>
                 </div>
-                <div
-                  id="mobileNumberError"
-                  class="field-error"
-                  aria-live="polite"
-                ></div>
-              </div>
 
-              <h3 class="section-heading section-label-emphasis col-span-2">
-                <i class="bi bi-shield-check"></i> Status
-              </h3>
-              <div class="form-group-compact col-span-2 caregiver-status">
-                <label for="status" class="form-label visually-hidden">
-                  Status
-                </label>
-                <select id="status" name="status" class="input-field">
-                  <option value="" disabled>Select Status</option>
-                  <option value="A" selected>Active</option>
-                  <option value="X">Inactive</option>
-                  <option value="D">Deleted</option>
-                </select>
-              </div>
+                <div class="form-group-compact caregiver-contact-field">
+                  <label for="mobileLocalNumber" class="form-label visually-hidden">
+                    Mobile Number
+                  </label>
+                  <input type="hidden" id="mobileNumber" name="mobileNumber" />
+                  <div class="mobile-e164-group">
+                    <div class="select-shell mobile-country-code">
+                      <select
+                        id="mobileCountryCode"
+                        class="input-field"
+                        aria-label="Mobile country code"
+                        required
+                      >
+                        <option value="+60" selected>🇲🇾 Malaysia +60</option>
+                        <option value="+65">🇸🇬 Singapore +65</option>
+                        <option value="+62">🇮🇩 Indonesia +62</option>
+                        <option value="+66">🇹🇭 Thailand +66</option>
+                        <option value="+63">🇵🇭 Philippines +63</option>
+                        <option value="+1">🇺🇸 United States +1</option>
+                        <option value="+44">🇬🇧 United Kingdom +44</option>
+                        <option value="+61">🇦🇺 Australia +61</option>
+                      </select>
+                    </div>
+                    <div class="mobile-local-number">
+                      <input
+                        type="tel"
+                        id="mobileLocalNumber"
+                        class="input-field"
+                        placeholder="Mobile Number *"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        maxlength="15"
+                      />
+                    </div>
+                  </div>
+                  <div
+                    id="mobileNumberError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
+                </div>
+              </section>
+
+              <section class="clinical-section col-span-2">
+                <div class="clinical-section-header">
+                  <h3 class="section-heading section-label-emphasis">
+                    <i class="bi bi-shield-check"></i> Status
+                  </h3>
+                </div>
+                <div class="form-group-compact caregiver-status-field">
+                  <label for="status" class="form-label visually-hidden">
+                    Status
+                  </label>
+                  <div class="select-shell">
+                    <select id="status" name="status" class="input-field">
+                      <option value="" disabled>Select Status</option>
+                      <option value="A" selected>Active</option>
+                      <option value="X">Inactive</option>
+                      <option value="D">Deleted</option>
+                    </select>
+                  </div>
+                </div>
+              </section>
             </form>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-secondary app-modal-btn-secondary"
               data-bs-dismiss="modal"
             >
               Cancel
@@ -371,7 +423,7 @@
               type="submit"
               form="caregiverForm"
               id="submitBtn"
-              class="btn btn-primary"
+              class="btn btn-primary app-modal-btn-primary"
             >
               Save
             </button>
@@ -388,26 +440,26 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div class="modal-dialog modal-lg modal-dialog-centered app-modal-dialog detail-modal-dialog">
+        <div class="modal-content app-modal-content detail-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title">Caregiver Details</h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
-            <div class="details-grid" id="caregiverDetailsContent">
+          <div class="modal-body app-modal-body">
+            <div class="detail-dashboard" id="caregiverDetailsContent">
               <!-- Details will be populated here -->
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-primary app-modal-btn-primary"
               data-bs-dismiss="modal"
             >
               Close
@@ -1238,7 +1290,20 @@
 
       function displayCaregiverDetails(caregiver) {
         const content = document.getElementById("caregiverDetailsContent");
+        const field = (value) => escapeHtml(value || "-");
+        const rawField = (value) => String(value || "").trim();
+        const initials = rawField(caregiver.name)
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("") || "C";
+        const statusBadge = `<span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">${caregiver.status === 'A' ? 'Active' : (caregiver.status === 'X' ? 'Inactive' : 'Deleted')}</span>`;
+        const providerName = getMedicalProviderCode(caregiver.medicalProviderId);
+        const formatDateTime = (value) =>
+          value ? new Date(value).toLocaleString("en-GB").replace(",", "") : "-";
         content.innerHTML = `
+<<<<<<< HEAD
           <div class="detail-item">
             <div class="detail-label">Full Name</div>
             <div class="detail-value">${caregiver.name || "-"}</div>
@@ -1259,25 +1324,53 @@
             <div class="detail-label">Status</div>
             <div class="detail-value">
               <span class="badge ${caregiver.status === 'A' ? 'badge-success-soft' : (caregiver.status === 'X' ? 'badge-warning-soft' : 'badge-danger-soft')}">${caregiver.status === 'A' ? 'Active' : (caregiver.status === 'X' ? 'Inactive' : 'Deleted')}</span>
+=======
+          <section class="detail-profile-summary">
+            <div class="detail-avatar">${field(initials)}</div>
+            <div class="detail-profile-main">
+              <h2>${field(caregiver.name)}</h2>
+              <div class="detail-profile-id">
+                <i class="bi bi-person-badge"></i>
+                <span>User ID</span>
+                <strong>${field(caregiver.userId)}</strong>
+              </div>
+>>>>>>> e0b10fd (Add new input and medical provider filter)
             </div>
-          </div>
-          <div class="audit-grid col-span-2">
-            <div class="audit-item">
-              <div class="audit-label">Created Date/Time</div>
-              <div class="audit-value">${caregiver.createDt ? new Date(caregiver.createDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+            <div class="detail-profile-provider">
+              <i class="bi bi-hospital"></i>
+              <div class="detail-profile-provider-text">
+                <span>Medical Provider</span>
+                <strong>${field(providerName)}</strong>
+              </div>
             </div>
-            <div class="audit-item">
-              <div class="audit-label">Created By</div>
-              <div class="audit-value">${caregiver.createBy || "-"}</div>
+          </section>
+
+          <section class="detail-section">
+            <div class="detail-section-header">
+              <h3 class="section-heading">
+                <i class="bi bi-person-lines-fill"></i> Caregiver Information
+              </h3>
             </div>
-            <div class="audit-item">
-              <div class="audit-label">Last Updated</div>
-              <div class="audit-value">${caregiver.modifyDt ? new Date(caregiver.modifyDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
+            <div class="detail-rows">
+              <div class="detail-row">
+                <div class="detail-row-label">Email</div>
+                <div class="detail-row-value">${field(caregiver.email)}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-row-label">Mobile Number</div>
+                <div class="detail-row-value">${field(caregiver.mobileNumber)}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-row-label">Status</div>
+                <div class="detail-row-value">${statusBadge}</div>
+              </div>
             </div>
-            <div class="audit-item">
-              <div class="audit-label">Modified By</div>
-              <div class="audit-value">${caregiver.modifyBy || "-"}</div>
-            </div>
+          </section>
+
+          <div class="detail-audit-line">
+            <span>Created: <strong>${field(formatDateTime(caregiver.createDt))}</strong> by <strong>${field(caregiver.createBy)}</strong></span>
+            <span class="detail-audit-divider">|</span>
+            <span>Updated: <strong>${field(formatDateTime(caregiver.modifyDt))}</strong> by <strong>${field(caregiver.modifyBy)}</strong></span>
           </div>
         `;
       }

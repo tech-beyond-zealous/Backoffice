@@ -269,6 +269,7 @@ public class PatientCaregiverService {
                 key.patientId(),
                 formatMedicalProvider(provider),
                 patient.getName() != null ? patient.getName() : "-",
+                patient.getIcPassportNo() != null ? patient.getIcPassportNo() : "-",
                 caregiverIds,
                 caregiverNames.isBlank() ? "-" : caregiverNames,
                 safeStatus(first.getStatus()),

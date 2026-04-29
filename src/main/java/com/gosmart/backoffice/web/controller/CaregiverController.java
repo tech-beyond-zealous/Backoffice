@@ -11,7 +11,9 @@ import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +44,16 @@ public class CaregiverController {
     public String registrationPage(HttpServletRequest request, Model model) {
         protectedPageModelService.apply(model, request, null);
         UserFunctionPermission permission = (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
-        model.addAttribute("caregivers", caregiverService.findAll());
-        model.addAttribute("medicalProviders", medicalProviderService.findAll());
+        String userId = requireCurrentUserId(request);
+        var medicalProviders = medicalProviderService.findAccessibleByUserId(userId);
+        Set<Integer> allowedProviderIds = medicalProviders.stream()
+                .map(provider -> provider.getId())
+                .collect(Collectors.toSet());
+        model.addAttribute("caregivers", caregiverService.findAll().stream()
+                .filter(caregiver -> caregiver.getMedicalProviderId() != null)
+                .filter(caregiver -> allowedProviderIds.contains(caregiver.getMedicalProviderId()))
+                .toList());
+        model.addAttribute("medicalProviders", medicalProviders);
         model.addAttribute("permission", permission);
         model.addAttribute("requestPath", request.getRequestURI());
         model.addAttribute("functionCode", request.getAttribute(AuthInterceptor.REQ_ATTR_FUNCTION_CODE));
@@ -57,6 +67,7 @@ public class CaregiverController {
         if (userId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        requireMedicalProviderAccess(userId, caregiver.getMedicalProviderId());
         permissionService.requireCreate(
                 request,
                 userId,
@@ -76,6 +87,7 @@ public class CaregiverController {
         if (userId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
         }
+        requireMedicalProviderAccess(userId, caregiver.getMedicalProviderId());
         permissionService.requireEdit(
                 request,
                 userId,
@@ -118,27 +130,56 @@ public class CaregiverController {
     @ResponseBody
     public Optional<CaregiverEntity> getCaregiver(@PathVariable Long id, HttpServletRequest request) {
         requireView(request);
-        return caregiverService.findById(id);
+        String userId = requireCurrentUserId(request);
+        Set<Integer> allowedProviderIds = accessibleProviderIds(userId);
+        return caregiverService.findById(id)
+                .filter(caregiver -> caregiver.getMedicalProviderId() != null)
+                .filter(caregiver -> allowedProviderIds.contains(caregiver.getMedicalProviderId()));
     }
 
     @GetMapping("/caregiver/all")
     @ResponseBody
     public List<CaregiverEntity> getAllCaregivers(HttpServletRequest request) {
         requireView(request);
-        return caregiverService.findAll();
+        String userId = requireCurrentUserId(request);
+        Set<Integer> allowedProviderIds = accessibleProviderIds(userId);
+        return caregiverService.findAll().stream()
+                .filter(caregiver -> caregiver.getMedicalProviderId() != null)
+                .filter(caregiver -> allowedProviderIds.contains(caregiver.getMedicalProviderId()))
+                .toList();
     }
 
     private void requireView(HttpServletRequest request) {
-        String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
-        if (userId == null) {
-            throw new IllegalStateException("Logged-in user id is missing from request attributes");
-        }
+        String userId = requireCurrentUserId(request);
         permissionService.requireView(
                 request,
                 userId,
                 CAREGIVER_REGISTRATION_FUNCTION_PATH,
                 "You do not have permission to view caregivers."
         );
+    }
+
+    private String requireCurrentUserId(HttpServletRequest request) {
+        String userId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (userId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        return userId;
+    }
+
+    private Set<Integer> accessibleProviderIds(String userId) {
+        return medicalProviderService.findAccessibleByUserId(userId).stream()
+                .map(provider -> provider.getId())
+                .collect(Collectors.toSet());
+    }
+
+    private void requireMedicalProviderAccess(String userId, Integer medicalProviderId) {
+        if (!medicalProviderService.hasAccessibleProvider(userId, medicalProviderId)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN,
+                    "You do not have access to this medical provider."
+            );
+        }
     }
 
     private String normalizeMobileNumber(String mobileNumber) {

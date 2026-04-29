@@ -13,6 +13,8 @@ import com.gosmart.backoffice.web.interceptor.AuthInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -59,17 +61,30 @@ public class PatientCaregiverController {
         protectedPageModelService.apply(model, request, null);
         UserFunctionPermission permission =
                 (UserFunctionPermission) request.getAttribute(AuthInterceptor.REQ_ATTR_PERMISSION);
-        model.addAttribute("medicalProviders", medicalProviderService.findAll().stream()
-                .filter(provider -> "A".equalsIgnoreCase(provider.getStatus()))
-                .toList());
+        String currentUserId = requireCurrentUserId(request);
+        var medicalProviders = medicalProviderService.findAccessibleByUserId(currentUserId);
+        Set<Integer> allowedProviderIds = medicalProviders.stream()
+                .map(provider -> provider.getId())
+                .collect(Collectors.toSet());
+        Set<Long> allowedProviderIdsLong = allowedProviderIds.stream()
+                .map(Integer::longValue)
+                .collect(Collectors.toSet());
+        model.addAttribute("medicalProviders", medicalProviders);
         model.addAttribute("patients", patientRegistrationService.findAll().stream()
                 .filter(patient -> "A".equalsIgnoreCase(patient.getStatus()))
+                .filter(patient -> patient.getMedicalProviderId() != null)
+                .filter(patient -> allowedProviderIdsLong.contains(patient.getMedicalProviderId()))
                 .toList());
         model.addAttribute("caregivers", caregiverService.findAll().stream()
                 .filter(caregiver -> "A".equalsIgnoreCase(caregiver.getStatus()))
+                .filter(caregiver -> caregiver.getMedicalProviderId() != null)
+                .filter(caregiver -> allowedProviderIds.contains(caregiver.getMedicalProviderId()))
                 .toList());
         try {
-            model.addAttribute("patientCaregivers", patientCaregiverService.findAllCurrentAssignments());
+            model.addAttribute("patientCaregivers", patientCaregiverService.findAllCurrentAssignments().stream()
+                    .filter(assignment -> assignment.getMedicalProviderId() != null)
+                    .filter(assignment -> allowedProviderIds.contains(assignment.getMedicalProviderId()))
+                    .toList());
         } catch (RuntimeException ex) {
             log.error("Unable to load patient caregiver page data", ex);
             model.addAttribute("patientCaregivers", Collections.emptyList());
@@ -93,6 +108,9 @@ public class PatientCaregiverController {
         String currentUserId = (String) httpRequest.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
         if (currentUserId == null) {
             throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        if (!medicalProviderService.hasAccessibleProvider(currentUserId, request.getMedicalProviderId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have access to this medical provider.");
         }
         UserFunctionPermission permission =
                 permissionService.resolve(httpRequest, currentUserId, PATIENT_CAREGIVER_FUNCTION_PATH);
@@ -119,10 +137,7 @@ public class PatientCaregiverController {
     @DeleteMapping("/patient/patient-caregiver/{id}")
     @ResponseBody
     public void deletePatientCaregiver(@PathVariable Integer id, HttpServletRequest request) {
-        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
-        if (currentUserId == null) {
-            throw new IllegalStateException("Logged-in user id is missing from request attributes");
-        }
+        String currentUserId = requireCurrentUserId(request);
         permissionService.requireDelete(
                 request,
                 currentUserId,
@@ -130,5 +145,13 @@ public class PatientCaregiverController {
                 "You do not have permission to delete patient caregiver assignments."
         );
         patientCaregiverService.deleteAssignmentGroup(id, currentUserId);
+    }
+
+    private String requireCurrentUserId(HttpServletRequest request) {
+        String currentUserId = (String) request.getAttribute(AuthInterceptor.REQ_ATTR_USER_ID);
+        if (currentUserId == null) {
+            throw new IllegalStateException("Logged-in user id is missing from request attributes");
+        }
+        return currentUserId;
     }
 }

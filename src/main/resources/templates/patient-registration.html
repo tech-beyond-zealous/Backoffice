@@ -31,7 +31,7 @@
               <div class="table-tools-left">
                 <select
                   id="tableMedicalProviderFilter"
-                  class="form-select"
+                  class="form-select patient-table-provider-filter"
                   aria-label="Filter by medical provider"
                 >
                   <option value="">All Medical Providers</option>
@@ -41,7 +41,7 @@
                     th:text="${provider.code + ' - ' + provider.name}"
                   ></option>
                 </select>
-                <div class="input-group flex-grow-1">
+                <div class="input-group flex-grow-1 patient-table-search">
                   <span class="input-group-text"
                     ><i class="bi bi-search"></i
                   ></span>
@@ -88,13 +88,6 @@
               <table class="table table-hover align-middle patients-table">
                 <thead class="table-header-custom">
                   <tr>
-                    <th class="sortable" data-sort="medicalProviderCode">
-                      Medical Provider
-                      <span
-                        class="sort-arrow"
-                        data-field="medicalProviderCode"
-                      ></span>
-                    </th>
                     <th class="sortable" data-sort="name">
                       Patient Name
                       <span class="sort-arrow" data-field="name"></span>
@@ -112,6 +105,9 @@
                       City <span class="sort-arrow" data-field="city"></span>
                     </th>
                     <th>Chronic Disease</th>
+                    <th>Current Medications</th>
+                    <th>Allergies</th>
+                    <th>Allergy Details</th>
                     <th class="sortable" data-sort="remark">
                       Remark
                       <span class="sort-arrow" data-field="remark"></span>
@@ -134,16 +130,6 @@
                     data-chronic="${patient.hasChronicDisease}"
                     data-remark="${patient.remark}"
                   >
-                    <td>
-                      <span
-                        th:each="provider : ${medicalProviders}"
-                        th:if="${provider.id == patient.medicalProviderId}"
-                        th:text="|${provider.name} (${provider.code})|"
-                      ></span>
-                      <span th:if="${patient.medicalProviderId == null}"
-                        >-</span
-                      >
-                    </td>
                     <td>
                       <a
                         th:if="${permission != null and permission.view}"
@@ -168,6 +154,31 @@
                         th:class="${patient.hasChronicDisease == 'Y' ? 'badge badge-danger-soft' : 'badge badge-success-soft'}"
                         th:text="${patient.hasChronicDisease == 'Y' ? 'Yes' : 'No'}"
                       >
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        class="remark-preview detail-alert-text"
+                        th:attr="data-full-remark=${patient.medicineTakenNow}"
+                        th:text="${patient.medicineTakenNow != null and #strings.length(patient.medicineTakenNow) > 30 ? #strings.substring(patient.medicineTakenNow, 0, 30) + '...' : (patient.medicineTakenNow != null and !#strings.isEmpty(patient.medicineTakenNow) ? patient.medicineTakenNow : '-')}"
+                      >
+                        -
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        th:class="${patient.hasAllergies == 'Y' ? 'badge badge-danger-soft detail-alert-text' : 'badge badge-success-soft'}"
+                        th:text="${patient.hasAllergies == 'Y' ? 'Yes' : 'No'}"
+                      >
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        class="remark-preview detail-alert-text"
+                        th:attr="data-full-remark=${patient.allergyDetails}"
+                        th:text="${patient.allergyDetails != null and #strings.length(patient.allergyDetails) > 30 ? #strings.substring(patient.allergyDetails, 0, 30) + '...' : (patient.allergyDetails != null and !#strings.isEmpty(patient.allergyDetails) ? patient.allergyDetails : '-')}"
+                      >
+                        -
                       </span>
                     </td>
                     <td>
@@ -203,7 +214,7 @@
                     </td>
                   </tr>
                   <tr id="noPatients" th:if="${#lists.isEmpty(patients)}">
-                    <td colspan="10" class="text-center text-muted py-4">
+                    <td colspan="12" class="text-center text-muted py-4">
                       No patients registered yet
                     </td>
                   </tr>
@@ -242,18 +253,20 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg patient-registration-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div
+        class="modal-dialog modal-xl patient-registration-dialog app-modal-dialog"
+      >
+        <div class="modal-content app-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title" id="patientFormModalLabel">Add Patient</h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body app-modal-body">
             <form
               id="patientForm"
               class="form-grid patient-registration-form"
@@ -261,331 +274,478 @@
             >
               <input type="hidden" id="patientId" name="id" />
 
-              <!-- Medical Provider -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-building"></i> Medical Provider
-              </h3>
-              <div class="form-group-compact span-12">
-                <label
-                  for="medicalProviderId"
-                  class="form-label visually-hidden"
-                  >Medical Provider</label
-                >
-                <select
-                  id="medicalProviderId"
-                  name="medicalProviderId"
-                  class="input-field"
-                  required
-                >
-                  <option value="" disabled selected>
-                    Select Medical Provider *
-                  </option>
-                  <option
-                    th:each="provider : ${medicalProviders}"
-                    th:value="${provider.id}"
-                    th:text="${provider.name}"
-                  ></option>
-                </select>
-              </div>
-
-              <!-- Basic Info -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-person"></i> Basic Information
-              </h3>
-              <div class="form-group-compact span-8">
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  class="input-field"
-                  placeholder="Full Name *"
-                  maxlength="100"
-                  required
-                />
-              </div>
-              <div class="form-group-compact span-4">
-                <input
-                  type="text"
-                  id="age"
-                  name="age"
-                  class="input-field"
-                  placeholder="Age *"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  maxlength="3"
-                  required
-                />
-              </div>
-
-              <div class="form-group-compact span-6">
-                <select id="gender" name="gender" class="input-field" required>
-                  <option value="" disabled selected>Select Gender *</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-              <div class="form-group-compact span-6">
-                <select id="race" name="race" class="input-field" required>
-                  <option value="" disabled selected>Select Race *</option>
-                  <option value="Chinese">Chinese</option>
-                  <option value="Indian">Indian</option>
-                  <option value="Malay">Malay</option>
-                  <option value="Others">Others</option>
-                </select>
-              </div>
-
-              <!-- Identity -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-card-text"></i> Identity
-              </h3>
-
-              <div class="form-group-compact span-8">
-                <input
-                  type="text"
-                  id="icPassportNo"
-                  name="icPassportNo"
-                  class="input-field"
-                  placeholder="IC / Passport Number *"
-                  maxlength="20"
-                  required
-                />
-              </div>
-
-              <!-- Contact -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-telephone"></i> Contact
-              </h3>
-
-              <div class="form-group-compact span-8">
-                <input type="hidden" id="mobileNo" name="mobileNo" />
-                <div class="mobile-e164-group">
+              <section class="patient-form-section span-6">
+                <h3 class="section-heading">
+                  <i class="bi bi-building"></i> Medical Provider
+                </h3>
+                <div class="form-group-compact">
+                  <label for="medicalProviderId" class="field-label"
+                    >Medical Provider <span aria-hidden="true">*</span></label
+                  >
                   <select
-                    id="mobileCountryCode"
-                    class="input-field mobile-country-code"
-                    aria-label="Mobile country code"
+                    id="medicalProviderId"
+                    name="medicalProviderId"
+                    class="input-field"
                     required
                   >
-                    <option value="+60" selected>🇲🇾 Malaysia +60</option>
-                    <option value="+65">🇸🇬 Singapore +65</option>
-                    <option value="+62">🇮🇩 Indonesia +62</option>
-                    <option value="+66">🇹🇭 Thailand +66</option>
-                    <option value="+63">🇵🇭 Philippines +63</option>
-                    <option value="+1">🇺🇸 United States +1</option>
-                    <option value="+44">🇬🇧 United Kingdom +44</option>
-                    <option value="+61">🇦🇺 Australia +61</option>
+                    <option value="" disabled selected>
+                      Select Medical Provider *
+                    </option>
+                    <option
+                      th:each="provider : ${medicalProviders}"
+                      th:value="${provider.id}"
+                      th:text="${provider.name}"
+                    ></option>
                   </select>
-                  <input
-                    type="tel"
-                    id="mobileLocalNumber"
-                    class="input-field mobile-local-number"
-                    placeholder="Mobile Number *"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="15"
-                  />
                 </div>
-                <div
-                  id="mobileNumberError"
-                  class="field-error"
-                  aria-live="polite"
-                ></div>
-              </div>
+              </section>
 
-              <!-- Emergency -->
-              <h3 class="section-heading span-12 tight-section">
-                <i class="bi bi-shield-exclamation"></i> Emergency Contact
-              </h3>
-
-              <div class="form-group-compact span-8">
-                <input
-                  type="text"
-                  id="emergencyContactName"
-                  name="emergencyContactName"
-                  class="input-field"
-                  placeholder="Full Name *"
-                  maxlength="100"
-                  required
-                />
-              </div>
-              <div class="form-group-compact span-4">
-                <input
-                  type="text"
-                  id="relationship"
-                  name="relationship"
-                  class="input-field"
-                  placeholder="Relationship"
-                  maxlength="50"
-                />
-              </div>
-              <div class="form-group-compact span-8">
-                <input
-                  type="hidden"
-                  id="emergencyContactNo"
-                  name="emergencyContactNo"
-                />
-                <div class="mobile-e164-group compact-e164-group">
-                  <select
-                    id="emergencyCountryCode"
-                    class="input-field mobile-country-code"
-                    aria-label="Emergency contact country code"
-                    required
+              <section class="patient-form-section span-6">
+                <h3 class="section-heading">
+                  <i class="bi bi-person-vcard"></i> GoSmart User ID
+                </h3>
+                <div class="form-group-compact">
+                  <label for="gosmartUserId" class="field-label"
+                    >GoSmart User ID</label
                   >
-                    <option value="+60" selected>🇲🇾 Malaysia +60</option>
-                    <option value="+65">🇸🇬 Singapore +65</option>
-                    <option value="+62">🇮🇩 Indonesia +62</option>
-                    <option value="+66">🇹🇭 Thailand +66</option>
-                    <option value="+63">🇵🇭 Philippines +63</option>
-                    <option value="+1">🇺🇸 United States +1</option>
-                    <option value="+44">🇬🇧 United Kingdom +44</option>
-                    <option value="+61">🇦🇺 Australia +61</option>
-                  </select>
                   <input
-                    type="tel"
-                    id="emergencyLocalNumber"
-                    class="input-field mobile-local-number"
-                    placeholder="Mobile Number *"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                    maxlength="15"
+                    type="text"
+                    id="gosmartUserId"
+                    name="gosmartUserId"
+                    class="input-field"
+                    placeholder="GoSmart User ID"
+                    maxlength="100"
                   />
                 </div>
-                <div
-                  id="emergencyContactNoError"
-                  class="field-error"
-                  aria-live="polite"
-                ></div>
-              </div>
+              </section>
 
-              <!-- Address -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-geo-alt"></i> Address
-              </h3>
-
-              <div class="form-group-compact span-8">
-                <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  class="input-field"
-                  placeholder="Address"
-                  maxlength="255"
-                />
-              </div>
-              <div class="form-group-compact span-4">
-                <input
-                  type="text"
-                  id="area"
-                  name="area"
-                  class="input-field"
-                  placeholder="Area"
-                  maxlength="100"
-                />
-              </div>
-              <div class="form-group-compact span-4">
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  class="input-field"
-                  placeholder="City"
-                  maxlength="100"
-                />
-              </div>
-              <div class="form-group-compact span-5">
-                <select id="state" name="state" class="input-field">
-                  <option value="" disabled selected>Select State</option>
-                  <option value="Johor">Johor</option>
-                  <option value="Kedah">Kedah</option>
-                  <option value="Kelantan">Kelantan</option>
-                  <option value="Melaka">Melaka</option>
-                  <option value="Negeri Sembilan">Negeri Sembilan</option>
-                  <option value="Pahang">Pahang</option>
-                  <option value="Perak">Perak</option>
-                  <option value="Perlis">Perlis</option>
-                  <option value="Pulau Pinang">Pulau Pinang</option>
-                  <option value="Selangor">Selangor</option>
-                  <option value="Terengganu">Terengganu</option>
-                  <option value="Sabah">Sabah</option>
-                  <option value="Sarawak">Sarawak</option>
-                  <option value="Kuala Lumpur">Kuala Lumpur</option>
-                  <option value="Labuan">Labuan</option>
-                  <option value="Putrajaya">Putrajaya</option>
-                </select>
-              </div>
-              <div class="form-group-compact span-3">
-                <input
-                  type="text"
-                  id="postcode"
-                  name="postcode"
-                  class="input-field"
-                  placeholder="Postcode"
-                  maxlength="10"
-                />
-              </div>
-
-              <!-- GoSmart User Id -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-person-vcard"></i> GoSmart User ID
-              </h3>
-
-              <div class="form-group-compact span-8">
-                <input
-                  type="text"
-                  id="gosmartUserId"
-                  name="gosmartUserId"
-                  class="input-field"
-                  placeholder="GoSmart User ID"
-                  maxlength="100"
-                />
-              </div>
-
-              <!-- Medical -->
-              <h3 class="section-heading span-12">
-                <i class="bi bi-heart-pulse"></i> Medical Information
-              </h3>
-
-              <div class="form-group-compact span-4">
-                <select
-                  id="hasChronicDisease"
-                  name="hasChronicDisease"
-                  class="input-field"
-                >
-                  <option value="N">Chronic Disease: No</option>
-                  <option value="Y">Chronic Disease: Yes</option>
-                </select>
-              </div>
-              <div class="form-group-compact span-8">
-                <input
-                  type="text"
-                  id="chronicDisease"
-                  name="chronicDisease"
-                  class="input-field"
-                  placeholder="If Yes, Specify Disease"
-                  maxlength="255"
-                />
-              </div>
-              <h3 class="section-heading span-12">
-                <i class="bi bi-chat-left-text"></i> Remarks
-              </h3>
-              <div class="form-group-compact span-12">
-                <textarea
-                  id="remark"
-                  name="remark"
-                  class="input-field"
-                  rows="3"
-                  maxlength="500"
-                  placeholder="Enter remarks"
-                ></textarea>
-                <div class="text-end mt-2 text-muted">
-                  <small id="remarkCount">0/500</small>
+              <section class="patient-form-section span-12">
+                <h3 class="section-heading">
+                  <i class="bi bi-person"></i> Basic Information
+                </h3>
+                <div class="form-section-grid basic-info-grid">
+                  <div class="form-group-compact basic-name-field">
+                    <label for="name" class="field-label"
+                      >Full Name <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      class="input-field"
+                      placeholder="Full Name *"
+                      maxlength="100"
+                      required
+                    />
+                  </div>
+                  <div class="form-group-compact basic-age-field">
+                    <label for="age" class="field-label"
+                      >Age <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="age"
+                      name="age"
+                      class="input-field"
+                      placeholder="Age *"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
+                      maxlength="3"
+                      required
+                    />
+                  </div>
+                  <div class="form-group-compact basic-gender-field">
+                    <label for="gender" class="field-label"
+                      >Gender <span aria-hidden="true">*</span></label
+                    >
+                    <select
+                      id="gender"
+                      name="gender"
+                      class="input-field"
+                      required
+                    >
+                      <option value="" disabled selected>
+                        Select Gender *
+                      </option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                  <div class="form-group-compact basic-race-field">
+                    <label for="race" class="field-label"
+                      >Race <span aria-hidden="true">*</span></label
+                    >
+                    <select id="race" name="race" class="input-field" required>
+                      <option value="" disabled selected>Select Race *</option>
+                      <option value="Chinese">Chinese</option>
+                      <option value="Indian">Indian</option>
+                      <option value="Malay">Malay</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
+              </section>
+
+              <section class="patient-form-section span-6">
+                <h3 class="section-heading">
+                  <i class="bi bi-card-text"></i> Identity
+                </h3>
+                <div class="form-section-grid">
+                  <div class="form-group-compact">
+                    <label for="icPassportNo" class="field-label"
+                      >IC / Passport Number
+                      <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="icPassportNo"
+                      name="icPassportNo"
+                      class="input-field"
+                      placeholder="IC / Passport Number *"
+                      maxlength="20"
+                      required
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section class="patient-form-section span-6">
+                <h3 class="section-heading">
+                  <i class="bi bi-telephone"></i> Contact Information
+                </h3>
+                <div class="form-group-compact">
+                  <label for="mobileLocalNumber" class="field-label"
+                    >Mobile Number <span aria-hidden="true">*</span></label
+                  >
+                  <input type="hidden" id="mobileNo" name="mobileNo" />
+                  <div class="phone-input-group">
+                    <select
+                      id="mobileCountryCode"
+                      class="input-field mobile-country-code"
+                      aria-label="Mobile country code"
+                      required
+                    >
+                      <option value="+60" selected>Malaysia +60</option>
+                      <option value="+65">Singapore +65</option>
+                      <option value="+62">Indonesia +62</option>
+                      <option value="+66">Thailand +66</option>
+                      <option value="+63">Philippines +63</option>
+                      <option value="+1">United States +1</option>
+                      <option value="+44">United Kingdom +44</option>
+                      <option value="+61">Australia +61</option>
+                    </select>
+                    <input
+                      type="tel"
+                      id="mobileLocalNumber"
+                      class="input-field mobile-local-number"
+                      placeholder="Mobile Number *"
+                      inputmode="numeric"
+                      pattern="[0-9]*"
+                      maxlength="15"
+                    />
+                  </div>
+                  <div
+                    id="mobileNumberError"
+                    class="field-error"
+                    aria-live="polite"
+                  ></div>
+                </div>
+              </section>
+
+              <section class="patient-form-section span-12">
+                <h3 class="section-heading">
+                  <i class="bi bi-shield-exclamation"></i> Emergency Contact
+                </h3>
+                <div class="form-section-grid emergency-grid">
+                  <div class="form-group-compact">
+                    <label for="emergencyContactName" class="field-label"
+                      >Full Name <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      type="text"
+                      id="emergencyContactName"
+                      name="emergencyContactName"
+                      class="input-field"
+                      placeholder="Full Name *"
+                      maxlength="100"
+                      required
+                    />
+                  </div>
+                  <div class="form-group-compact">
+                    <label for="relationship" class="field-label"
+                      >Relationship</label
+                    >
+                    <input
+                      type="text"
+                      id="relationship"
+                      name="relationship"
+                      class="input-field"
+                      placeholder="Relationship"
+                      maxlength="50"
+                    />
+                  </div>
+                  <div class="form-group-compact emergency-phone-field">
+                    <label for="emergencyLocalNumber" class="field-label"
+                      >Mobile Number <span aria-hidden="true">*</span></label
+                    >
+                    <input
+                      type="hidden"
+                      id="emergencyContactNo"
+                      name="emergencyContactNo"
+                    />
+                    <div class="phone-input-group">
+                      <select
+                        id="emergencyCountryCode"
+                        class="input-field mobile-country-code"
+                        aria-label="Emergency contact country code"
+                        required
+                      >
+                        <option value="+60" selected>Malaysia +60</option>
+                        <option value="+65">Singapore +65</option>
+                        <option value="+62">Indonesia +62</option>
+                        <option value="+66">Thailand +66</option>
+                        <option value="+63">Philippines +63</option>
+                        <option value="+1">United States +1</option>
+                        <option value="+44">United Kingdom +44</option>
+                        <option value="+61">Australia +61</option>
+                      </select>
+                      <input
+                        type="tel"
+                        id="emergencyLocalNumber"
+                        class="input-field mobile-local-number"
+                        placeholder="Mobile Number *"
+                        inputmode="numeric"
+                        pattern="[0-9]*"
+                        maxlength="15"
+                      />
+                    </div>
+                    <div
+                      id="emergencyContactNoError"
+                      class="field-error"
+                      aria-live="polite"
+                    ></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="patient-form-section span-12">
+                <h3 class="section-heading">
+                  <i class="bi bi-geo-alt"></i> Address
+                </h3>
+                <div class="form-section-grid address-grid">
+                  <div class="form-group-compact address-line-field">
+                    <label for="address" class="field-label">Address</label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      class="input-field"
+                      placeholder="Address"
+                      maxlength="255"
+                    />
+                  </div>
+                  <div class="form-group-compact">
+                    <label for="area" class="field-label">Area</label>
+                    <input
+                      type="text"
+                      id="area"
+                      name="area"
+                      class="input-field"
+                      placeholder="Area"
+                      maxlength="100"
+                    />
+                  </div>
+                  <div class="form-group-compact">
+                    <label for="city" class="field-label">City</label>
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      class="input-field"
+                      placeholder="City"
+                      maxlength="100"
+                    />
+                  </div>
+                  <div class="form-group-compact">
+                    <label for="state" class="field-label">State</label>
+                    <select id="state" name="state" class="input-field">
+                      <option value="" disabled selected>Select state</option>
+                      <option value="Johor">Johor</option>
+                      <option value="Kedah">Kedah</option>
+                      <option value="Kelantan">Kelantan</option>
+                      <option value="Melaka">Melaka</option>
+                      <option value="Negeri Sembilan">Negeri Sembilan</option>
+                      <option value="Pahang">Pahang</option>
+                      <option value="Perak">Perak</option>
+                      <option value="Perlis">Perlis</option>
+                      <option value="Pulau Pinang">Pulau Pinang</option>
+                      <option value="Selangor">Selangor</option>
+                      <option value="Terengganu">Terengganu</option>
+                      <option value="Sabah">Sabah</option>
+                      <option value="Sarawak">Sarawak</option>
+                      <option value="Kuala Lumpur">Kuala Lumpur</option>
+                      <option value="Labuan">Labuan</option>
+                      <option value="Putrajaya">Putrajaya</option>
+                    </select>
+                  </div>
+                  <div class="form-group-compact">
+                    <label for="postcode" class="field-label">Postcode</label>
+                    <input
+                      type="text"
+                      id="postcode"
+                      name="postcode"
+                      class="input-field"
+                      placeholder="Postcode"
+                      maxlength="10"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section class="patient-form-section span-12">
+                <h3 class="section-heading">
+                  <i class="bi bi-heart-pulse"></i> Medical Information
+                </h3>
+                <div class="form-section-grid medical-info-grid">
+                  <div class="medical-control-row" id="chronicDiseaseControl">
+                    <label class="field-label toggle-field-label"
+                      >Chronic Condition</label
+                    >
+                    <div class="medical-control-body">
+                      <input
+                        type="hidden"
+                        id="hasChronicDisease"
+                        name="hasChronicDisease"
+                        value="N"
+                      />
+                      <div
+                        class="toggle-group"
+                        role="group"
+                        aria-label="Chronic condition"
+                        data-toggle-target="hasChronicDisease"
+                      >
+                        <button
+                          type="button"
+                          class="toggle-option"
+                          data-value="N"
+                        >
+                          No
+                        </button>
+                        <button
+                          type="button"
+                          class="toggle-option"
+                          data-value="Y"
+                        >
+                          Yes
+                        </button>
+                      </div>
+                      <div class="form-group-compact conditional-field">
+                        <label for="chronicDisease" class="field-label"
+                          >Specify Condition</label
+                        >
+                        <input
+                          type="text"
+                          id="chronicDisease"
+                          name="chronicDisease"
+                          class="input-field"
+                          placeholder="Specify condition"
+                          maxlength="255"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="medical-control-row" id="allergiesControl">
+                    <label class="field-label toggle-field-label"
+                      >Allergies</label
+                    >
+                    <div class="medical-control-body">
+                      <input
+                        type="hidden"
+                        id="hasAllergies"
+                        name="hasAllergies"
+                        value="N"
+                      />
+                      <div
+                        class="toggle-group"
+                        role="group"
+                        aria-label="Allergies"
+                        data-toggle-target="hasAllergies"
+                      >
+                        <button
+                          type="button"
+                          class="toggle-option"
+                          data-value="N"
+                        >
+                          No
+                        </button>
+                        <button
+                          type="button"
+                          class="toggle-option"
+                          data-value="Y"
+                        >
+                          Yes
+                        </button>
+                      </div>
+                      <div class="form-group-compact conditional-field">
+                        <label for="allergyDetails" class="field-label"
+                          >Allergy Details</label
+                        >
+                        <input
+                          type="text"
+                          id="allergyDetails"
+                          name="allergyDetails"
+                          class="input-field"
+                          placeholder="Allergy details"
+                          maxlength="255"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group-compact current-medications-field">
+                    <label for="medicineTakenNow" class="field-label"
+                      >Current Medications</label
+                    >
+                    <textarea
+                      id="medicineTakenNow"
+                      name="medicineTakenNow"
+                      class="input-field"
+                      rows="3"
+                      maxlength="500"
+                      placeholder="Current medications"
+                    ></textarea>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                class="patient-form-section patient-remarks-section span-12"
+              >
+                <h3 class="section-heading">
+                  <i class="bi bi-chat-left-text"></i> Remarks
+                </h3>
+                <div class="form-group-compact remarks-section">
+                  <label for="remark" class="field-label">Remarks</label>
+                  <textarea
+                    id="remark"
+                    name="remark"
+                    class="input-field remarks-textarea"
+                    rows="3"
+                    maxlength="500"
+                    placeholder="Enter remarks"
+                  ></textarea>
+                  <div class="remarks-footer">
+                    <small id="remarkCount" class="remarks-counter"
+                      >0/500</small
+                    >
+                  </div>
+                </div>
+              </section>
             </form>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-secondary app-modal-btn-secondary"
               data-bs-dismiss="modal"
             >
               Cancel
@@ -594,7 +754,7 @@
               type="submit"
               form="patientForm"
               id="submitBtn"
-              class="btn btn-primary"
+              class="btn btn-primary app-modal-btn-primary"
             >
               Save
             </button>
@@ -611,26 +771,28 @@
       data-bs-backdrop="static"
       aria-hidden="true"
     >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
+      <div
+        class="modal-dialog modal-xl modal-dialog-centered app-modal-dialog detail-modal-dialog"
+      >
+        <div class="modal-content app-modal-content detail-modal-content">
+          <div class="modal-header app-modal-header">
             <h5 class="modal-title">Patient Details</h5>
             <button
               type="button"
-              class="btn-close btn-close-white"
+              class="btn-close app-modal-close"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
-            <div class="details-grid" id="patientDetailsContent">
+          <div class="modal-body app-modal-body">
+            <div class="detail-dashboard" id="patientDetailsContent">
               <!-- Details will be populated here -->
             </div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer app-modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-primary app-modal-btn-primary"
               data-bs-dismiss="modal"
             >
               Close
@@ -855,7 +1017,8 @@
         race: "Please select a race.",
         icPassportNo: "Please enter the IC or passport number.",
         emergencyContactName: "Please enter an emergency contact name.",
-        chronicDisease: "Please specify the disease.",
+        chronicDisease: "Please specify the condition.",
+        allergyDetails: "Please enter allergy details.",
       };
 
       function getFieldErrorElement(field) {
@@ -950,6 +1113,22 @@
           setFieldError(document.getElementById("chronicDisease"), "");
         }
 
+        if (
+          allergySelect.value === "Y" &&
+          !document.getElementById("allergyDetails").value.trim()
+        ) {
+          setFieldError(
+            document.getElementById("allergyDetails"),
+            validationMessages.allergyDetails,
+          );
+          if (!firstInvalidField) {
+            firstInvalidField = document.getElementById("allergyDetails");
+          }
+          isValid = false;
+        } else {
+          setFieldError(document.getElementById("allergyDetails"), "");
+        }
+
         const e164MobileNo = buildE164MobileNo();
         if (!/^\+[1-9]\d{6,14}$/.test(e164MobileNo)) {
           setMobileNumberError("Please enter a valid mobile number.");
@@ -996,13 +1175,16 @@
       }
 
       form.addEventListener("input", (event) => {
+        if (event.target.id === "chronicDisease" && event.target.value.trim()) {
+          setFieldError(event.target);
+        }
+        if (event.target.id === "allergyDetails" && event.target.value.trim()) {
+          setFieldError(event.target);
+        }
         const field = event.target.closest("[required]");
         if (!field || field.id === "mobileLocalNumber") return;
         if (field.validity.valid) {
           setFieldError(field);
-        }
-        if (event.target.id === "chronicDisease" && event.target.value.trim()) {
-          setFieldError(event.target);
         }
       });
 
@@ -1190,10 +1372,20 @@
           patient.gosmartUserId || "";
         document.getElementById("medicalProviderId").value =
           patient.medicalProviderId || "";
-        document.getElementById("hasChronicDisease").value =
-          patient.hasChronicDisease || "N";
+        setToggleValue(
+          document.getElementById("hasChronicDisease"),
+          patient.hasChronicDisease || "N",
+        );
         document.getElementById("chronicDisease").value =
           patient.chronicDisease || "";
+        document.getElementById("medicineTakenNow").value =
+          patient.medicineTakenNow || "";
+        setToggleValue(
+          document.getElementById("hasAllergies"),
+          patient.hasAllergies || "N",
+        );
+        document.getElementById("allergyDetails").value =
+          patient.allergyDetails || "";
         document.getElementById("remark").value = patient.remark || "";
         updateRemarkCount();
 
@@ -1201,6 +1393,7 @@
           "Edit Patient";
         submitBtn.textContent = "Update Patient";
         toggleChronic();
+        toggleAllergies();
       }
 
       async function editPatient(button) {
@@ -1258,6 +1451,10 @@
           "Add Patient";
         submitBtn.textContent = "Save";
         form.classList.remove("border", "border-warning", "form-edit-mode");
+        setToggleValue(document.getElementById("hasChronicDisease"), "N");
+        setToggleValue(document.getElementById("hasAllergies"), "N");
+        toggleChronic();
+        toggleAllergies();
       }
 
       function updateRemarkCount() {
@@ -1375,7 +1572,6 @@
                 data-chronic="${escapeHtml(patient.chronic)}"
                 data-remark="${escapeHtml(patient.remark)}"
               >
-                <td>${escapeHtml(getMedicalProviderCode(patient.medicalProviderId))}</td>
                 <td>
                   ${
                     permissions.view
@@ -1395,6 +1591,21 @@
                 <td>
                   <span class="badge ${patient.hasChronicDisease === "Y" ? "badge-danger-soft" : "badge-success-soft"}">
                     ${patient.hasChronicDisease === "Y" ? "Yes" : "No"}
+                  </span>
+                </td>
+                <td>
+                  <span class="remark-preview detail-alert-text" data-full-remark="${escapeHtml(patient.medicineTakenNow || "")}">
+                    ${escapeHtml(truncateText(patient.medicineTakenNow))}
+                  </span>
+                </td>
+                <td>
+                  <span class="badge ${patient.hasAllergies === "Y" ? "badge-danger-soft detail-alert-text" : "badge-success-soft"}">
+                    ${patient.hasAllergies === "Y" ? "Yes" : "No"}
+                  </span>
+                </td>
+                <td>
+                  <span class="remark-preview detail-alert-text" data-full-remark="${escapeHtml(patient.allergyDetails || "")}">
+                    ${escapeHtml(truncateText(patient.allergyDetails))}
                   </span>
                 </td>
                 <td>
@@ -1438,7 +1649,7 @@
         if (pageItems.length === 0) {
           patientsList.innerHTML = `
             <tr id="noPatients">
-              <td colspan="10" class="text-center text-muted py-4">
+              <td colspan="12" class="text-center text-muted py-4">
                 No patients match your search or filter criteria.
               </td>
             </tr>
@@ -1730,19 +1941,70 @@
       const chronicSelect = document.getElementById("hasChronicDisease");
       const chronicInput =
         document.getElementById("chronicDisease").parentElement;
+      const allergySelect = document.getElementById("hasAllergies");
+      const allergyInput = document.getElementById("allergyDetails").parentElement;
+
+      function syncToggleGroup(hiddenInput) {
+        const group = document.querySelector(
+          `[data-toggle-target="${hiddenInput.id}"]`,
+        );
+        if (!group) return;
+        group.querySelectorAll(".toggle-option").forEach((button) => {
+          const isActive = button.dataset.value === hiddenInput.value;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-pressed", String(isActive));
+        });
+      }
+
+      function setToggleValue(hiddenInput, value) {
+        hiddenInput.value = value;
+        syncToggleGroup(hiddenInput);
+      }
 
       function toggleChronic() {
-        if (chronicSelect.value === "Y") {
-          chronicInput.style.display = "block";
-        } else {
-          chronicInput.style.display = "none";
-          document.getElementById("chronicDisease").value = "";
+        const isActive = chronicSelect.value === "Y";
+        const chronicField = document.getElementById("chronicDisease");
+        chronicInput
+          .closest(".medical-control-row")
+          ?.classList.toggle("medical-control-active", isActive);
+        chronicField.disabled = !isActive;
+        if (!isActive) {
+          chronicField.value = "";
           setFieldError(document.getElementById("chronicDisease"), "");
         }
       }
 
-      chronicSelect.addEventListener("change", toggleChronic);
-      document.addEventListener("DOMContentLoaded", toggleChronic);
+      function toggleAllergies() {
+        const isActive = allergySelect.value === "Y";
+        const allergyField = document.getElementById("allergyDetails");
+        allergyInput
+          .closest(".medical-control-row")
+          ?.classList.toggle("medical-control-active", isActive);
+        allergyField.disabled = !isActive;
+        if (!isActive) {
+          allergyField.value = "";
+          setFieldError(document.getElementById("allergyDetails"), "");
+        }
+      }
+
+      document.querySelectorAll(".toggle-group").forEach((group) => {
+        const hiddenInput = document.getElementById(group.dataset.toggleTarget);
+        group.querySelectorAll(".toggle-option").forEach((button) => {
+          button.addEventListener("click", () => {
+            setToggleValue(hiddenInput, button.dataset.value);
+            if (hiddenInput === chronicSelect) toggleChronic();
+            if (hiddenInput === allergySelect) toggleAllergies();
+          });
+        });
+        syncToggleGroup(hiddenInput);
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        syncToggleGroup(chronicSelect);
+        syncToggleGroup(allergySelect);
+        toggleChronic();
+        toggleAllergies();
+      });
 
       // View patient details
       async function viewPatientDetails(link) {
@@ -1769,108 +2031,225 @@
 
       function displayPatientDetails(patient) {
         const content = document.getElementById("patientDetailsContent");
-        content.innerHTML = `
-          <div class="detail-item">
-            <div class="detail-label">Full Name</div>
-            <div class="detail-value">${patient.name || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">IC / Passport</div>
-            <div class="detail-value">${patient.icPassportNo || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">GoSmart User ID</div>
-            <div class="detail-value">${patient.gosmartUserId || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Age</div>
-            <div class="detail-value">${patient.age || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Gender</div>
-            <div class="detail-value">${patient.gender || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Race</div>
-            <div class="detail-value">${patient.race || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Mobile Number</div>
-            <div class="detail-value">${patient.mobileNo || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Emergency Contact</div>
-            <div class="detail-value">${patient.emergencyContactName || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Emergency Contact No</div>
-            <div class="detail-value">${patient.emergencyContactNo || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Relationship</div>
-            <div class="detail-value">${patient.relationship || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Address</div>
-            <div class="detail-value">${patient.address || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Area</div>
-            <div class="detail-value">${patient.area || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Postcode</div>
-            <div class="detail-value">${patient.postcode || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">State</div>
-            <div class="detail-value">${patient.state || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">City</div>
-            <div class="detail-value">${patient.city || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Remark</div>
-            <div class="detail-value">${patient.remark || "-"}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Chronic Disease</div>
-            <div class="detail-value">
-              <span class="badge ${patient.hasChronicDisease === "Y" ? "badge-danger-soft" : "badge-success-soft"}">
-                ${patient.hasChronicDisease === "Y" ? "Yes" : "No"}
-              </span>
-            </div>
-          </div>
-          ${
-            patient.hasChronicDisease === "Y"
-              ? `
-          <div class="detail-item">
-            <div class="detail-label">Chronic Disease Details</div>
-            <div class="detail-value">${patient.chronicDisease || "-"}</div>
-          </div>
-          `
-              : ""
-          }
-          <div class="audit-grid col-span-2">
-            <div class="audit-item">
-              <div class="audit-label">Created Date/Time</div>
-              <div class="audit-value">${patient.createDt ? new Date(patient.createDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
-            </div>
-            <div class="audit-item">
-              <div class="audit-label">Created By</div>
-              <div class="audit-value">${patient.createBy || "-"}</div>
-            </div>
-            <div class="audit-item">
-              <div class="audit-label">Last Updated</div>
-              <div class="audit-value">${patient.modifyDt ? new Date(patient.modifyDt).toLocaleString("en-GB").replace(",", "") : "-"}</div>
-            </div>
-            <div class="audit-item">
-              <div class="audit-label">Modified By</div>
-              <div class="audit-value">${patient.modifyBy || "-"}</div>
+        const field = (value) => escapeHtml(value || "-");
+        const rawField = (value) => String(value || "").trim();
+        const formatDateTime = (value) =>
+          value ? new Date(value).toLocaleString("en-GB").replace(",", "") : "-";
+        const statusBadge = (value, isAlert = false) => `
+          <span class="patient-detail-status ${value === "Y" ? `status-yes ${isAlert ? "status-alert" : ""}` : "status-no"}">
+            ${value === "Y" ? "Yes" : "No"}
+          </span>
+        `;
+        const emptyText = (message) =>
+          `<p class="patient-detail-paragraph patient-detail-empty">${message}</p>`;
+        const initials = rawField(patient.name)
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((part) => part.charAt(0).toUpperCase())
+          .join("") || "P";
+        const copyButton = (value, label) =>
+          rawField(value)
+            ? `<button type="button" class="detail-copy-btn" data-copy="${field(value)}" title="Copy ${label}" aria-label="Copy ${label}" onclick="copyDetailValue(this)">
+                <i class="bi bi-copy"></i>
+              </button>`
+            : "";
+        const detailRow = (label, value, options = {}) => `
+          <div class="patient-detail-row">
+            <div class="patient-detail-row-label">${label}</div>
+            <div class="patient-detail-row-value ${options.alert ? "detail-alert-text" : ""}">
+              <span>${field(value)}</span>
+              ${options.copy ? copyButton(value, label) : ""}
             </div>
           </div>
         `;
+        const providerName = getMedicalProviderCode(patient.medicalProviderId);
+        const emergencyContactLine = [
+          rawField(patient.emergencyContactName),
+          rawField(patient.relationship) ? `(${rawField(patient.relationship)})` : "",
+        ]
+          .filter(Boolean)
+          .join(" ");
+        const addressLine = [
+          patient.address,
+          patient.area,
+          patient.city,
+          patient.postcode,
+          patient.state,
+        ]
+          .map(rawField)
+          .filter(Boolean)
+          .join(", ");
+        const addressPrimary = [patient.address, patient.area]
+          .map(rawField)
+          .filter(Boolean)
+          .join(", ");
+        const addressSecondary = [patient.city, patient.postcode, patient.state]
+          .map(rawField)
+          .filter(Boolean)
+          .join(", ");
+        const medicationItems = rawField(patient.medicineTakenNow)
+          .split(/\n|,|;/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+        const medicationContent = medicationItems.length
+          ? `<ul class="patient-medication-list">${medicationItems
+              .map((item) => `<li>${field(item)}</li>`)
+              .join("")}</ul>`
+          : emptyText("No current medications");
+        const conditionDetails = rawField(patient.chronicDisease)
+          ? field(patient.chronicDisease)
+          : patient.hasChronicDisease === "Y"
+            ? "No condition details recorded"
+            : "No chronic condition recorded";
+        const allergyDetails = rawField(patient.allergyDetails)
+          ? field(patient.allergyDetails)
+          : patient.hasAllergies === "Y"
+            ? "No allergy details recorded"
+            : "No allergy recorded";
+        content.innerHTML = `
+          <section class="patient-profile-summary">
+            <div class="patient-avatar">${field(initials)}</div>
+            <div class="patient-profile-main">
+              <h2>${field(patient.name)}</h2>
+              <div class="patient-profile-id">
+                <i class="bi bi-card-text"></i>
+                <span>IC / Passport</span>
+                <strong>${field(patient.icPassportNo)}</strong>
+                ${copyButton(patient.icPassportNo, "IC / Passport")}
+              </div>
+            </div>
+            <div class="patient-profile-provider">
+              <i class="bi bi-hospital"></i>
+              <div class="patient-profile-provider-text">
+                <span>Medical Provider</span>
+                <strong>${field(providerName)}</strong>
+              </div>
+            </div>
+          </section>
+
+          <div class="patient-detail-grid">
+            <section class="patient-detail-section">
+              <div class="patient-detail-section-header">
+                <h3 class="section-heading">
+                  <i class="bi bi-person-lines-fill"></i> Personal Information
+                </h3>
+              </div>
+              <div class="patient-detail-rows">
+                ${detailRow("GoSmart User ID", patient.gosmartUserId)}
+                ${detailRow("Age", patient.age)}
+                ${detailRow("Gender", patient.gender)}
+                ${detailRow("Race", patient.race)}
+              </div>
+            </section>
+
+            <section class="patient-detail-section">
+              <div class="patient-detail-section-header">
+                <h3 class="section-heading">
+                  <i class="bi bi-telephone"></i> Contact Information
+                </h3>
+              </div>
+              <div class="patient-contact-summary">
+                <div class="patient-contact-block">
+                  <div class="patient-contact-label">Mobile Number</div>
+                  <div class="patient-contact-value">
+                    <span>${field(patient.mobileNo)}</span>
+                    ${copyButton(patient.mobileNo, "phone number")}
+                  </div>
+                </div>
+                <div class="patient-contact-block">
+                  <div class="patient-contact-label">Emergency Contact</div>
+                  <div class="patient-contact-inline">
+                    <div class="patient-contact-name">${field(emergencyContactLine || patient.emergencyContactName)}</div>
+                    <div class="patient-contact-value">
+                      <span>${field(patient.emergencyContactNo)}</span>
+                      ${copyButton(patient.emergencyContactNo, "emergency phone number")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="patient-detail-section">
+            <div class="patient-detail-section-header">
+              <h3 class="section-heading">
+                <i class="bi bi-geo-alt"></i> Address
+              </h3>
+            </div>
+            <div class="patient-address-line">
+              <div>${field(addressPrimary || addressLine || "-")}</div>
+              ${
+                addressSecondary
+                  ? `<div class="patient-address-secondary">${field(addressSecondary)}</div>`
+                  : ""
+              }
+            </div>
+          </section>
+
+          <section class="patient-detail-section patient-medical-section">
+            <div class="patient-detail-section-header">
+              <h3 class="section-heading">
+                <i class="bi bi-heart-pulse"></i> Medical Information
+              </h3>
+            </div>
+            <div class="patient-medical-flags">
+              <div>
+                <div class="patient-medical-flag-header">
+                  <span>Chronic Condition</span>
+                  ${statusBadge(patient.hasChronicDisease, true)}
+                </div>
+                <p class="patient-medical-flag-detail detail-alert-text">${conditionDetails}</p>
+              </div>
+              <div>
+                <div class="patient-medical-flag-header">
+                  <span>Allergies</span>
+                  ${statusBadge(patient.hasAllergies, true)}
+                </div>
+                <p class="patient-medical-flag-detail detail-alert-text">${allergyDetails}</p>
+              </div>
+            </div>
+            <div class="patient-medical-content">
+              <div class="patient-medical-block">
+                <h4>Current Medications</h4>
+                ${medicationContent}
+              </div>
+            </div>
+          </section>
+
+          <section class="patient-detail-section">
+            <div class="patient-detail-section-header">
+              <h3 class="section-heading">
+                <i class="bi bi-chat-left-text"></i> Remarks
+              </h3>
+            </div>
+            <p class="patient-detail-paragraph patient-remarks-paragraph">${rawField(patient.remark) ? field(patient.remark) : "No remarks recorded"}</p>
+          </section>
+
+          <div class="patient-detail-meta">
+            <span>Created: ${field(formatDateTime(patient.createDt))} by ${field(patient.createBy)}</span>
+            <span class="patient-meta-divider">|</span>
+            <span>Updated: ${field(formatDateTime(patient.modifyDt))} by ${field(patient.modifyBy)}</span>
+          </div>
+        `;
+      }
+
+      function copyDetailValue(button) {
+        const value = button?.dataset?.copy || "";
+        if (!value || value === "-") return;
+        if (!navigator.clipboard) {
+          showToast("Clipboard is not available");
+          return;
+        }
+        navigator.clipboard
+          .writeText(value)
+          .then(() => showToast("Copied to clipboard"))
+          .catch(() => showToast("Unable to copy"));
+      }
+
+      function editPatientFromDetails(button) {
+        getPatientDetailsModal().hide();
+        editPatient(button);
       }
     </script>
   </body>

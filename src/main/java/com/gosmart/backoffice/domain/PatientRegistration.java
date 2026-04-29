@@ -41,6 +41,12 @@ public class PatientRegistration {
     // Medical
     private String hasChronicDisease; // Y / N
     private String chronicDisease;
+    @Column(name = "medicine_taken_now")
+    private String medicineTakenNow;
+    @Column(name = "has_allergies")
+    private String hasAllergies;
+    @Column(name = "allergy_details")
+    private String allergyDetails;
     @Column(name = "remark")
     private String remark;
 
@@ -208,6 +214,30 @@ public class PatientRegistration {
 
     public void setChronicDisease(String chronicDisease) {
         this.chronicDisease = chronicDisease;
+    }
+
+    public String getMedicineTakenNow() {
+        return medicineTakenNow;
+    }
+
+    public void setMedicineTakenNow(String medicineTakenNow) {
+        this.medicineTakenNow = medicineTakenNow;
+    }
+
+    public String getHasAllergies() {
+        return hasAllergies;
+    }
+
+    public void setHasAllergies(String hasAllergies) {
+        this.hasAllergies = hasAllergies;
+    }
+
+    public String getAllergyDetails() {
+        return allergyDetails;
+    }
+
+    public void setAllergyDetails(String allergyDetails) {
+        this.allergyDetails = allergyDetails;
     }
 
     public String getRemark() {

@@ -8,6 +8,7 @@ public final class PatientCaregiverView {
     private final Integer patientId;
     private final String medicalProviderCode;
     private final String patientName;
+    private final String patientIcPassportNo;
     private final List<Integer> caregiverIds;
     private final String caregiverNames;
     private final String status;
@@ -22,6 +23,7 @@ public final class PatientCaregiverView {
             Integer patientId,
             String medicalProviderCode,
             String patientName,
+            String patientIcPassportNo,
             List<Integer> caregiverIds,
             String caregiverNames,
             String status,
@@ -35,6 +37,7 @@ public final class PatientCaregiverView {
         this.patientId = patientId;
         this.medicalProviderCode = medicalProviderCode;
         this.patientName = patientName;
+        this.patientIcPassportNo = patientIcPassportNo;
         this.caregiverIds = caregiverIds;
         this.caregiverNames = caregiverNames;
         this.status = status;
@@ -62,6 +65,10 @@ public final class PatientCaregiverView {
 
     public String getPatientName() {
         return patientName;
+    }
+
+    public String getPatientIcPassportNo() {
+        return patientIcPassportNo;
     }
 
     public List<Integer> getCaregiverIds() {
