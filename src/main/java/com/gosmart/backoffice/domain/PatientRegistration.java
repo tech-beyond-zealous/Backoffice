@@ -40,12 +40,13 @@ public class PatientRegistration {
 
     // Medical
     private String hasChronicDisease; // Y / N
+    @Column(length = 500)
     private String chronicDisease;
-    @Column(name = "medicine_taken_now")
+    @Column(name = "medicine_taken_now", length = 500)
     private String medicineTakenNow;
-    @Column(name = "has_allergies")
+    @Column(name = "has_allergies", columnDefinition = "char(1)", length = 1)
     private String hasAllergies;
-    @Column(name = "allergy_details")
+    @Column(name = "allergy_details", length = 500)
     private String allergyDetails;
     @Column(name = "remark")
     private String remark;

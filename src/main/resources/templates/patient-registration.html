@@ -569,7 +569,7 @@
                   <div class="form-group-compact">
                     <label for="state" class="field-label">State</label>
                     <select id="state" name="state" class="input-field">
-                      <option value="" disabled selected>Select state</option>
+                      <option value="" disabled selected>Select State</option>
                       <option value="Johor">Johor</option>
                       <option value="Kedah">Kedah</option>
                       <option value="Kelantan">Kelantan</option>
@@ -649,8 +649,15 @@
                           name="chronicDisease"
                           class="input-field"
                           placeholder="Specify condition"
-                          maxlength="255"
+                          maxlength="500"
                         />
+                        <div class="remarks-footer">
+                          <small
+                            id="chronicDiseaseCount"
+                            class="remarks-counter"
+                            >0/500</small
+                          >
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -696,23 +703,32 @@
                           name="allergyDetails"
                           class="input-field"
                           placeholder="Allergy details"
-                          maxlength="255"
+                          maxlength="500"
                         />
+                        <div class="remarks-footer">
+                          <small
+                            id="allergyDetailsCount"
+                            class="remarks-counter"
+                            >0/500</small
+                          >
+                        </div>
                       </div>
                     </div>
                   </div>
                   <div class="form-group-compact current-medications-field">
-                    <label for="medicineTakenNow" class="field-label"
-                      >Current Medications</label
-                    >
                     <textarea
                       id="medicineTakenNow"
                       name="medicineTakenNow"
-                      class="input-field"
+                      class="input-field remarks-textarea"
                       rows="3"
                       maxlength="500"
-                      placeholder="Current medications"
+                      placeholder="Current Medications"
                     ></textarea>
+                    <div class="remarks-footer">
+                      <small id="medicineTakenNowCount" class="remarks-counter"
+                        >0/500</small
+                      >
+                    </div>
                   </div>
                 </div>
               </section>
@@ -1175,6 +1191,15 @@
       }
 
       form.addEventListener("input", (event) => {
+        if (event.target.id === "chronicDisease") {
+          updateFieldCount("chronicDisease", "chronicDiseaseCount");
+        }
+        if (event.target.id === "allergyDetails") {
+          updateFieldCount("allergyDetails", "allergyDetailsCount");
+        }
+        if (event.target.id === "medicineTakenNow") {
+          updateFieldCount("medicineTakenNow", "medicineTakenNowCount");
+        }
         if (event.target.id === "chronicDisease" && event.target.value.trim()) {
           setFieldError(event.target);
         }
@@ -1388,6 +1413,7 @@
           patient.allergyDetails || "";
         document.getElementById("remark").value = patient.remark || "";
         updateRemarkCount();
+        updateMedicalDetailCounts();
 
         document.getElementById("patientFormModalLabel").textContent =
           "Edit Patient";
@@ -1447,6 +1473,7 @@
         setEmergencyContactFields("");
         clearInlineValidation();
         updateRemarkCount();
+        updateMedicalDetailCounts();
         document.getElementById("patientFormModalLabel").textContent =
           "Add Patient";
         submitBtn.textContent = "Save";
@@ -1459,6 +1486,17 @@
 
       function updateRemarkCount() {
         remarkCount.textContent = `${remark.value.length}/500`;
+      }
+
+      function updateFieldCount(fieldId, counterId) {
+        document.getElementById(counterId).textContent =
+          `${document.getElementById(fieldId).value.length}/500`;
+      }
+
+      function updateMedicalDetailCounts() {
+        updateFieldCount("chronicDisease", "chronicDiseaseCount");
+        updateFieldCount("allergyDetails", "allergyDetailsCount");
+        updateFieldCount("medicineTakenNow", "medicineTakenNowCount");
       }
 
       async function loadPatients() {
@@ -1884,6 +1922,7 @@
         attachPatientsTableEvents();
         updateSortArrows();
         updateRemarkCount();
+        updateMedicalDetailCounts();
         remark.addEventListener("input", updateRemarkCount);
         document.addEventListener("mousemove", (event) => {
           const remarkPreview = event.target.closest(".remark-preview");
@@ -1970,6 +2009,7 @@
         chronicField.disabled = !isActive;
         if (!isActive) {
           chronicField.value = "";
+          updateFieldCount("chronicDisease", "chronicDiseaseCount");
           setFieldError(document.getElementById("chronicDisease"), "");
         }
       }
@@ -1983,6 +2023,7 @@
         allergyField.disabled = !isActive;
         if (!isActive) {
           allergyField.value = "";
+          updateFieldCount("allergyDetails", "allergyDetailsCount");
           setFieldError(document.getElementById("allergyDetails"), "");
         }
       }
