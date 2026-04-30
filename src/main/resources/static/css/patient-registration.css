@@ -246,8 +246,10 @@
 .medical-control-row {
   display: grid;
   grid-template-columns: 9.75rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
   align-items: start;
-  gap: 0.65rem;
+  column-gap: 0.65rem;
+  row-gap: 0.05rem;
   min-width: 0;
   padding: 0.55rem 0;
   border: 0;
@@ -259,21 +261,20 @@
 
 .medical-control-row .toggle-field-label {
   align-self: start;
-  padding-top: 0.63rem;
   margin: 0;
   color: #34495f;
   font-size: 0.82rem;
   font-weight: 600;
+  line-height: 1.1;
 }
 
 .medical-control-body {
-  display: grid;
-  grid-template-columns: 8.75rem minmax(0, 1fr);
-  gap: 0.55rem;
-  align-items: start;
+  display: contents;
 }
 
 .medical-control-body .toggle-group {
+  grid-column: 1;
+  grid-row: 2;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
   min-width: 0;
@@ -286,6 +287,8 @@
 }
 
 .medical-control-body .conditional-field {
+  grid-column: 2;
+  grid-row: 1 / span 2;
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -331,6 +334,14 @@
   border-color: #8fb8dc;
   background: #fcfeff;
   box-shadow: 0 0 0 0.14rem rgba(31, 106, 199, 0.07);
+}
+
+#patientFormModal .medical-control-body .remarks-textarea {
+  min-height: 4.75rem;
+  height: auto;
+  border-radius: 0.55rem;
+  line-height: 1.5;
+  resize: vertical;
 }
 
 .current-medications-field,
@@ -1070,16 +1081,24 @@
   }
 
   .medical-control-body {
+    display: grid;
     grid-template-columns: 1fr;
   }
 
   .medical-control-row {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
     gap: 0.45rem;
   }
 
   .medical-control-row .toggle-field-label {
     padding-top: 0;
+  }
+
+  .medical-control-body .toggle-group,
+  .medical-control-body .conditional-field {
+    grid-column: auto;
+    grid-row: auto;
   }
 }
 

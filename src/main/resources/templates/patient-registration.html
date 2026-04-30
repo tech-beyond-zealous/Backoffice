@@ -49,7 +49,7 @@
                     id="patientSearch"
                     type="search"
                     class="form-control"
-                    placeholder="Search by name, city, IC, mobile"
+                    placeholder="Search by name, IC, mobile"
                   />
                 </div>
               </div>
@@ -643,14 +643,14 @@
                         <label for="chronicDisease" class="field-label"
                           >Specify Condition</label
                         >
-                        <input
-                          type="text"
+                        <textarea
                           id="chronicDisease"
                           name="chronicDisease"
-                          class="input-field"
+                          class="input-field remarks-textarea"
+                          rows="3"
                           placeholder="Specify condition"
                           maxlength="500"
-                        />
+                        ></textarea>
                         <div class="remarks-footer">
                           <small
                             id="chronicDiseaseCount"
@@ -697,14 +697,14 @@
                         <label for="allergyDetails" class="field-label"
                           >Allergy Details</label
                         >
-                        <input
-                          type="text"
+                        <textarea
                           id="allergyDetails"
                           name="allergyDetails"
-                          class="input-field"
+                          class="input-field remarks-textarea"
+                          rows="3"
                           placeholder="Allergy details"
                           maxlength="500"
-                        />
+                        ></textarea>
                         <div class="remarks-footer">
                           <small
                             id="allergyDetailsCount"
@@ -901,6 +901,33 @@
                 </label>
               </div>
             </div>
+            <div class="mb-4">
+              <h6 class="mb-3 section-label-emphasis">Allergies</h6>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterAllergiesYes"
+                  value="Y"
+                  data-filter="allergies"
+                />
+                <label class="form-check-label" for="filterAllergiesYes">
+                  Has Allergies
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input filter-checkbox"
+                  type="checkbox"
+                  id="filterAllergiesNo"
+                  value="N"
+                  data-filter="allergies"
+                />
+                <label class="form-check-label" for="filterAllergiesNo">
+                  No Allergies
+                </label>
+              </div>
+            </div>
           </div>
           <div class="modal-footer">
             <button
@@ -984,6 +1011,7 @@
       let filterCriteria = {
         gender: [],
         chronic: [],
+        allergies: [],
         medicalProviderId: "",
       };
 
@@ -1554,12 +1582,21 @@
           const matchChronic =
             filterCriteria.chronic.length === 0 ||
             filterCriteria.chronic.includes(patient.hasChronicDisease);
+          const matchAllergies =
+            filterCriteria.allergies.length === 0 ||
+            filterCriteria.allergies.includes(patient.hasAllergies);
           const matchProvider =
             !filterCriteria.medicalProviderId ||
             String(patient.medicalProviderId) ===
               filterCriteria.medicalProviderId;
 
-          return matchSearch && matchGender && matchChronic && matchProvider;
+          return (
+            matchSearch &&
+            matchGender &&
+            matchChronic &&
+            matchAllergies &&
+            matchProvider
+          );
         });
 
         filtered.sort((a, b) => {
@@ -1835,6 +1872,7 @@
         // Reset filter criteria
         filterCriteria.gender = [];
         filterCriteria.chronic = [];
+        filterCriteria.allergies = [];
         filterCriteria.medicalProviderId = "";
 
         // Reset sort
@@ -1855,6 +1893,10 @@
 
         filterCriteria.chronic = Array.from(
           document.querySelectorAll('input[data-filter="chronic"]:checked'),
+        ).map((cb) => cb.value);
+
+        filterCriteria.allergies = Array.from(
+          document.querySelectorAll('input[data-filter="allergies"]:checked'),
         ).map((cb) => cb.value);
 
         const providerFilter = document.getElementById("filterMedicalProvider");
