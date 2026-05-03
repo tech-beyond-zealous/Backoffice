@@ -82,7 +82,8 @@ VALUES
 (202, 2, 'CGV', 'Caregiver', 3, ' ', 'A'),
 (203, 2, 'APPT', 'Appointments', 4, ' ', 'A'),
 (204, 2, 'BILL', 'Billing', 5, ' ', 'A'),
-(205, 2, 'DASH', 'Dashboard', 6, ' ', 'A');
+(205, 2, 'DASH', 'Dashboard', 6, ' ', 'A'),
+(206, 2, 'REPORT', 'Report', 7, ' ', 'A');
 ```
 
 **Field Descriptions:**
@@ -101,6 +102,7 @@ VALUES
 - **Appointments** (ID: 203) – Appointment scheduling
 - **Billing** (ID: 204) – Payment and invoice management
 - **Dashboard** (ID: 205) – Analytics and reporting
+- **Report** (ID: 206) – Operational reports
 
 ### Functions
 
@@ -124,7 +126,10 @@ VALUES
 (2006, 204, 'PAYMENT', 'Payment', '/billing/payment', 1, '', 'A'),
 
 -- Dashboard
-(2007, 205, 'ANALYTICS', 'Analytics', '/dashboard/analytics', 1, '', 'A');
+(2007, 205, 'ANALYTICS', 'Analytics', '/dashboard/analytics', 1, '', 'A'),
+
+-- Report
+(2009, 206, 'SOS_ALERT', 'SOS Alert', '/report/sos-alert', 1, 'SOS alert report', 'A');
 ```
 
 **Field Descriptions:**
@@ -146,6 +151,7 @@ VALUES
 - **APPT_REG** – Appointment scheduling
 - **PAYMENT** – Billing and payments
 - **ANALYTICS** – Dashboard analytics
+- **SOS_ALERT** – SOS alert report
 
 ---
 

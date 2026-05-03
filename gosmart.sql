@@ -91,7 +91,8 @@ VALUES
 (2005,203,'APPT_REG','Registration','/appointment/registration',1,'','A'),
 (2006,204,'PAYMENT','Payment','/billing/payment',1,'','A'),
 (2007,205,'ANALYTICS','Analytics','/dashboard/analytics',1,'','A'),
-(2008,201,'ASSIGN_CAREGIVER','Assign Caregiver','/patient/patient-caregiver',4,NULL,'A');
+(2008,201,'ASSIGN_CAREGIVER','Assign Caregiver','/patient/patient-caregiver',4,NULL,'A'),
+(2009,206,'SOS_ALERT','SOS Alert','/report/sos-alert',1,'SOS alert report','A');
 /*!40000 ALTER TABLE `function` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -123,7 +124,7 @@ CREATE TABLE `function_group` (
 
 LOCK TABLES `function_group` WRITE;
 /*!40000 ALTER TABLE `function_group` DISABLE KEYS */;
-INSERT INTO `function_group` (`group_id`, `application_system_id`, `group_code`, `group_name`, `sort_order`, `remark`, `status`) VALUES (1,1,'BLUEPA1','Parent Blue A1',1,NULL,'A'),(2,1,'BLUEPA2','Parent Blue A2',2,NULL,'A'),(6,2,'REDP1','Parent Red A1',1,NULL,'A'),(7,3,'YELLOWPA1','Parent Yellow A1',1,NULL,'A'),(8,3,'YELLOWPA2','Parent Yellow A2',2,NULL,'A'),(9,3,'YELLOWPA3','Parent Yellow A3',3,NULL,'A');
+INSERT INTO `function_group` (`group_id`, `application_system_id`, `group_code`, `group_name`, `sort_order`, `remark`, `status`) VALUES (1,1,'BLUEPA1','Parent Blue A1',1,NULL,'A'),(2,1,'BLUEPA2','Parent Blue A2',2,NULL,'A'),(6,2,'REDP1','Parent Red A1',1,NULL,'A'),(7,3,'YELLOWPA1','Parent Yellow A1',1,NULL,'A'),(8,3,'YELLOWPA2','Parent Yellow A2',2,NULL,'A'),(9,3,'YELLOWPA3','Parent Yellow A3',3,NULL,'A'),(206,2,'REPORT','Report',7,' ','A');
 /*!40000 ALTER TABLE `function_group` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -161,6 +162,27 @@ INSERT INTO `user_function` (`user_function_id`, `function_id`, `user_id`, `crea
 UNLOCK TABLES;
 
 --
+-- Table structure for table `sos_contact`
+--
+
+DROP TABLE IF EXISTS `sos_contact`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sos_contact` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `create_dt` datetime NOT NULL,
+  `create_by` varchar(100) NOT NULL,
+  `patient_id` int NOT NULL,
+  `contact_user_id` int NOT NULL,
+  `status` char(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sos_contact_patient_id` (`patient_id`),
+  KEY `idx_sos_contact_contact_user_id` (`contact_user_id`),
+  KEY `idx_sos_contact_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `user_password`
 --
 
@@ -187,6 +209,27 @@ LOCK TABLES `user_password` WRITE;
 INSERT INTO `user_password` (`id`, `create_dt`, `modify_dt`, `user_id`, `hashed_pwd`) VALUES (1,'2026-03-27 00:00:00',NULL,'tanc08@gmail.com','xrJk6saY3kzGUOV4spRv+wYvvDpCF7Dp0TVud1Pg/dk='),(2,'2026-03-27 00:00:00',NULL,'tychuen88@gmail.com','KaOxvNzPxuriKtHWdeIxvz0TwgQ5Y/ngiJPA56C937o='),(3,'2026-03-27 00:00:00',NULL,'adriananuarkamal@gmail.com','kBNlP51VNIftGpeaGLgTkwPVTOdic1W/FBZ3pMRTQ1M=');
 /*!40000 ALTER TABLE `user_password` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Granting SOS Alert report menu access
+--
+
+INSERT INTO `user_function`
+    (`function_id`, `user_id`, `create`, `edit`, `delete`, `view`, `status`)
+SELECT
+    f.`function_id`,
+    up.`user_id`,
+    'N',
+    'N',
+    'N',
+    'Y',
+    'A'
+FROM `function` f
+JOIN `user_password` up
+WHERE f.`function_code` = 'SOS_ALERT'
+ON DUPLICATE KEY UPDATE
+    `view` = 'Y',
+    `status` = 'A';
 
 --
 -- Table structure for table `user_session`
